@@ -1,0 +1,25 @@
+# =============================================================================
+# Grafana 11 Datasource Provisioning
+# UPDATED: Added Prometheus 3.x compatible settings
+# =============================================================================
+
+apiVersion: 1
+
+datasources:
+  - name:      Prometheus
+    uid:       prometheus
+    type:      prometheus
+    access:    proxy
+    url:       http://prometheus:9090
+    isDefault: true
+    editable:  false
+    jsonData:
+      timeInterval:              '15s'
+      queryTimeout:              '60s'
+      httpMethod:                POST
+      prometheusType:            Prometheus
+      prometheusVersion:         '3.4.0'
+      cacheLevel:                Low
+      incrementalQuerying:       true
+      incrementalQueryOverlapWindow: '10m'
+    version: 1
