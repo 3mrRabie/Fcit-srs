@@ -375,6 +375,7 @@ export default function CourseRegPage() {
   const maxCred = creditSummary?.maxCredits || meta?.maxCredits || 20;
   const remCred = creditSummary?.remainingCredits || (maxCred - regCred);
   const regOpen = meta.registration_open || sems.find(s => s.id == semId)?.status === 'registration';
+  const dropOpen = meta.add_drop_open || regOpen;
 
   const filteredAvail = avail.filter(c => {
     if (filterCat !== 'ALL' && c.category !== filterCat) return false;
@@ -442,9 +443,10 @@ export default function CourseRegPage() {
       </div>
 
       {loading ? <Spinner /> : (
-        <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 0.8fr', gap: '16px', alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: regOpen ? '1.4fr 0.8fr' : '1fr', gap: '16px', alignItems: 'start' }}>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {regOpen && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <Card noPadding style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
               <div style={{ padding: '14px', borderBottom: '1px solid var(--color-gray-200)', display: 'flex', gap: '10px', alignItems: 'center', background: '#f8fafc', borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0' }}>
                 <input 
@@ -529,6 +531,7 @@ export default function CourseRegPage() {
               </div>
             </Card>
           </div>
+          )}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <Card title="مقرراتي المختارة" style={{ position: 'sticky', top: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }} headerActions={<Badge variant="primary">{enrolled.length} مقرر</Badge>}>
@@ -551,7 +554,9 @@ export default function CourseRegPage() {
                           د. {c.doctor_name_ar || c.doctor_name || '—'}
                         </div>
                       </div>
-                      <Button size="sm" variant="danger" onClick={() => drop(c.enrollment_id || c.id)} style={{ padding: '6px 10px', fontSize: '11px' }}>حذف</Button>
+                      {dropOpen && (
+                        <Button size="sm" variant="danger" onClick={() => drop(c.enrollment_id || c.id)} style={{ padding: '6px 10px', fontSize: '11px' }}>حذف</Button>
+                      )}
                     </div>
                   </div>
                 ))

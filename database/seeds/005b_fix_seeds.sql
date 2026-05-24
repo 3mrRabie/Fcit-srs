@@ -5405,7 +5405,6 @@ BEGIN
       WHEN cgpa < 2.0 AND cgpa > 0 THEN 'probation'
       WHEN cgpa < 2.5 AND cgpa >= 2.0 THEN 'warning'
       ELSE 'active'
-      ELSE 'active'
     END::academic_status
   WHERE cgpa > 0;
 

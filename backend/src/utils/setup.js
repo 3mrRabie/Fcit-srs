@@ -124,9 +124,15 @@ async function setup() {
       'migrations/fix_summer_max_credits.sql',
       'migrations/fix_curriculum_plans.sql',
       'migrations/fix_semester_statuses.sql',
+      'migrations/populate_curriculum_plans.sql',
       'seeds/004_real_professors.sql',
       'seeds/005_real_students.sql',
-      'seeds/005b_fix_seeds.sql'
+      'seeds/005b_fix_seeds.sql',
+      'seeds/006_demo_student_enrollments.sql',
+      'seeds/007_fix_demo_student.sql',
+      'migrations/sync_academic_status.sql',
+      'migrations/fix_semester_status.sql',
+      'migrations/fix_demo_fall_2025_enrollments.sql'
     ];
     for (const migFile of namedMigrations) {
       const key = path.basename(migFile);

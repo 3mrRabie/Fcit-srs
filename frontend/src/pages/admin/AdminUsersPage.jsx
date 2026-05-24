@@ -13,6 +13,8 @@ export default function AdminUsersPage() {
   const [q, setQ] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const LIMIT = 20;
 
   // Bulk Import State
   const [showImportModal, setShowImportModal] = useState(false);
@@ -20,30 +22,30 @@ export default function AdminUsersPage() {
   const [importLoading, setImportLoading] = useState(false);
   const [importStats, setImportStats] = useState(null);
 
-  const load = () => {
+  const load = (pageNum = 1) => {
     setLoading(true);
-    adminAPI.getUsers({ page, search: q, _t: Date.now() })
+    adminAPI.getUsers({ page: pageNum, limit: LIMIT, search: q, _t: Date.now() })
       .then(r => {
         const d = D(r);
-        if (d?.users) {
-          setUsers(d.users);
-          setTotalPages(d.totalPages || 1);
-        } else {
-          setUsers(Array.isArray(d) ? d : []);
-          setTotalPages(1);
-        }
+        const userList = Array.isArray(d) ? d : (d?.users || []);
+        const t  = d?.total      ?? userList.length;
+        const tp = d?.totalPages ?? 1;
+        setUsers(userList);
+        setTotal(t);
+        setTotalPages(tp);
+        setPage(pageNum);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { load(); }, [page]);
+  useEffect(() => { load(1); }, []);
   
   // Refresh on search
   useEffect(() => {
     const timer = setTimeout(() => {
       setPage(1);
-      load();
+      load(1);
     }, 400);
     return () => clearTimeout(timer);
   }, [q]);
@@ -64,7 +66,7 @@ export default function AdminUsersPage() {
       toast.success('تمت إضافة المستخدم');
       setShowAdd(false);
       setForm({ fullNameAr: '', fullNameEn: '', email: '', role: 'doctor', password: '' });
-      load();
+      load(1);
     } catch (err) {
       toast.error(err.response?.data?.message || 'فشل في الإضافة');
     }
@@ -127,7 +129,7 @@ export default function AdminUsersPage() {
       const data = D(res);
       setImportStats(data);
       toast.success(res.data?.message || 'تم الاستيراد');
-      load();
+      load(1);
     } catch (err) {
       toast.error(err.response?.data?.message || 'فشل الاستيراد');
     } finally {
@@ -248,13 +250,36 @@ export default function AdminUsersPage() {
           </Table>
           
           {totalPages > 1 && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
-              <div style={{ fontSize: '14px', color: 'var(--color-gray-500)' }}>
-                صفحة {page} من {totalPages}
-              </div>
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '16px 0', borderTop: '1px solid var(--color-gray-200)', marginTop: '12px'
+            }}>
+              <span style={{ fontSize: '13px', color: 'var(--color-gray-500)' }}>
+                عرض {((page - 1) * LIMIT) + 1}–{Math.min(page * LIMIT, total)} من {total} مستخدم
+              </span>
               <div style={{ display: 'flex', gap: '8px' }}>
-                <Button size="sm" variant="outline" disabled={page === 1} onClick={() => setPage(p => p - 1)}>السابق</Button>
-                <Button size="sm" variant="outline" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>التالي</Button>
+                <Button
+                  size="sm" variant="outline"
+                  disabled={page <= 1}
+                  onClick={() => load(page - 1)}
+                >
+                  → السابق
+                </Button>
+                <span style={{
+                  padding: '6px 14px', border: '1px solid var(--color-gray-200)',
+                  borderRadius: 'var(--radius-md)', fontSize: '13px',
+                  background: 'var(--color-primary-light)', color: 'var(--color-primary)',
+                  fontWeight: 700
+                }}>
+                  {page} / {totalPages}
+                </span>
+                <Button
+                  size="sm" variant="outline"
+                  disabled={page >= totalPages}
+                  onClick={() => load(page + 1)}
+                >
+                  ← التالي
+                </Button>
               </div>
             </div>
           )}

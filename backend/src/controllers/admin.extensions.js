@@ -530,7 +530,7 @@ const getDoctorOwnSchedule = async (req, res, next) => {
 
     const offerings = (await query(
       `SELECT co.id as offering_id, co.capacity, co.enrolled_count, co.room,
-              c.code, c.name_ar, c.name_en, c.credits, c.category, c.level,
+              c.id as course_id, c.code, c.name_ar, c.name_en, c.credits, c.category, c.level,
               sem.id as semester_id, sem.label as semester_label,
               sem.start_date, sem.end_date, sem.status as semester_status,
               u.full_name_ar as doctor_name_ar, u.full_name_en as doctor_name_en,
@@ -581,10 +581,14 @@ const getDoctorOwnSchedule = async (req, res, next) => {
     const weeklyGrid = {};
     for (const day of DAYS) weeklyGrid[day] = [];
 
+    const seenSlots = new Set();
     for (const offering of uniqueOfferings) {
       if (offering.schedule_slots) {
         for (const slot of offering.schedule_slots) {
           if (weeklyGrid[slot.day]) {
+            const dedupKey = `${offering.course_id}-${slot.day}-${slot.start}`;
+            if (seenSlots.has(dedupKey)) continue;
+            seenSlots.add(dedupKey);
             weeklyGrid[slot.day].push({
               ...slot,
               courseCode: offering.code,

@@ -56,7 +56,7 @@ const getDashboard = async (req, res, next) => {
     )).rows[0];
 
     const recentWarnings = (await query(
-      `SELECT s.id as student_id, u.full_name_ar as student_name, s.student_code, s.cgpa, s.total_warnings as warning_count, s.current_level, s.academic_status, s.total_credits_passed
+      `SELECT s.id as student_id, u.full_name_ar as student_name, s.student_code, s.cgpa, s.total_warnings, s.current_level, s.academic_status, s.total_credits_passed
        FROM students s
        JOIN users u ON u.id = s.user_id
        WHERE s.academic_status IN ('warning', 'probation')
@@ -998,7 +998,7 @@ const getOfferings = async (req, res, next) => {
       LEFT JOIN doctors d ON d.id = co.doctor_id
       LEFT JOIN users u ON u.id = d.user_id
       JOIN semesters sem ON sem.id = co.semester_id
-      WHERE 1=1`;
+      WHERE co.is_active = TRUE`;
     const params = [];
     if (semesterId) { params.push(semesterId); sql += ` AND co.semester_id = $${params.length}`; }
     if (courseId)   { params.push(courseId);   sql += ` AND co.course_id = $${params.length}`; }
