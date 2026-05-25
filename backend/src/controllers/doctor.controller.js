@@ -347,23 +347,34 @@ const getMyCourses = async (req, res, next) => {
     const doctor = (await query('SELECT id FROM doctors WHERE user_id = $1', [req.user.id])).rows[0];
     if (!doctor) return res.status(404).json({ success: false, message: 'Doctor profile not found' });
 
+    // Use live COUNT from enrollments instead of stale denormalized co.enrolled_count
     const courses = (await query(
-      `SELECT co.id as offering_id, co.enrolled_count, co.capacity,
-              c.code as course_code, c.name_ar as course_name_ar, c.name_en as course_name_en, c.credits, c.level,
-              sem.id as semester_id, sem.label as semester, sem.semester_type, sem.status as semester_status, ay.year_label
+      `SELECT co.id as offering_id, co.capacity,
+              COUNT(e.id) FILTER (WHERE e.status IN ('registered','completed')) AS enrolled_count,
+              c.code as course_code, c.name_ar as course_name_ar, c.name_en as course_name_en,
+              c.credits, c.level,
+              sem.id as semester_id, sem.label as semester_label, sem.semester_type,
+              sem.status as semester_status, ay.year_label
        FROM course_offerings co
        JOIN courses c ON c.id = co.course_id
        JOIN semesters sem ON sem.id = co.semester_id
        LEFT JOIN academic_years ay ON ay.id = sem.academic_year_id
-       WHERE co.doctor_id = $1 ORDER BY sem.start_date DESC, c.code`,
+       LEFT JOIN enrollments e ON e.offering_id = co.id
+       WHERE co.doctor_id = $1
+       GROUP BY co.id, c.id, sem.id, ay.year_label
+       ORDER BY sem.start_date DESC, c.code`,
       [doctor.id]
     )).rows;
 
     const levelsMap = bylawService.getBylaw().levels.reduce((acc, l) => ({...acc, [l.id]: l.name_ar}), {});
     courses.forEach(c => {
-      c.course_name = c.course_name_ar || c.course_name_en;
-      c.level_label = levelsMap[c.level] || `الفرقة ${c.level}`;
-      c.semester = bylawService.getSemesterLabel(c.semester_type, c.year_label) || c.semester;
+      c.course_name    = c.course_name_ar || c.course_name_en;
+      c.courseName     = c.course_name;
+      c.courseCode     = c.course_code;
+      c.enrolled_count = parseInt(c.enrolled_count) || 0;
+      c.enrolledCount  = c.enrolled_count;
+      c.level_label    = levelsMap[c.level] || `الفرقة ${c.level}`;
+      c.semester       = bylawService.getSemesterLabel(c.semester_type, c.year_label) || c.semester_label;
     });
 
     return res.json({ success: true, data: courses });

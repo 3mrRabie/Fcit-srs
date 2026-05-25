@@ -577,7 +577,7 @@ const getDoctorOwnSchedule = async (req, res, next) => {
     const uniqueOfferings = Array.from(uniqueOfferingsMap.values());
 
     // Build weekly grid for schedule display
-    const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu'];
+    const DAYS = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu'];
     const weeklyGrid = {};
     for (const day of DAYS) weeklyGrid[day] = [];
 

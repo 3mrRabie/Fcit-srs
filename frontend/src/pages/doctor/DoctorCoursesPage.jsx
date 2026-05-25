@@ -3,123 +3,222 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { doctorAPI, sharedAPI } from '../../services/api';
 import { D } from '../../utils/helpers';
 import AppLayout from '../../components/layout/AppLayout';
-import { Card, Button, Spinner, Badge } from '../../components/ui';
-import { Search, Users, Calendar } from 'lucide-react';
+import { Spinner } from '../../components/ui';
+import { Search, Users, Calendar, BookOpen } from 'lucide-react';
+
+const PRIMARY = '#1b4f9e';
 
 export default function DoctorCoursesPage() {
-  const [courses, setCourses] = useState([]);
-  const [sems, setSems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchParams] = useSearchParams();
-  const [searchQ, setSearchQ] = useState(searchParams.get('search') || '');
+  const [courses, setCourses]   = useState([]);
+  const [sems, setSems]         = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [searchParams]          = useSearchParams();
+  const [searchQ, setSearchQ]   = useState(searchParams.get('search') || '');
 
-  // Read search param from URL when it changes
   useEffect(() => {
     const q = searchParams.get('search');
     if (q !== null) setSearchQ(q);
   }, [searchParams]);
 
   useEffect(() => {
+    // Use getMyCourses (live counts, all semesters, no deduplication)
     Promise.all([
-      doctorAPI.getDashboard().catch(() => ({})),
-      sharedAPI.getSemesters().catch(() => ({}))
-    ]).then(([dRes, sRes]) => {
-      setCourses(D(dRes)?.courses || []);
+      doctorAPI.getMyCourses().catch(() => ({})),
+      sharedAPI.getSemesters().catch(() => ({})),
+    ]).then(([cRes, sRes]) => {
+      const raw = D(cRes) || [];
+      setCourses(Array.isArray(raw) ? raw : []);
       setSems(D(sRes) || []);
     }).finally(() => setLoading(false));
   }, []);
 
-  // Filter and group courses by semester
+  const ACTIVE_STATUSES = ['active', 'registration', 'grading'];
+
+  const SEMESTER_TYPE_AR = { fall: 'الترم الأول', spring: 'الترم الثاني', summer: 'الترم الصيفي' };
+
   const filteredAndGrouped = useMemo(() => {
     const q = searchQ.toLowerCase().trim();
+
+    // First filter by active status AND optional search query
     const filtered = courses.filter(c => {
+      const semId  = c.semester_id || c.semesterId;
+      const sem    = sems.find(s => s.id === semId);
+      const status = c.semester_status || sem?.status || '';
+      if (!ACTIVE_STATUSES.includes(status)) return false; // hide closed semesters
+
       if (!q) return true;
-      return (c.courseName || c.course_name || '').toLowerCase().includes(q) ||
-             (c.courseCode || c.course_code || '').toLowerCase().includes(q);
+      const name = (c.course_name_ar || c.course_name_en || c.courseName || c.course_name || '').toLowerCase();
+      const code = (c.course_code || c.courseCode || '').toLowerCase();
+      return name.includes(q) || code.includes(q);
     });
 
     const groups = {};
     filtered.forEach(c => {
-      const semId = c.semester_id || c.semesterId;
-      const sem = sems.find(s => s.id === semId);
-      const semLabel = sem ? (sem.label || `${sem.semester_type || ''} ${sem.year_label || ''}`) : 'فصل دراسي غير محدد';
-      
-      if (!groups[semLabel]) groups[semLabel] = [];
-      groups[semLabel].push(c);
+      const semId  = c.semester_id || c.semesterId;
+      const sem    = sems.find(s => s.id === semId);
+      const status = c.semester_status || sem?.status || '';
+
+      // Use Arabic label already computed by backend (c.semester),
+      // then fall back to the type map, then raw DB label.
+      const type  = c.semester_type || sem?.semester_type || '';
+      const year  = c.year_label    || sem?.year_label    || '';
+      const semLabel = c.semester
+        || (type && year ? `${SEMESTER_TYPE_AR[type] || type} ${year}` : null)
+        || sem?.label
+        || 'فصل دراسي غير محدد';
+
+      if (!groups[semLabel]) groups[semLabel] = { courses: [], status };
+      groups[semLabel].courses.push(c);
     });
-    return groups;
+
+    // Sort: registration → active → grading
+    const ORDER = { registration: 0, active: 1, grading: 2 };
+    return Object.entries(groups).sort(([,a], [,b]) => {
+      const ai = ORDER[a.status] ?? 99;
+      const bi = ORDER[b.status] ?? 99;
+      return ai - bi;
+    });
   }, [courses, sems, searchQ]);
+
+  const statusBadge = (status) => {
+    const map = { active: ['نشط', '#16a34a', '#dcfce7'], registration: ['تسجيل', '#2563eb', '#dbeafe'],
+                  grading: ['درجات', '#d97706', '#fef3c7'], closed: ['مغلق', '#6b7280', '#f1f5f9'] };
+    const [label, color, bg] = map[status] || ['—', '#94a3b8', '#f8fafc'];
+    return (
+      <span style={{ padding: '2px 10px', borderRadius: 99, background: bg, color, fontWeight: 700, fontSize: 10 }}>
+        {label}
+      </span>
+    );
+  };
 
   return (
     <AppLayout>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-primary-dark)', margin: 0 }}>مقرراتي</h1>
-        
-        <div style={{ position: 'relative', width: '300px', maxWidth: '100%' }}>
-          <input
-            type="text"
-            placeholder="ابحث في مقرراتك..."
-            value={searchQ}
-            onChange={e => setSearchQ(e.target.value)}
-            style={{
-              width: '100%', padding: '10px 14px 10px 36px', borderRadius: 'var(--radius-lg)',
-              border: '1px solid var(--color-gray-200)', fontSize: '14px', outline: 'none'
-            }}
-          />
-          <Search size={16} color="var(--color-gray-400)" style={{ position: 'absolute', left: '12px', top: '12px' }} />
-        </div>
-      </div>
+      <div style={{ direction: 'rtl' }}>
 
-      {loading ? <Spinner /> : Object.keys(filteredAndGrouped).length === 0 ? (
-        <Card>
-          <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--color-gray-400)' }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}>📚</div>
-            <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-gray-600)', marginBottom: '8px' }}>لا توجد مقررات</div>
-            <div style={{ fontSize: '14px' }}>لم يتم العثور على مقررات مسندة إليك مطابقة للبحث.</div>
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: PRIMARY, margin: 0 }}>مقرراتي</h1>
+          <div style={{ position: 'relative', width: 280 }}>
+            <input
+              type="text"
+              placeholder="ابحث في مقرراتك..."
+              value={searchQ}
+              onChange={e => setSearchQ(e.target.value)}
+              style={{
+                width: '100%', padding: '9px 36px 9px 14px', borderRadius: 10,
+                border: '1px solid #e5e7eb', fontSize: 13, outline: 'none', background: '#fff',
+              }}
+            />
+            <Search size={15} color="#9ca3af" style={{ position: 'absolute', right: 12, top: 11 }} />
           </div>
-        </Card>
-      ) : (
-        Object.entries(filteredAndGrouped).map(([semLabel, semCourses]) => (
-          <div key={semLabel} style={{ marginBottom: '24px' }}>
-            <h2 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-primary)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Calendar size={18} />
-              {semLabel}
-            </h2>
-            
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
-              {semCourses.map(c => {
-                const rosterId = c.offering_id || c.offeringId || c.id;
-                return (
-                  <Card key={rosterId} noPadding style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ background: 'var(--color-gray-50)', padding: '16px', borderBottom: '1px solid var(--color-gray-100)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                        <div style={{ fontWeight: 800, fontSize: '14px', color: 'var(--color-primary-dark)' }}>{c.courseCode || c.course_code}</div>
-                      </div>
-                      <div style={{ fontWeight: 700, fontSize: '16px', color: 'var(--color-gray-900)' }}>{c.courseName || c.course_name}</div>
-                    </div>
-                    
-                    <div style={{ padding: '16px', flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-gray-600)', fontSize: '13px', marginBottom: '8px' }}>
-                        <Users size={14} />
-                        <span>الطلاب المسجلين: <strong>{c.enrolledCount || c.enrolled_count || 0}</strong></span>
-                      </div>
-                      <div style={{ fontSize: '13px', color: 'var(--color-gray-500)' }}>
-                        المستوى / الفرقة: <strong>{c.level_label || c.level || 'غير محدد'}</strong>
-                      </div>
-                    </div>
-                    
-                    <div style={{ padding: '12px 16px', background: 'var(--color-white)', borderTop: '1px solid var(--color-gray-100)' }}>
-                      <Link to={`/doctor/courses/${rosterId}`} style={{ textDecoration: 'none', display: 'block' }}>
-                        <Button style={{ width: '100%', justifyContent: 'center' }}>إدارة الطلاب والدرجات</Button>
-                      </Link>
-                    </div>
-                  </Card>
-                );
-              })}
+        </div>
+
+        {loading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: 80 }}><Spinner /></div>
+        ) : filteredAndGrouped.length === 0 ? (
+          <div style={{
+            textAlign: 'center', padding: '60px 24px', background: '#fff',
+            borderRadius: 14, border: '1px solid #e5e7eb',
+          }}>
+            <div style={{ fontSize: 48, marginBottom: 12, opacity: 0.3 }}>📚</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: '#64748b', marginBottom: 6 }}>لا توجد مقررات</div>
+            <div style={{ fontSize: 13, color: '#94a3b8' }}>
+              {searchQ ? 'لا توجد نتائج مطابقة للبحث' : 'لم يتم إسناد مقررات إليك حتى الآن'}
             </div>
           </div>
-        ))
-      )}
+        ) : (
+          filteredAndGrouped.map(([semLabel, { courses: semCourses, status }]) => (
+            <div key={semLabel} style={{ marginBottom: 28 }}>
+              {/* Semester heading */}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12,
+                paddingBottom: 8, borderBottom: `2px solid ${PRIMARY}20`,
+              }}>
+                <Calendar size={17} color={PRIMARY} />
+                <h2 style={{ fontSize: 15, fontWeight: 800, color: PRIMARY, margin: 0 }}>{semLabel}</h2>
+                {statusBadge(status)}
+                <span style={{ marginRight: 'auto', fontSize: 12, color: '#94a3b8' }}>
+                  {semCourses.length} {semCourses.length === 1 ? 'مقرر' : 'مقررات'}
+                </span>
+              </div>
+
+              {/* Course cards */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
+                {semCourses.map(c => {
+                  const rosterId  = c.offering_id || c.offeringId || c.id;
+                  const enrolled  = parseInt(c.enrolled_count || c.enrolledCount) || 0;
+                  const capacity  = parseInt(c.capacity) || 0;
+                  const fillPct   = capacity > 0 ? Math.min(Math.round((enrolled / capacity) * 100), 100) : 0;
+                  const name      = c.course_name_ar || c.course_name_en || c.courseName || c.course_name || '—';
+                  const code      = c.course_code || c.courseCode || '—';
+                  const level     = c.level_label || c.level || '—';
+                  return (
+                    <div key={rosterId} style={{
+                      background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb',
+                      overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,.04)',
+                      display: 'flex', flexDirection: 'column', transition: 'box-shadow .15s',
+                    }}>
+                      {/* Card top stripe */}
+                      <div style={{ height: 4, background: PRIMARY }} />
+                      <div style={{ padding: '14px 16px', flex: 1 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                          <span style={{
+                            padding: '2px 10px', borderRadius: 6, background: '#eff6ff',
+                            color: PRIMARY, fontWeight: 800, fontSize: 11,
+                          }}>{code}</span>
+                          <BookOpen size={15} color="#94a3b8" />
+                        </div>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: '#111827', marginBottom: 10, lineHeight: 1.4 }}>
+                          {name}
+                        </div>
+                        <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 12 }}>
+                          المستوى: <strong>{level}</strong>
+                        </div>
+
+                        {/* Enrollment bar */}
+                        <div style={{ marginBottom: 4 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#374151' }}>
+                              <Users size={13} />
+                              <span>الطلاب المسجلون</span>
+                            </div>
+                            <span style={{ fontWeight: 800, fontSize: 13, color: enrolled > 0 ? '#111827' : '#94a3b8' }}>
+                              {enrolled}
+                              {capacity > 0 && <span style={{ color: '#94a3b8', fontWeight: 400 }}>/{capacity}</span>}
+                            </span>
+                          </div>
+                          {capacity > 0 && (
+                            <div style={{ height: 5, background: '#f1f5f9', borderRadius: 99, overflow: 'hidden' }}>
+                              <div style={{
+                                width: `${fillPct}%`, height: '100%', borderRadius: 99,
+                                background: fillPct > 85 ? '#ef4444' : fillPct > 60 ? '#f97316' : PRIMARY,
+                                transition: 'width .3s',
+                              }} />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div style={{ padding: '10px 14px', borderTop: '1px solid #f1f5f9' }}>
+                        <Link to={`/doctor/courses/${rosterId}`} style={{ textDecoration: 'none', display: 'block' }}>
+                          <button style={{
+                            width: '100%', padding: '9px', borderRadius: 8, border: 'none',
+                            background: PRIMARY, color: '#fff', fontWeight: 700, fontSize: 13,
+                            cursor: 'pointer', transition: 'opacity .15s',
+                          }}>
+                            إدارة الطلاب والدرجات
+                          </button>
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
     </AppLayout>
   );
 }

@@ -46,12 +46,16 @@ function letterToPoints(letter) {
 }
 
 /**
- * Calculate total course grade from components
- * Grade breakdown: midterm(20%) + coursework(10%) + practical(10%) + final(60%)
- * Special rules: if final_exam < 30% -> automatic fail
+ * Calculate total course grade from components.
+ * Grades are raw marks: midterm(0-20) + coursework(0-10) + practical(0-10) + final(0-60) = 0-100
+ * Special rules: if final_exam < 30 -> automatic fail
  */
 function calculateTotalGrade({ midterm = 0, coursework = 0, practical = 0, final_exam = 0 }) {
-  const total = (midterm * 0.20) + (coursework * 0.10) + (practical * 0.10) + (final_exam * 0.60);
+  const total =
+    parseFloat(midterm    || 0) +
+    parseFloat(coursework || 0) +
+    parseFloat(practical  || 0) +
+    parseFloat(final_exam || 0);
   return Math.round(total * 100) / 100;
 }
 
@@ -133,10 +137,17 @@ function isPassingGrade(letterGrade) {
  */
 function validateGradeEntry({ midterm, coursework, practical, final_exam }) {
   const errors = [];
-  if (midterm < 0 || midterm > 100) errors.push('Midterm must be 0-100');
-  if (coursework < 0 || coursework > 100) errors.push('Coursework must be 0-100');
-  if (practical < 0 || practical > 100) errors.push('Practical must be 0-100');
-  if (final_exam < 0 || final_exam > 100) errors.push('Final exam must be 0-100');
+  const check = (name, val, max) => {
+    if (val === undefined || val === null || val === '') return;
+    const n = parseFloat(val);
+    if (isNaN(n))   errors.push(`${name} must be a number`);
+    else if (n < 0) errors.push(`${name} cannot be negative`);
+    else if (n > max) errors.push(`${name} cannot exceed ${max}`);
+  };
+  check('Midterm grade',    midterm,    20);
+  check('Coursework grade', coursework, 10);
+  check('Practical grade',  practical,  10);
+  check('Final exam grade', final_exam, 60);
   return errors;
 }
 

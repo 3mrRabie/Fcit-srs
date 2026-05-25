@@ -52,11 +52,3 @@ coverage/
 # ─── Archives (don't commit tarballs) ────────────────────────────
 *.tar.gz
 *.zip
-
-# ─── AI / Claude tool config (local only) ─────────────────────────
-.claude/
-.claude.md
-
-# ─── Dev scratchpads ──────────────────────────────────────────────
-scratch_queries.sql
-scratch_*.sql

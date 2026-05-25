@@ -21,49 +21,114 @@ const timeToMinutes = (t) => {
   const [h, m] = t.split(':').map(Number);
   return h * 60 + (m || 0);
 };
-const DAY_START    = 8 * 60;
-const DAY_END      = 22 * 60;
-const PX_PER_MIN   = 1.6;
+// Fixed window: 07:00 – 15:00, compact spacing matching student timetable
+const DAY_START    = 7 * 60;
+const DAY_END      = 15 * 60;
+const PX_PER_MIN   = 0.75;  // 45px per hour — compact
 const topPx    = (t) => (timeToMinutes(t) - DAY_START) * PX_PER_MIN;
 const heightPx = (s, e) => (timeToMinutes(e) - timeToMinutes(s)) * PX_PER_MIN;
-const HOUR_LABELS  = Array.from({ length: 15 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`);
+const HOUR_LABELS  = Array.from({ length: 9 }, (_, i) => `${String(7 + i).padStart(2, '0')}:00`);
 
-// ── Course slot card ──────────────────────────────────────────────────────────
-function SlotCard({ slot, colorIdx }) {
-  const col = COURSE_PALETTE[colorIdx % COURSE_PALETTE.length];
-  const h   = heightPx(slot.start, slot.end);
-  const top = topPx(slot.start);
-  const isShort = h < 52;
+// ── Overlap layout helpers ────────────────────────────────────────────────────
+
+/**
+ * Given a list of slots for one day, assign each a { col, totalCols }
+ * so that simultaneously-running slots are placed side-by-side.
+ */
+function assignColumns(slots) {
+  if (!slots.length) return [];
+
+  // Sort by start time
+  const sorted = [...slots].map((s, origIdx) => ({ ...s, origIdx }))
+    .sort((a, b) => timeToMinutes(a.start) - timeToMinutes(b.start));
+
+  const columns = []; // each entry: [{ slot, endMin }]
+
+  sorted.forEach(slot => {
+    const startMin = timeToMinutes(slot.start);
+    const endMin   = timeToMinutes(slot.end);
+    let placed = false;
+
+    for (let c = 0; c < columns.length; c++) {
+      const col = columns[c];
+      const lastEnd = Math.max(...col.map(x => x.endMin));
+      if (startMin >= lastEnd) {
+        col.push({ slot, endMin });
+        slot._col = c;
+        placed = true;
+        break;
+      }
+    }
+
+    if (!placed) {
+      slot._col = columns.length;
+      columns.push([{ slot, endMin }]);
+    }
+  });
+
+  // Determine totalCols for each slot: how many columns overlap at its time range
+  return sorted.map(slot => {
+    const startMin = timeToMinutes(slot.start);
+    const endMin   = timeToMinutes(slot.end);
+    // count how many columns have a slot overlapping [startMin, endMin)
+    const activeCols = columns.filter(col =>
+      col.some(({ slot: s, endMin: e }) =>
+        timeToMinutes(s.start) < endMin && e > startMin
+      )
+    ).length;
+    return { ...slot, col: slot._col, totalCols: activeCols };
+  });
+}
+
+function SlotCard({ slot, colorIdx, col = 0, totalCols = 1 }) {
+  const col_def = COURSE_PALETTE[colorIdx % COURSE_PALETTE.length];
+  const h      = heightPx(slot.start, slot.end);
+  const top    = topPx(slot.start);
+  const isTiny = h < 36;
+  const isSmall = h < 58;
+
+  // Side-by-side positioning: divide the column width evenly
+  const pct   = 100 / totalCols;
+  const left  = `calc(${col * pct}% + 2px)`;
+  const width = `calc(${pct}% - 4px)`;
 
   return (
     <div
       title={`${slot.courseCode} — ${slot.courseNameAr || slot.courseName}\n${slot.start?.slice(0,5)} – ${slot.end?.slice(0,5)}\n${slot.room || ''}`}
       style={{
         position: 'absolute',
-        top,
-        left: 3,
-        right: 3,
-        height: Math.max(h, 28),
-        background: col.bg,
-        border: `2px solid ${col.border}`,
-        borderRadius: 8,
-        padding: isShort ? '2px 6px' : '6px 8px',
+        top: top + 1,
+        left,
+        width,
+        height: Math.max(h - 2, 22),
+        background: col_def.bg,
+        border: `1.5px solid ${col_def.border}`,
+        borderLeft: `4px solid ${col_def.border}`,
+        borderRadius: 7,
+        padding: isTiny ? '2px 6px' : '4px 7px',
         overflow: 'hidden',
         boxSizing: 'border-box',
-        boxShadow: '0 1px 4px rgba(0,0,0,.08)',
+        boxShadow: '0 1px 3px rgba(0,0,0,.07)',
         zIndex: 2,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1,
       }}
     >
-      <div style={{ fontWeight: 800, fontSize: 11, color: col.text }}>{slot.courseCode}</div>
-      {!isShort && (
+      <div style={{ fontWeight: 800, fontSize: 11, color: col_def.text }}>{slot.courseCode}</div>
+      {!isTiny && (
         <>
-          <div style={{ fontSize: 10, color: '#374151', marginTop: 1, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+          <div style={{ fontSize: 10, color: '#374151', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
             {slot.courseNameAr || slot.courseName}
           </div>
-          <div style={{ fontSize: 10, color: '#6b7280', marginTop: 1 }}>
-            {slot.start?.slice(0,5)} – {slot.end?.slice(0,5)}
-          </div>
-          {slot.room && <div style={{ fontSize: 10, color: '#9ca3af' }}>{slot.room}</div>}
+          {!isSmall && (
+            <>
+              <div style={{ fontSize: 10, color: '#6b7280' }}>
+                {slot.start?.slice(0,5)} – {slot.end?.slice(0,5)}
+              </div>
+              {slot.room && <div style={{ fontSize: 10, color: '#9ca3af' }}>{slot.room}</div>}
+            </>
+          )}
         </>
       )}
     </div>
@@ -115,34 +180,43 @@ function WeeklyGrid({ grid }) {
         </div>
 
         {/* Day columns */}
-        {[...DAYS].reverse().map(day => (
-          <div key={day} style={{ flex: 1, minWidth: 110, display: 'flex', flexDirection: 'column' }}>
-            <div style={{
-              height: 24,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: '#1b4f9e',
-              color: '#fff',
-              fontSize: 12, fontWeight: 700,
-              borderRight: '1px solid rgba(255,255,255,.15)',
-            }}>
-              {DAY_AR[day]}
+        {[...DAYS].reverse().map(day => {
+          const layoutSlots = assignColumns(grid[day] || []);
+          return (
+            <div key={day} style={{ flex: 1, minWidth: 110, display: 'flex', flexDirection: 'column' }}>
+              <div style={{
+                height: 24,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: '#1b4f9e',
+                color: '#fff',
+                fontSize: 12, fontWeight: 700,
+                borderRight: '1px solid rgba(255,255,255,.15)',
+              }}>
+                {DAY_AR[day]}
+              </div>
+              <div style={{ position: 'relative', height: totalH, borderRight: '1px solid #e5e7eb' }}>
+                {HOUR_LABELS.map(label => (
+                  <div key={label} style={{ position: 'absolute', top: topPx(label), left: 0, right: 0, borderTop: '1px solid #f1f5f9' }} />
+                ))}
+                {HOUR_LABELS.map(label => {
+                  const [h] = label.split(':').map(Number);
+                  return (
+                    <div key={`${h}:30`} style={{ position: 'absolute', top: topPx(`${String(h).padStart(2,'0')}:30`), left: 0, right: 0, borderTop: '1px dashed #f1f5f9' }} />
+                  );
+                })}
+                {layoutSlots.map((slot, i) => (
+                  <SlotCard
+                    key={`${slot.courseCode}-${i}`}
+                    slot={slot}
+                    colorIdx={colorMap[slot.courseCode] ?? i}
+                    col={slot.col}
+                    totalCols={slot.totalCols}
+                  />
+                ))}
+              </div>
             </div>
-            <div style={{ position: 'relative', height: totalH, borderRight: '1px solid #e5e7eb' }}>
-              {HOUR_LABELS.map(label => (
-                <div key={label} style={{ position: 'absolute', top: topPx(label), left: 0, right: 0, borderTop: '1px solid #f1f5f9' }} />
-              ))}
-              {HOUR_LABELS.map(label => {
-                const [h] = label.split(':').map(Number);
-                return (
-                  <div key={`${h}:30`} style={{ position: 'absolute', top: topPx(`${String(h).padStart(2,'0')}:30`), left: 0, right: 0, borderTop: '1px dashed #f1f5f9' }} />
-                );
-              })}
-              {(grid[day] || []).map((slot, i) => (
-                <SlotCard key={`${slot.courseCode}-${i}`} slot={slot} colorIdx={colorMap[slot.courseCode] ?? i} />
-              ))}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -159,10 +233,12 @@ export default function DoctorSchedulePage() {
     sharedAPI.getSemesters()
       .then(r => {
         const s = D(r) || [];
-        setSems(s);
-        const cur = s.find(x => ['registration', 'active', 'grading'].includes(x.status));
+        // Only show active/registration/grading semesters in the schedule
+        const activeSems = s.filter(x => ['registration', 'active', 'grading'].includes(x.status));
+        setSems(activeSems);
+        const cur = activeSems.find(x => ['registration', 'active', 'grading'].includes(x.status));
         if (cur) setSelSem(cur.id);
-        else if (s.length > 0) setSelSem(s[0].id);
+        else if (activeSems.length > 0) setSelSem(activeSems[0].id);
       })
       .catch(() => {});
   }, []);
@@ -177,6 +253,8 @@ export default function DoctorSchedulePage() {
   }, [selSem]);
 
   const grid        = data?.weeklyGrid || {};
+  // Ensure all days are present (backend may omit Sat)
+  DAYS.forEach(d => { if (!grid[d]) grid[d] = []; });
   const offerings   = data?.offerings || [];
   const hasSchedule = offerings.length > 0;
   const currentSem  = sems.find(s => s.id == selSem);
@@ -245,23 +323,39 @@ ${courses.map(o=>`<div class="row"><strong style="min-width:70px;color:#1d4ed8">
           <span style={{ fontSize: 22 }}>🏛️</span>
           <div>
             <div style={{ fontWeight: 800, fontSize: 16, color: '#1b4f9e' }}>جدول عضو هيئة التدريس</div>
-            {currentSem && <div style={{ fontSize: 12, color: '#64748b', marginTop: 1 }}>{currentSem.label}</div>}
+            {currentSem && (() => {
+            const typeAr = { fall: 'الترم الأول', spring: 'الترم الثاني', summer: 'الترم الصيفي' };
+            const arLabel = (currentSem.semester_type && currentSem.year_label)
+              ? `${typeAr[currentSem.semester_type] || currentSem.semester_type} ${currentSem.year_label}`
+              : currentSem.label;
+            return <div style={{ fontSize: 12, color: '#64748b', marginTop: 1 }}>{arLabel}</div>;
+          })()}
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          {currentSem && (
-            <Badge variant={currentSem.status === 'active' ? 'success' : currentSem.status === 'registration' ? 'info' : 'default'} style={{ fontSize: 11 }}>
-              {currentSem.status === 'active' ? 'نشط' : currentSem.status === 'registration' ? 'تسجيل' : 'مغلق'}
-            </Badge>
-          )}
+          {currentSem && (() => {
+            const badgeMap = {
+              active:       { label: 'نشط',    variant: 'success' },
+              registration: { label: 'تسجيل',  variant: 'info' },
+              grading:      { label: 'درجات',  variant: 'warning' },
+            };
+            const b = badgeMap[currentSem.status] || { label: currentSem.status, variant: 'default' };
+            return (
+              <Badge variant={b.variant} style={{ fontSize: 11 }}>{b.label}</Badge>
+            );
+          })()}
           <select
             style={{ padding: '7px 12px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, background: '#f8fafc' }}
             value={selSem}
             onChange={e => setSelSem(e.target.value)}
           >
-            {sems.map(s => (
-              <option key={s.id} value={s.id}>{s.label || `${s.semester_type||''} ${s.year_label||''}`}</option>
-            ))}
+            {sems.map(s => {
+              const typeAr = { fall: 'الترم الأول', spring: 'الترم الثاني', summer: 'الترم الصيفي' };
+              const arLabel = (s.semester_type && s.year_label)
+                ? `${typeAr[s.semester_type] || s.semester_type} ${s.year_label}`
+                : s.label || `${s.semester_type||''} ${s.year_label||''}`;
+              return <option key={s.id} value={s.id}>{arLabel}</option>;
+            })}
           </select>
           <Button size="sm" onClick={printSchedule} disabled={!hasSchedule} style={{ fontSize: 12 }}>
             🖨️ طباعة
@@ -323,7 +417,12 @@ ${courses.map(o=>`<div class="row"><strong style="min-width:70px;color:#1d4ed8">
                       <div style={{ fontWeight: 800, color: col.text, width: 72, fontSize: 13 }}>{o.code}</div>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontWeight: 600, color: '#1e293b', fontSize: 13 }}>{o.name_ar || o.name_en}</div>
-                        <div style={{ fontSize: 11, color: '#64748b', marginTop: 1 }}>{o.room || 'القاعة غير محددة'}</div>
+                        <div style={{ fontSize: 11, color: '#64748b', marginTop: 1 }}>
+                          {o.schedule_slots && o.schedule_slots.length > 0
+                            ? (o.room || 'القاعة غير محددة')
+                            : <span style={{ color: '#f59e0b', fontWeight: 600 }}>⚠ لم يتم تحديد وقت المحاضرة</span>
+                          }
+                        </div>
                       </div>
                       <div style={{ textAlign: 'center', minWidth: 70 }}>
                         <div style={{ fontSize: 10, color: '#94a3b8', marginBottom: 2 }}>الطلاب</div>
