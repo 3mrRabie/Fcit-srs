@@ -190,7 +190,13 @@ async function withdrawCourse(enrollmentId, studentId, reason = '') {
 // ─────────────────────────────────────────────────────────────────────────────
 async function enterGrades(enrollmentId, grades, enteredById) {
   return withTransaction(async (client) => {
-    const { midterm_grade, coursework_grade, practical_grade, final_exam_grade } = grades;
+    // [FIX-GRADES-1] Normalize: empty strings → null, otherwise parse to float.
+    // Empty strings ('') cannot be stored in numeric columns and cause a 400 DB error.
+    const toNum = (v) => (v === '' || v === null || v === undefined) ? null : parseFloat(v);
+    const midterm_grade    = toNum(grades.midterm_grade);
+    const coursework_grade = toNum(grades.coursework_grade);
+    const practical_grade  = toNum(grades.practical_grade);
+    const final_exam_grade = toNum(grades.final_exam_grade);
 
     const errors = gpaService.validateGradeEntry({
       midterm: midterm_grade, coursework: coursework_grade,
@@ -231,7 +237,9 @@ async function enterGrades(enrollmentId, grades, enteredById) {
     });
 
     let letter, points;
-    if (parseFloat(final_exam_grade) < 30) {
+    // [FIX-GRADES-2] final_exam_grade is null when not yet entered; only auto-fail
+    // when a value is actually provided AND it is below 30 (i.e. < 50% of 60).
+    if (final_exam_grade !== null && final_exam_grade < 30) {
       letter = 'F'; points = 0.0;
     } else {
       letter = gpaService.percentageToLetter(total);

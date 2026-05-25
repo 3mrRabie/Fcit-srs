@@ -235,7 +235,9 @@ const enterGrades = async (req, res, next) => {
     const result = await registrationService.enterGrades(enrollmentId, grades, req.user.id);
     return res.json({ success: true, data: result });
   } catch (err) {
-    if (err.message) return res.status(400).json({ success: false, message: err.message });
+    // [FIX-GRADES-3] Only return 400 for known business-rule violations;
+    // DB-level errors (err.code set by pg) must remain 500 so they don't mislead.
+    if (err.message && !err.code) return res.status(400).json({ success: false, message: err.message });
     next(err);
   }
 };
@@ -329,9 +331,17 @@ const getAttendanceReport = async (req, res, next) => {
       [offeringId]
     )).rows;
 
+    // [FIX-ATT-1] Count present/absent per session so the frontend can display them.
     const sessions = (await query(
-      `SELECT id, session_date, session_type, total_students
-       FROM attendance_sessions WHERE offering_id = $1 ORDER BY session_date DESC`,
+      `SELECT s.id, s.session_date, s.session_type, s.total_students,
+              COUNT(ar.id) FILTER (WHERE ar.is_present = TRUE)  AS present_count,
+              COUNT(ar.id) FILTER (WHERE ar.is_present = FALSE AND ar.is_excused = FALSE) AS absent_count,
+              COUNT(ar.id) FILTER (WHERE ar.is_excused = TRUE)  AS excused_count
+       FROM attendance_sessions s
+       LEFT JOIN attendance_records ar ON ar.session_id = s.id
+       WHERE s.offering_id = $1
+       GROUP BY s.id
+       ORDER BY s.session_date DESC`,
       [offeringId]
     )).rows;
 

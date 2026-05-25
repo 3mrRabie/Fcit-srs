@@ -5,13 +5,20 @@ const { MIN_PASSING_TOTAL_PCT, MIN_PASSING_FINAL_PCT } = require('../config/cons
 const fs = require('fs');
 const path = require('path');
 
-const { getBylaw } = require('./bylaw.service');
+// NOTE: Do NOT top-level require bylaw.service here.
+// bylaw.service.js also requires gpa.service.js, creating a circular dependency.
+// Node.js resolves circular deps by returning a partially-evaluated module, so
+// { getBylaw } would be undefined at the time gpa.service.js first loads.
+// Fix: use a lazy require() inside each function that needs getBylaw().
+// Node caches modules after first load so there is no performance penalty.
 
 /**
  * Convert a percentage score to grade points (Art. 17)
  */
 function percentageToPoints(pct) {
   if (pct === null || pct === undefined) return 0;
+  // Lazy require breaks the circular dependency with bylaw.service
+  const { getBylaw } = require('./bylaw.service');
   const scale = getBylaw().grading_system;
   for (const g of scale) {
     if (pct >= g.min_percent) return g.points;
@@ -24,6 +31,8 @@ function percentageToPoints(pct) {
  */
 function percentageToLetter(pct) {
   if (pct === null || pct === undefined) return 'F';
+  // Lazy require breaks the circular dependency with bylaw.service
+  const { getBylaw } = require('./bylaw.service');
   const scale = getBylaw().grading_system;
   for (const g of scale) {
     if (pct >= g.min_percent) return g.grade;

@@ -708,6 +708,33 @@ const finalizeSemester = async (req, res, next) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // COURSE OFFERINGS
 // ─────────────────────────────────────────────────────────────────────────────
+// [FIX-SCHED-1] Helper: checks whether `doctorId` already has a schedule slot that
+// overlaps with any slot in `slots` array [{day, startTime, endTime}], optionally
+// excluding `excludeOfferingId` (used during updates).
+async function checkDoctorScheduleConflict(client, doctorId, slots, excludeOfferingId = null) {
+  if (!doctorId || !slots || slots.length === 0) return null;
+  for (const slot of slots) {
+    const conflict = (await client.query(
+      `SELECT dss.offering_id, c.code AS course_code, dss.day_of_week, dss.start_time, dss.end_time
+       FROM doctor_schedule_slots dss
+       JOIN course_offerings co ON co.id = dss.offering_id
+       JOIN courses c ON c.id = co.course_id
+       WHERE co.doctor_id = $1
+         AND dss.day_of_week = $2
+         AND dss.start_time < $4::time          -- existing starts before new ends
+         AND dss.end_time   > $3::time          -- existing ends   after new starts
+         ${excludeOfferingId ? 'AND dss.offering_id != $5' : ''}`,
+      excludeOfferingId
+        ? [doctorId, slot.day, slot.startTime, slot.endTime, excludeOfferingId]
+        : [doctorId, slot.day, slot.startTime, slot.endTime]
+    )).rows[0];
+    if (conflict) {
+      return `تعارض في الجدول: الدكتور لديه محاضرة (${conflict.course_code}) في نفس الوقت (${conflict.day_of_week} ${conflict.start_time}–${conflict.end_time})`;
+    }
+  }
+  return null;
+}
+
 const createOffering = async (req, res, next) => {
   try {
     const { semesterId, courseId, doctorId, capacity = 60, schedule, room } = req.body;
@@ -716,6 +743,12 @@ const createOffering = async (req, res, next) => {
     }
     
     return withTransaction(async (client) => {
+      // [FIX-SCHED-2] Check for doctor schedule conflicts BEFORE inserting.
+      if (doctorId && schedule && schedule.length > 0) {
+        const conflict = await checkDoctorScheduleConflict(client, doctorId, schedule);
+        if (conflict) return res.status(409).json({ success: false, message: conflict });
+      }
+
       const offering = (await client.query(
         'INSERT INTO course_offerings (semester_id, course_id, doctor_id, capacity, schedule, room) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *',
         [semesterId, courseId, doctorId || null, capacity, schedule ? JSON.stringify(schedule) : null, room || null]
@@ -1018,6 +1051,18 @@ const updateOffering = async (req, res, next) => {
     const { capacity, doctorId, schedule, room, isActive } = req.body;
 
     return withTransaction(async (client) => {
+      // [FIX-SCHED-3] When updating doctor or schedule, check for conflicts.
+      // Determine effective doctorId: use supplied value or fall back to existing.
+      let effectiveDoctorId = doctorId;
+      if (!effectiveDoctorId) {
+        const cur = (await client.query('SELECT doctor_id FROM course_offerings WHERE id = $1', [offeringId])).rows[0];
+        effectiveDoctorId = cur?.doctor_id;
+      }
+      if (effectiveDoctorId && schedule && schedule.length > 0) {
+        const conflict = await checkDoctorScheduleConflict(client, effectiveDoctorId, schedule, offeringId);
+        if (conflict) return res.status(409).json({ success: false, message: conflict });
+      }
+
       const offering = (await client.query(
         `UPDATE course_offerings SET
            capacity = COALESCE($1, capacity),

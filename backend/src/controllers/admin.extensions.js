@@ -529,7 +529,7 @@ const getDoctorOwnSchedule = async (req, res, next) => {
     }
 
     const offerings = (await query(
-      `SELECT co.id as offering_id, co.capacity, co.enrolled_count, co.room,
+      `SELECT co.id as offering_id, co.capacity, (SELECT COUNT(*) FROM enrollments e WHERE e.offering_id = co.id AND e.status IN ('registered','completed')) AS enrolled_count, co.room,
               c.id as course_id, c.code, c.name_ar, c.name_en, c.credits, c.category, c.level,
               sem.id as semester_id, sem.label as semester_label,
               sem.start_date, sem.end_date, sem.status as semester_status,
@@ -602,13 +602,48 @@ const getDoctorOwnSchedule = async (req, res, next) => {
       }
     }
 
+    // [FIX-SCHEDULE-OVERLAP] Detect time conflicts: mark any slot whose time range
+    // overlaps with another slot on the same day. Adds hasConflict=true flag so the
+    // frontend can display a clear warning instead of silently showing two side-by-side
+    // blocks that look like valid data.
+    const toMin = (t) => {
+      if (!t) return 0;
+      const [h, m] = String(t).split(':').map(Number);
+      return h * 60 + (m || 0);
+    };
+    const scheduleConflicts = [];
+    for (const day of DAYS) {
+      const slots = weeklyGrid[day];
+      for (let i = 0; i < slots.length; i++) {
+        for (let j = i + 1; j < slots.length; j++) {
+          const a = slots[i], b = slots[j];
+          const aStart = toMin(a.start), aEnd = toMin(a.end);
+          const bStart = toMin(b.start), bEnd = toMin(b.end);
+          if (aStart < bEnd && aEnd > bStart) {
+            // Mark both slots as conflicting
+            a.hasConflict = true;
+            b.hasConflict = true;
+            scheduleConflicts.push({
+              day,
+              courses: [a.courseCode, b.courseCode],
+              time: `${a.start?.slice(0,5)}–${a.end?.slice(0,5)}`,
+              message: `تعارض في الجدول: ${a.courseCode} و ${b.courseCode} متداخلان في يوم ${day} الساعة ${a.start?.slice(0,5)}–${a.end?.slice(0,5)}`,
+            });
+          }
+        }
+      }
+    }
+
     return res.json({
       success: true,
       data: {
         offerings: uniqueOfferings,
         weeklyGrid,
-        totalStudents: uniqueOfferings.reduce((s, o) => s + (parseInt(o.registered_count) || 0), 0),
+        // [FIX-ENROLLED] use live enrolled_count (was registered_count which excluded 'completed')
+        totalStudents: uniqueOfferings.reduce((s, o) => s + (parseInt(o.enrolled_count) || 0), 0),
         semesterId: targetSemId,
+        // Populated only when conflicts exist; empty array means schedule is clean
+        scheduleConflicts,
       }
     });
   } catch (err) { next(err); }

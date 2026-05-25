@@ -81,41 +81,49 @@ function assignColumns(slots) {
 }
 
 function SlotCard({ slot, colorIdx, col = 0, totalCols = 1 }) {
-  const col_def = COURSE_PALETTE[colorIdx % COURSE_PALETTE.length];
-  const h      = heightPx(slot.start, slot.end);
-  const top    = topPx(slot.start);
-  const isTiny = h < 36;
-  const isSmall = h < 58;
+  const col_def    = COURSE_PALETTE[colorIdx % COURSE_PALETTE.length];
+  const h          = heightPx(slot.start, slot.end);
+  const top        = topPx(slot.start);
+  const isTiny     = h < 36;
+  const isSmall    = h < 58;
+  // [FIX-CONFLICTS] Slots flagged by backend overlap detection get distinct red styling
+  const isConflict = !!slot.hasConflict;
 
-  // Side-by-side positioning: divide the column width evenly
   const pct   = 100 / totalCols;
   const left  = `calc(${col * pct}% + 2px)`;
   const width = `calc(${pct}% - 4px)`;
 
   return (
     <div
-      title={`${slot.courseCode} — ${slot.courseNameAr || slot.courseName}\n${slot.start?.slice(0,5)} – ${slot.end?.slice(0,5)}\n${slot.room || ''}`}
+      title={`${slot.courseCode} — ${slot.courseNameAr || slot.courseName}\n${slot.start?.slice(0,5)} – ${slot.end?.slice(0,5)}\n${slot.room || ''}${isConflict ? '\n⚠ تعارض في الجدول!' : ''}`}
       style={{
         position: 'absolute',
         top: top + 1,
         left,
         width,
         height: Math.max(h - 2, 22),
-        background: col_def.bg,
-        border: `1.5px solid ${col_def.border}`,
-        borderLeft: `4px solid ${col_def.border}`,
+        background: isConflict ? '#fff1f2' : col_def.bg,
+        border: `1.5px solid ${isConflict ? '#f87171' : col_def.border}`,
+        borderLeft: `4px solid ${isConflict ? '#ef4444' : col_def.border}`,
         borderRadius: 7,
         padding: isTiny ? '2px 6px' : '4px 7px',
         overflow: 'hidden',
         boxSizing: 'border-box',
-        boxShadow: '0 1px 3px rgba(0,0,0,.07)',
+        boxShadow: isConflict
+          ? '0 0 0 1px #fca5a5, 0 2px 6px rgba(239,68,68,.18)'
+          : '0 1px 3px rgba(0,0,0,.07)',
         zIndex: 2,
         display: 'flex',
         flexDirection: 'column',
         gap: 1,
       }}
     >
-      <div style={{ fontWeight: 800, fontSize: 11, color: col_def.text }}>{slot.courseCode}</div>
+      {isConflict && !isTiny && (
+        <div style={{ fontSize: 8, fontWeight: 800, color: '#ef4444', letterSpacing: 0.2 }}>⚠ تعارض</div>
+      )}
+      <div style={{ fontWeight: 800, fontSize: 11, color: isConflict ? '#b91c1c' : col_def.text }}>
+        {slot.courseCode}
+      </div>
       {!isTiny && (
         <>
           <div style={{ fontSize: 10, color: '#374151', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
@@ -255,11 +263,13 @@ export default function DoctorSchedulePage() {
   const grid        = data?.weeklyGrid || {};
   // Ensure all days are present (backend may omit Sat)
   DAYS.forEach(d => { if (!grid[d]) grid[d] = []; });
-  const offerings   = data?.offerings || [];
-  const hasSchedule = offerings.length > 0;
-  const currentSem  = sems.find(s => s.id == selSem);
-
-  const totalStudents = offerings.reduce((s, o) => s + (o.enrolled_count || 0), 0);
+  const offerings        = data?.offerings || [];
+  const hasSchedule      = offerings.length > 0;
+  const currentSem       = sems.find(s => s.id == selSem);
+  // [FIX-ENROLLED] Use live count from backend (fixed from stale co.enrolled_count)
+  const totalStudents    = data?.totalStudents ?? offerings.reduce((s, o) => s + (parseInt(o.enrolled_count) || 0), 0);
+  // [FIX-CONFLICTS] Conflicts detected server-side; shown as a warning banner
+  const scheduleConflicts = data?.scheduleConflicts || [];
 
   const offeringsByLevel = offerings.reduce((acc, off) => {
     const level = off.level_name || 'الفرقة الأولى';
@@ -367,6 +377,40 @@ ${courses.map(o=>`<div class="row"><strong style="min-width:70px;color:#1d4ed8">
         <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}><Spinner /></div>
       ) : hasSchedule ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+          {/* ── Schedule conflict warning banner ─────────────── */}
+          {scheduleConflicts.length > 0 && (
+            <div style={{
+              background: '#fff1f2', border: '1.5px solid #fca5a5', borderRadius: 12,
+              padding: '12px 16px', direction: 'rtl',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                <span style={{ fontSize: 20 }}>⚠️</span>
+                <span style={{ fontWeight: 800, fontSize: 14, color: '#b91c1c' }}>
+                  تعارض في الجدول الدراسي ({scheduleConflicts.length} {scheduleConflicts.length === 1 ? 'تعارض' : 'تعارضات'})
+                </span>
+              </div>
+              <div style={{ fontSize: 12, color: '#7f1d1d', marginBottom: 8 }}>
+                يوجد تداخل في مواعيد المقررات التالية. يُرجى مراجعة الإدارة لإعادة ترتيب الجداول.
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {scheduleConflicts.map((c, i) => (
+                  <div key={i} style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    background: '#fff', borderRadius: 8, padding: '6px 12px',
+                    border: '1px solid #fecaca',
+                  }}>
+                    <span style={{ fontSize: 13 }}>🔴</span>
+                    <span style={{ fontWeight: 700, color: '#dc2626', fontSize: 12 }}>
+                      {c.courses.join(' ، ')}
+                    </span>
+                    <span style={{ color: '#64748b', fontSize: 11 }}>—</span>
+                    <span style={{ color: '#374151', fontSize: 11 }}>{c.message}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* ── Stats row ────────────────────────────────────── */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>

@@ -515,11 +515,16 @@ function AttendanceTab({ offeringId, roster }) {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {sessions.map((ses, i) => {
-            const total   = (ses.presentCount || 0) + (ses.absentCount || 0) || (ses.total || 1);
-            const pct     = total > 0 ? Math.round(((ses.presentCount || 0) / total) * 100) : 0;
+            // [FIX-ATT-2] Backend returns snake_case; normalise to expected names.
+            const presentCount = parseInt(ses.present_count ?? ses.presentCount ?? 0);
+            const absentCount  = parseInt(ses.absent_count  ?? ses.absentCount  ?? 0);
+            const total   = presentCount + absentCount || (ses.total_students || 1);
+            const pct     = total > 0 ? Math.round((presentCount / total) * 100) : 0;
             const barColor = pct < 42 ? DANGER : pct < 70 ? WARN : SUCCESS;
             const typeMap  = { lecture: 'محاضرة', lab: 'معمل', tutorial: 'تمرين' };
-            const date     = ses.sessionDate || ses.session_date;
+            // backend sends session_type (snake_case); sessionType (camelCase) is the legacy shape
+            const sType   = ses.session_type || ses.sessionType || 'lecture';
+            const date     = ses.session_date || ses.sessionDate;
             const dateStr  = date ? new Date(date).toLocaleDateString('ar-EG', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '—';
             return (
               <div key={ses.id || i} style={{
@@ -532,7 +537,7 @@ function AttendanceTab({ offeringId, roster }) {
                   background: '#f1f5f9', display: 'flex', alignItems: 'center',
                   justifyContent: 'center', fontSize: 18, flexShrink: 0,
                 }}>
-                  {ses.sessionType === 'lab' ? '🔬' : ses.sessionType === 'tutorial' ? '✏️' : '📖'}
+                  {sType === 'lab' ? '🔬' : sType === 'tutorial' ? '✏️' : '📖'}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
@@ -541,7 +546,7 @@ function AttendanceTab({ offeringId, roster }) {
                       padding: '1px 8px', borderRadius: 99, background: '#f1f5f9',
                       fontSize: 10, color: '#64748b', fontWeight: 600,
                     }}>
-                      {typeMap[ses.sessionType] || 'محاضرة'}
+                      {typeMap[sType] || 'محاضرة'}
                     </span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -553,11 +558,11 @@ function AttendanceTab({ offeringId, roster }) {
                 </div>
                 <div style={{ display: 'flex', gap: 16, flexShrink: 0 }}>
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: 16, fontWeight: 800, color: SUCCESS }}>{ses.presentCount || 0}</div>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: SUCCESS }}>{presentCount}</div>
                     <div style={{ fontSize: 9, color: '#94a3b8' }}>حضور</div>
                   </div>
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: 16, fontWeight: 800, color: DANGER }}>{ses.absentCount || 0}</div>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: DANGER }}>{absentCount}</div>
                     <div style={{ fontSize: 9, color: '#94a3b8' }}>غياب</div>
                   </div>
                 </div>
