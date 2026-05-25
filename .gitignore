@@ -1,0 +1,62 @@
+# ─── Node / npm ───────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+package-lock.json
+
+# ─── Build / dist ─────────────────────────────────────────────────
+frontend/build/
+frontend/dist/
+backend/dist/
+
+# ─── Environment & secrets ────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+.env.production
+backend/.env
+frontend/.env.local
+*.pem
+*.key
+*.cert
+
+# ─── Docker volumes & data ────────────────────────────────────────
+postgres_data/
+prometheus_data/
+grafana_data/
+backend_logs/
+db-extracted/
+
+# ─── IDE & OS ─────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*~
+
+# ─── Logs ─────────────────────────────────────────────────────────
+logs/
+*.log
+backend/logs/
+
+# ─── Test artefacts ───────────────────────────────────────────────
+coverage/
+.nyc_output/
+
+# ─── Backups ──────────────────────────────────────────────────────
+*.bak
+*.bak2
+*.orig
+
+# ─── Archives (don't commit tarballs) ────────────────────────────
+*.tar.gz
+*.zip
+
+# ─── AI / Claude tool config (local only) ─────────────────────────
+.claude/
+.claude.md
+
+# ─── Dev scratchpads ──────────────────────────────────────────────
+scratch_queries.sql
+scratch_*.sql
