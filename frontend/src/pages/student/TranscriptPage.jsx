@@ -78,6 +78,34 @@ function GpaPill({ value, label }) {
   );
 }
 
+// ── Classification normaliser ─────────────────────────────────────────────────
+// Handles Arabic text (from migration 011), English text (from JS service),
+// and filters out any garbled / question-mark values from old seed runs.
+const CLASSIFICATION_MAP = {
+  // Arabic originals (migration 011)
+  'ممتاز':   'ممتاز',
+  'جيد جداً':'جيد جداً',
+  'جيد':     'جيد',
+  'مقبول':   'مقبول',
+  'راسب':    'راسب',
+  // English originals (JS gpa service)
+  'Excellent':    'ممتاز',
+  'Very Good':    'جيد جداً',
+  'Good':         'جيد',
+  'Satisfactory': 'مقبول',
+  'Weak':         'مقبول',
+  'Poor':         'راسب',
+};
+
+function normalizeClassification(raw) {
+  if (!raw) return null;
+  const trimmed = String(raw).trim();
+  // Reject values that consist mostly of question marks or non-Arabic/Latin chars
+  if (/^[?؟\s]+$/.test(trimmed)) return null;
+  if (trimmed.replace(/[^a-zA-Z\u0600-\u06FF\s]/g, '').length < 2) return null;
+  return CLASSIFICATION_MAP[trimmed] || null;
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function TranscriptPage() {
   const [d, setD]       = useState(null);
@@ -223,13 +251,13 @@ export default function TranscriptPage() {
                     <>
                       {semGpa  && <GpaPill value={semGpa}  label="معدل الترم" />}
                       {cumGpa  && <GpaPill value={cumGpa}  label="تراكمي"    />}
-                      {gpaRec?.classification && (
+                      {normalizeClassification(gpaRec?.classification) && (
                         <span style={{
                           fontSize: 11, color: '#64748b',
                           background: '#f1f5f9', borderRadius: 20,
                           padding: '3px 10px',
                         }}>
-                          {gpaRec.classification}
+                          {normalizeClassification(gpaRec.classification)}
                         </span>
                       )}
                     </>

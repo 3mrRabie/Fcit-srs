@@ -534,7 +534,7 @@ const getStudentDetail = async (req, res, next) => {
       semestersMap.set(sId, {
         semesterId: sId,
         semesterName: r.label,
-        gpa: r.gpa,
+        gpa: r.semester_gpa,
         courses: []
       });
     });
@@ -823,6 +823,15 @@ const getAnnouncements = async (req, res, next) => {
        ORDER BY is_pinned DESC, created_at DESC LIMIT 50`
     )).rows;
     return res.json({ success: true, data: anns });
+  } catch (err) { next(err); }
+};
+
+const deleteAnnouncement = async (req, res, next) => {
+  try {
+    const { announcementId } = req.params;
+    const result = await query('DELETE FROM announcements WHERE id = $1 RETURNING id', [announcementId]);
+    if (!result.rows[0]) return res.status(404).json({ success: false, message: 'Announcement not found' });
+    return res.json({ success: true, message: 'Announcement deleted' });
   } catch (err) { next(err); }
 };
 
@@ -1315,7 +1324,7 @@ module.exports = {
   validateUsersBulk, bulkImportUsers,
   getStudents, getStudentDetail,
   getSemesters, createSemester, updateSemesterStatus, finalizeSemester,
-  createOffering, createAnnouncement, getAnnouncements, getAcademicReport,
+  createOffering, createAnnouncement, getAnnouncements, deleteAnnouncement, getAcademicReport,
   // [C6-FIX] Course management
   getCourses, createCourse, updateCourse, deleteCourse, addPrerequisite,
   // Offerings management

@@ -84,6 +84,7 @@ const AdminTimetablePage = lazyWithRetry(() => import('./pages/admin/AdminTimeta
 const AdminRegistrationPage = lazyWithRetry(() => import('./pages/admin/AdminRegistrationPage'));
 const AdminReportsPage = lazyWithRetry(() => import('./pages/admin/AdminReportsPage'));
 const AnnouncementsPage = lazyWithRetry(() => import('./pages/admin/AnnouncementsPage'));
+const SharedAnnouncementsPage = lazyWithRetry(() => import('./pages/shared/SharedAnnouncementsPage'));
 const AdminCurriculumPage = lazyWithRetry(() => import('./pages/admin/AdminCurriculumPage'));
 const AdminBylawEditor = lazyWithRetry(() => import('./pages/admin/AdminBylawEditor'));
 const AdminDepartmentsPage = lazyWithRetry(() => import('./pages/admin/AdminDepartmentsPage'));
@@ -119,6 +120,7 @@ export default function App() {
                 <Route path="/student/transcript" element={<Guard roles={['student']}><TranscriptPage /></Guard>} />
                 <Route path="/student/graduation" element={<Guard roles={['student']}><GraduationPage /></Guard>} />
                 <Route path="/student/notifications" element={<Guard roles={['student']}><NotificationsPage /></Guard>} />
+                <Route path="/student/announcements" element={<Guard roles={['student']}><SharedAnnouncementsPage /></Guard>} />
 
                 {/* Doctor Routes */}
                 <Route path="/doctor" element={<Guard roles={['doctor']}><DoctorDashboard /></Guard>} />
@@ -126,6 +128,7 @@ export default function App() {
                 <Route path="/doctor/courses/:offeringId" element={<Guard roles={['doctor', 'admin']}><CourseRosterPage /></Guard>} />
                 <Route path="/doctor/schedule" element={<Guard roles={['doctor']}><DoctorSchedulePage /></Guard>} />
                 <Route path="/doctor/notifications" element={<Guard roles={['doctor']}><NotificationsPage /></Guard>} />
+                <Route path="/doctor/announcements" element={<Guard roles={['doctor']}><SharedAnnouncementsPage /></Guard>} />
 
                 {/* Admin Routes */}
                 <Route path="/admin" element={<Guard roles={['admin']}><AdminDashboard /></Guard>} />

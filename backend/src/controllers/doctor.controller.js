@@ -256,6 +256,18 @@ const bulkEnterGrades = async (req, res, next) => {
     const errors = [];
 
     for (const g of grades) {
+      // [FIX-GRADE-NULL] Skip rows where ALL grade components are absent.
+      // The doctor's bulk-save sends every student in the roster; students the
+      // doctor hasn't graded yet come through with all-null/undefined components.
+      // Calling enterGrades on them would (before the gpa.service fix) store
+      // total_grade=0 / letter_grade='F'. We short-circuit here at the controller
+      // level as an extra safety net so the frontend never causes phantom F grades.
+      const hasAnyGrade = [g.midterm_grade, g.coursework_grade, g.practical_grade, g.final_exam_grade]
+        .some(v => v !== null && v !== undefined && v !== '');
+      if (!hasAnyGrade) {
+        results.push({ enrollmentId: g.enrollmentId, skipped: true, message: 'no grades entered yet' });
+        continue;
+      }
       try {
         const result = await registrationService.enterGrades(g.enrollmentId, g, req.user.id);
         results.push({ enrollmentId: g.enrollmentId, ...result });

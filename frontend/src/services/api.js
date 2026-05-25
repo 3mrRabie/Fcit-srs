@@ -194,6 +194,7 @@ export const adminAPI = {
   createOffering:       (data)             => api.post('/admin/offerings', data),
   createAnnouncement:   (data)             => api.post('/admin/announcements', data),
   getAnnouncements:     ()                 => api.get('/admin/announcements'),
+  deleteAnnouncement:   (id)               => api.delete(`/admin/announcements/${id}`),
   getAcademicReport:    ()                 => api.get('/admin/reports/academic'),
   getNotifications:     ()                 => api.get('/notifications'),
   markNotificationRead: (notifId)          => api.patch(`/notifications/${notifId}/read`),

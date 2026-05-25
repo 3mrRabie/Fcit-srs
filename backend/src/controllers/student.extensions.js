@@ -311,13 +311,33 @@ const getAlternativeCourses = async (req, res, next) => {
       [student.id, semesterId]
     )).rows;
 
-    // Get already enrolled offering IDs
+    // Get already enrolled offering IDs (current semester)
     const enrolledOfferingIds = (await query(
       `SELECT offering_id FROM enrollments
        WHERE student_id=$1 AND status IN ('registered','completed')`, [student.id]
     )).rows.map(r => r.offering_id);
 
-    // Find alternatives: same or lower credits, not enrolled, capacity available, student level OK
+    // Get course IDs the student has already PASSED (any semester) — exclude from alternatives
+    const passedCourseIds = (await query(
+      `SELECT DISTINCT co.course_id
+       FROM enrollments e
+       JOIN course_offerings co ON co.id = e.offering_id
+       WHERE e.student_id = $1
+         AND e.status = 'completed'
+         AND e.letter_grade IS NOT NULL
+         AND e.letter_grade NOT IN ('F', 'Abs', 'W', 'I', 'Con')`,
+      [student.id]
+    )).rows.map(r => r.course_id);
+
+    // [FIX-ALT-YEAR] Find alternatives at the student's CURRENT year only.
+    // Bug: old query used `c.level <= $4` which showed year-1 and year-2 courses
+    // to a year-3 student. Fixed to `cp.year_of_study = $4` (current year only)
+    // and joined curriculum_plans to also enforce specialization correctness.
+    const studentLevelId = (require('../services/bylaw.service').creditsToLevel(student.total_credits_passed).id || 4);
+    const studentSpecializations = studentLevelId <= 2
+      ? ['GENERAL']
+      : [student.specialization || 'CS', 'GENERAL'];
+
     const candidates = (await query(
       `SELECT co.id AS offering_id, c.code, c.name_ar, c.name_en, c.credits,
               c.level AS course_level, c.category, co.capacity, co.enrolled_count,
@@ -326,6 +346,8 @@ const getAlternativeCourses = async (req, res, next) => {
                FROM doctor_schedule_slots dss WHERE dss.offering_id=co.id) AS slots
        FROM course_offerings co
        JOIN courses c ON c.id=co.course_id
+       -- Join curriculum_plans to enforce current-year + specialization boundary
+       JOIN curriculum_plans cp ON cp.course_id = c.id
        LEFT JOIN doctors d ON d.id=co.doctor_id
        LEFT JOIN users u ON u.id=d.user_id
        WHERE co.semester_id=$1
@@ -333,13 +355,18 @@ const getAlternativeCourses = async (req, res, next) => {
          AND co.id != $2::int
          AND co.enrolled_count < co.capacity
          AND c.credits <= $3
-         AND c.level <= $4
+         -- [FIX-ALT-YEAR] Must match the student's current study year — no previous years
+         AND cp.year_of_study = $4
+         AND cp.specialization = ANY($6::text[])
          AND c.is_active=TRUE
-       ORDER BY ABS(c.credits - $5), c.level, c.code
+         AND c.id != ANY($7::int[])
+       ORDER BY ABS(c.credits - $5), c.code
        LIMIT 20`,
       [semesterId, offeringId, remaining,
-         (require('../services/bylaw.service').creditsToLevel(student.total_credits_passed).id || 4),
-         blocked.credits || 3]
+         studentLevelId,
+         blocked.credits || 3,
+         studentSpecializations,
+         passedCourseIds.length > 0 ? passedCourseIds : [-1]]
     )).rows;
 
     // Filter: not already enrolled + no schedule conflicts + prereqs met

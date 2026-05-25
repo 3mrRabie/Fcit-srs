@@ -59,12 +59,19 @@ function letterToPoints(letter) {
  * Grades are raw marks: midterm(0-20) + coursework(0-10) + practical(0-10) + final(0-60) = 0-100
  * Special rules: if final_exam < 30 -> automatic fail
  */
-function calculateTotalGrade({ midterm = 0, coursework = 0, practical = 0, final_exam = 0 }) {
+function calculateTotalGrade({ midterm = null, coursework = null, practical = null, final_exam = null }) {
+  // [FIX-GRADE-NULL] When the doctor has not entered ANY component, return null
+  // so we never store a spurious total_grade=0 / letter_grade='F' for students
+  // who simply haven't been graded yet. (JS defaults only fire on `undefined`,
+  // not `null`, so we must guard explicitly here.)
+  if (midterm === null && coursework === null && practical === null && final_exam === null) {
+    return null;
+  }
   const total =
-    parseFloat(midterm    || 0) +
-    parseFloat(coursework || 0) +
-    parseFloat(practical  || 0) +
-    parseFloat(final_exam || 0);
+    parseFloat(midterm    ?? 0) +
+    parseFloat(coursework ?? 0) +
+    parseFloat(practical  ?? 0) +
+    parseFloat(final_exam ?? 0);
   return Math.round(total * 100) / 100;
 }
 

@@ -132,7 +132,9 @@ async function setup() {
       'seeds/007_fix_demo_student.sql',
       'migrations/sync_academic_status.sql',
       'migrations/fix_semester_status.sql',
-      'migrations/fix_demo_fall_2025_enrollments.sql'
+      'migrations/fix_demo_fall_2025_enrollments.sql',
+      'migrations/011_fix_timetable_grades_doctor.sql',
+      'migrations/012_fix_misc_issues.sql'
     ];
     for (const migFile of namedMigrations) {
       const key = path.basename(migFile);

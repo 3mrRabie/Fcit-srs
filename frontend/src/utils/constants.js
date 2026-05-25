@@ -23,6 +23,7 @@ export const NAV_ITEMS = [
   { to: '/doctor/courses',     icon: 'BookOpen',        label: 'مقرراتي',             roles: ['doctor'] },
   { to: '/doctor/schedule',    icon: 'Calendar',        label: 'جدولي',               roles: ['doctor'] },
   { to: '/doctor/notifications',icon: 'Bell',           label: 'الإشعارات',          roles: ['doctor'] },
+  { to: '/doctor/announcements',icon: 'Megaphone',      label: 'الإعلانات',          roles: ['doctor'] },
   // Student
   { to: '/student',            icon: 'LayoutDashboard', label: 'لوحة التحكم',         roles: ['student'] },
   { to: '/student/courses',    icon: 'ClipboardList',   label: 'تسجيل المقررات',      roles: ['student'] },
@@ -30,6 +31,7 @@ export const NAV_ITEMS = [
   { to: '/student/transcript', icon: 'FileText',        label: 'كشف الدرجات',         roles: ['student'] },
   { to: '/student/graduation', icon: 'GraduationCap',   label: 'حالة التخرج',         roles: ['student'] },
   { to: '/student/notifications',icon: 'Bell',          label: 'الإشعارات',          roles: ['student'] },
+  { to: '/student/announcements',icon: 'Megaphone',     label: 'الإعلانات',          roles: ['student'] },
 ];
 
 /** Page title lookup by path */
@@ -51,12 +53,14 @@ export const PAGE_TITLES = {
   '/doctor/courses':      'مقرراتي',
   '/doctor/schedule':     'جدولي',
   '/doctor/notifications':'الإشعارات',
+  '/doctor/announcements':'الإعلانات',
   '/student':             'لوحة التحكم',
   '/student/courses':     'تسجيل المقررات',
   '/student/schedule':    'جدولي',
   '/student/transcript':  'كشف الدرجات',
   '/student/graduation':  'حالة التخرج',
   '/student/notifications':'الإشعارات',
+  '/student/announcements':'الإعلانات',
   '/change-password':     'تغيير كلمة المرور',
 };
 

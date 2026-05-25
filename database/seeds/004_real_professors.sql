@@ -103,9 +103,16 @@ BEGIN
     ('00000000-0000-0000-0000-000000000024', 'dr.ibrahim@fci.tanta.edu.eg', '$2b$10$cOqt6YZKmMqMr6noJ5ymiu7D6T08JdSNlVT3dXyM9f/.y9WHgT7tW', 'doctor', 'د. إبراهيم جاد', 'Dr. Ibrahim Gad', '19910415223344', '01011112247', FALSE, TRUE),
     ('00000000-0000-0000-0000-000000000025', 'dr.iman.b@fci.tanta.edu.eg', '$2b$10$cOqt6YZKmMqMr6noJ5ymiu7D6T08JdSNlVT3dXyM9f/.y9WHgT7tW', 'doctor', 'أ.م.د. إيمان البقري', 'Assoc. Prof. Iman El Baqari', '19920515223344', '01011112248', FALSE, TRUE),
     ('00000000-0000-0000-0000-000000000026', 'dr.marwa@fci.tanta.edu.eg', '$2b$10$cOqt6YZKmMqMr6noJ5ymiu7D6T08JdSNlVT3dXyM9f/.y9WHgT7tW', 'doctor', 'د. مروة سلامة', 'Dr. Marwa Salama', '19930615223344', '01011112249', FALSE, TRUE)
-  ON CONFLICT (id) DO UPDATE SET 
-    email = EXCLUDED.email, 
-    full_name_ar = EXCLUDED.full_name_ar, 
+  ON CONFLICT (id) DO UPDATE SET
+    email        = EXCLUDED.email,
+    -- Only overwrite the Arabic name when it is blank/null. This prevents a
+    -- seed re-run from clobbering a corrected name written by a later migration
+    -- (e.g. 012_fix_misc_issues.sql which fixes Dr. Aida Nasr's encoding).
+    full_name_ar = CASE
+                     WHEN users.full_name_ar IS NULL OR users.full_name_ar = ''
+                     THEN EXCLUDED.full_name_ar
+                     ELSE users.full_name_ar
+                   END,
     full_name_en = EXCLUDED.full_name_en;
 
   -- ── 3. INSERT doctor profiles ──────────────────────────────────────────

@@ -230,11 +230,15 @@ function GradesTab({ roster, canEnter, offeringId, onReload }) {
               const hasAny = g.midterm_grade !== '' || g.coursework_grade !== '' ||
                              g.practical_grade !== '' || g.final_exam_grade !== '';
               const total  = hasAny ? mid + cw + pr + fin : null;
-              // Dynamic letter: compute from form if any marks entered,
-              // else show DB letter only if a total_grade is already stored
+              // [FIX-GRADE-NULL] Show persisted DB values ONLY when the doctor has
+              // explicitly entered grades (grade_entered_at is set). A null/zero
+              // total_grade that was stored before this fix (phantom F grades) must
+              // not be displayed — we guard by checking grade_entered_at instead of
+              // checking total_grade for null.
+              const dbGradeEntered = !!s.grade_entered_at;
               const dynamicLetter = hasAny
                 ? computeLetterGrade(total, g.final_exam_grade)
-                : (s.total_grade !== null && s.total_grade !== undefined ? s.letter_grade : null);
+                : (dbGradeEntered ? s.letter_grade : null);
               const isDirty = dirty[eid];
               return (
                 <tr key={eid} style={{
@@ -264,7 +268,7 @@ function GradesTab({ roster, canEnter, offeringId, onReload }) {
                   ))}
                   <td style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 800,
                     color: total !== null ? (total >= 60 ? SUCCESS : DANGER) : '#9ca3af', fontSize: 13 }}>
-                    {total !== null ? total.toFixed(0) : (s.total_grade ?? '—')}
+                    {total !== null ? total.toFixed(0) : (dbGradeEntered ? s.total_grade : '—')}
                   </td>
                   <td style={{ padding: '8px 8px', textAlign: 'center' }}>
                     <LetterBadge grade={dynamicLetter} />

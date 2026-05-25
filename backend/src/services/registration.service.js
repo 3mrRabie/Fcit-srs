@@ -236,6 +236,14 @@ async function enterGrades(enrollmentId, grades, enteredById) {
       practical: practical_grade, final_exam: final_exam_grade
     });
 
+    // [FIX-GRADE-NULL] If total is null it means ALL four components were null —
+    // the doctor sent an empty save (e.g. bulk-save for a not-yet-graded student).
+    // Do NOT write anything to the DB in this case; the row stays ungraded.
+    if (total === null) {
+      logger.info('enterGrades: all components null — skipping write for ungraded student', { enrollmentId });
+      return { success: true, total_grade: null, letter_grade: null, grade_points: null };
+    }
+
     let letter, points;
     // [FIX-GRADES-2] final_exam_grade is null when not yet entered; only auto-fail
     // when a value is actually provided AND it is below 30 (i.e. < 50% of 60).

@@ -144,6 +144,7 @@ router.get('/admin/reports/academic', authenticate, aOnly, adminCtrl.getAcademic
 
 router.get('/admin/announcements',  authenticate, aOnly, adminCtrl.getAnnouncements);
 router.post('/admin/announcements', authenticate, aOnly, adminCtrl.createAnnouncement);
+router.delete('/admin/announcements/:announcementId', authenticate, aOnly, adminCtrl.deleteAnnouncement);
 
 
 // ─────────────────────────────────────────────────────────────────────────────
