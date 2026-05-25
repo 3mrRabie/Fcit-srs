@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add *)",
+      "Bash(git commit -m 'fix\\(admin\\): correct adminForceDropStudent SQL join path *)",
+      "Bash(git init *)",
+      "Bash(git commit *)",
+      "Bash(npx jest *)"
+    ]
+  }
+}
