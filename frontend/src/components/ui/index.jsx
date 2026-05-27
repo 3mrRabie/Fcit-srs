@@ -2,7 +2,8 @@
    UI Component Library — FCIT-SRS
    All reusable primitives for the university SaaS dashboard
    ═══════════════════════════════════════════════════════════════════════════ */
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import styles from './ui.module.css';
 
 /* ════════════ Button ════════════ */
@@ -49,7 +50,7 @@ export function Input({
 
 /* ════════════ PasswordInput ════════════ */
 export function PasswordInput({ label, ...props }) {
-  const [show, setShow] = React.useState(false);
+  const [show, setShow] = useState(false);
   return (
     <div className={styles.field}>
       {label && <label className={styles.label}>{label}</label>}
@@ -94,32 +95,78 @@ export function Select({
 }
 
 /* ════════════ Card ════════════ */
-export function Card({ children, title, headerActions, className = '', noPadding = false, ...props }) {
+export function Card({
+  children, title, headerActions, className = '', noPadding = false,
+  variant = 'default', action, collapsible = false, style, ...props
+}) {
+  const [collapsed, setCollapsed] = useState(false);
+
+  const variantClass = variant !== 'default' ? styles[`card_${variant}`] : '';
+
   return (
-    <div className={`${styles.card} ${className}`} {...props}>
-      {(title || headerActions) && (
-        <div className={styles.cardHeader}>
+    <div
+      className={`${styles.card} ${variantClass} ${className}`}
+      style={style}
+      {...props}
+    >
+      {(title || headerActions || action) && (
+        <div
+          className={`${styles.cardHeader} ${collapsible ? styles.cardCollapsibleToggle : ''}`}
+          onClick={collapsible ? () => setCollapsed(p => !p) : undefined}
+          role={collapsible ? 'button' : undefined}
+          tabIndex={collapsible ? 0 : undefined}
+          onKeyDown={collapsible ? (e) => e.key === 'Enter' && setCollapsed(p => !p) : undefined}
+          aria-expanded={collapsible ? !collapsed : undefined}
+        >
           {title && <h2 className={styles.cardTitle}>{title}</h2>}
-          {headerActions && <div className={styles.cardActions}>{headerActions}</div>}
+          <div className={styles.cardActions}>
+            {action && action}
+            {headerActions && headerActions}
+          </div>
         </div>
       )}
-      <div className={noPadding ? '' : styles.cardBody}>
-        {children}
+      <div
+        className={collapsible
+          ? `${styles.cardCollapsibleBody} ${collapsed ? styles.cardCollapsibleBody_collapsed : ''}`
+          : undefined}
+      >
+        <div className={noPadding ? '' : styles.cardBody}>
+          {children}
+        </div>
       </div>
     </div>
   );
 }
 
 /* ════════════ StatCard ════════════ */
-export function StatCard({ icon, iconBg, value, label, className = '' }) {
+export function StatCard({ icon, iconBg, value, label, className = '', trend, style }) {
+  const trendClass = trend?.direction
+    ? styles[`statTrend_${trend.direction}`]
+    : styles.statTrend_neutral;
+
+  const TrendIcon = trend?.direction === 'up'
+    ? TrendingUp
+    : trend?.direction === 'down'
+    ? TrendingDown
+    : Minus;
+
   return (
-    <div className={`${styles.statCard} ${className}`}>
+    <div
+      className={`${styles.statCard} ${className}`}
+      style={{ '--stat-accent': iconBg || 'var(--color-primary)', ...style }}
+    >
       <div className={styles.statIcon} style={{ background: iconBg || 'var(--color-primary-50)' }}>
         {icon}
       </div>
       <div>
         <div className={styles.statValue}>{value}</div>
         <div className={styles.statLabel}>{label}</div>
+        {trend && (
+          <div className={`${styles.statTrend} ${trendClass}`}>
+            <TrendIcon size={10} />
+            {trend.value}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -176,11 +223,10 @@ export function GradeBadge({ grade }) {
 export function SpecBadge({ spec }) {
   const s = (spec || '').toUpperCase();
   const map = { CS: 'cs', IT: 'it', IS: 'is', SE: 'se' };
-  // Level 1-2 students have no specialization → show "عام" (General Program)
   if (!s || !map[s]) {
     return (
-      <span className={`${styles.badge} ${styles.spec_general || styles.badge_default}`}
-            style={{ background: 'rgba(100, 116, 139, 0.12)', color: '#475569', fontWeight: 700 }}>
+      <span className={`${styles.badge} ${styles.badge_default}`}
+            style={{ background: 'rgba(100, 116, 139, 0.12)', color: 'var(--color-gray-600)', fontWeight: 700 }}>
         عام
       </span>
     );
@@ -202,8 +248,13 @@ export function Table({ children, className = '' }) {
     </div>
   );
 }
-export function Th({ children, ...props }) {
-  return <th className={styles.th} {...props}>{children}</th>;
+export function Th({ children, sortable = false, ...props }) {
+  const cls = [styles.th, sortable && styles.thSortable].filter(Boolean).join(' ');
+  return (
+    <th className={cls} scope="col" {...props}>
+      {children}
+    </th>
+  );
 }
 export function Td({ children, className = '', ...props }) {
   return <td className={`${styles.td} ${className}`} {...props}>{children}</td>;
@@ -237,11 +288,69 @@ export function Spinner({ size = 32, className = '' }) {
   );
 }
 
+/* ════════════ Skeleton ════════════ */
+export function Skeleton({ width = '100%', height = '16px', radius, style, className = '' }) {
+  return (
+    <span
+      className={`${styles.skeleton} ${className}`}
+      style={{
+        width,
+        height,
+        borderRadius: radius || undefined,
+        display: 'block',
+        ...style,
+      }}
+      aria-hidden="true"
+    />
+  );
+}
+
+export function SkeletonCard({ className = '' }) {
+  return (
+    <div className={`${styles.skeletonCard} ${className}`}>
+      <Skeleton className={styles.skeletonCardIcon} width="48px" height="48px" radius="var(--radius-lg)" />
+      <div className={styles.skeletonCardContent}>
+        <Skeleton width="40%" height="24px" radius="var(--radius-sm)" />
+        <Skeleton width="65%" height="13px" radius="var(--radius-sm)" />
+      </div>
+    </div>
+  );
+}
+
+export function SkeletonTable({ rows = 5, cols = 4 }) {
+  const colWidths = ['30%', '20%', '25%', '15%', '10%'];
+  return (
+    <div className={styles.skeletonTable}>
+      <div className={`${styles.skeletonTableRow} ${styles.skeletonTableHeader}`}>
+        {Array.from({ length: cols }).map((_, i) => (
+          <Skeleton key={i} width={colWidths[i] || '20%'} height="13px" radius="var(--radius-sm)" />
+        ))}
+      </div>
+      {Array.from({ length: rows }).map((_, r) => (
+        <div key={r} className={styles.skeletonTableRow}>
+          {Array.from({ length: cols }).map((_, c) => (
+            <Skeleton
+              key={c}
+              width={c === 0 ? '35%' : colWidths[c] || '20%'}
+              height="13px"
+              radius="var(--radius-sm)"
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ════════════ EmptyState ════════════ */
 export function EmptyState({ icon, title, description, action, className = '' }) {
   return (
-    <div className={`${styles.empty} ${className}`}>
-      {icon && <div className={styles.emptyIcon}>{icon}</div>}
+    <div className={`${styles.empty} ${className}`} role="status" aria-live="polite">
+      {icon && (
+        <div className={styles.emptyIconWrap} aria-hidden="true">
+          {icon}
+        </div>
+      )}
       {title && <div className={styles.emptyTitle}>{title}</div>}
       {description && <div className={styles.emptyDesc}>{description}</div>}
       {action && <div className={styles.emptyAction}>{action}</div>}
@@ -298,23 +407,16 @@ export function Modal({ open, onClose, title, children, maxWidth = 500, classNam
   const overlayRef = useRef(null);
   const contentRef = useRef(null);
 
-  // Close on ESC
   useEffect(() => {
     if (!open) return;
-    const handler = (e) => {
-      if (e.key === 'Escape') onClose();
-    };
+    const handler = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [open, onClose]);
 
-  // Prevent body scroll when open
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    if (open) { document.body.style.overflow = 'hidden'; }
+    else       { document.body.style.overflow = ''; }
     return () => { document.body.style.overflow = ''; };
   }, [open]);
 
@@ -338,25 +440,17 @@ export function Modal({ open, onClose, title, children, maxWidth = 500, classNam
         {title && (
           <div className={styles.modalHeader}>
             <h3 className={styles.modalTitle}>{title}</h3>
-            <button
-              className={styles.modalClose}
-              onClick={onClose}
-              aria-label="إغلاق"
-            >
-              ✕
-            </button>
+            <button className={styles.modalClose} onClick={onClose} aria-label="إغلاق">✕</button>
           </div>
         )}
-        <div className={styles.modalBody}>
-          {children}
-        </div>
+        <div className={styles.modalBody}>{children}</div>
       </div>
     </div>
   );
 }
 
 /* ════════════ ProgressBar ════════════ */
-export function ProgressBar({ value, max = 100, color, className = '' }) {
+export function ProgressBar({ value, max = 100, color, showLabel = false, className = '' }) {
   const pct = Math.min(100, Math.round((value / max) * 100));
   return (
     <div className={`${styles.progressTrack} ${className}`}>
@@ -367,7 +461,11 @@ export function ProgressBar({ value, max = 100, color, className = '' }) {
         aria-valuenow={value}
         aria-valuemin={0}
         aria-valuemax={max}
-      />
+      >
+        {showLabel && pct > 15 && (
+          <span className={styles.progressLabel}>{pct}%</span>
+        )}
+      </div>
     </div>
   );
 }

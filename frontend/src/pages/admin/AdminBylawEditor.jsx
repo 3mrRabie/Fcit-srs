@@ -67,13 +67,13 @@ export default function AdminBylawEditor() {
 
   return (
     <AppLayout>
-      <div style={{ background: '#fef9c3', border: '1px solid #fbbf24', borderRadius: '12px', padding: '14px 16px', marginBottom: '16px', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-        <Scale size={24} color="#92400e" />
+      <div style={{ background: 'var(--color-warning-light)', border: '1px solid var(--color-accent)', borderRadius: '12px', padding: '14px 16px', marginBottom: '16px', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+        <Scale size={24} color="var(--color-warning-dark)" />
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700, color: '#92400e', marginBottom: '4px' }}>
+          <div style={{ fontWeight: 700, color: 'var(--color-warning-dark)', marginBottom: '4px' }}>
             Academic Regulations Editor (JSON)
           </div>
-          <div style={{ fontSize: '13px', color: '#78350f' }}>
+          <div style={{ fontSize: '13px', color: 'var(--color-warning-dark)' }}>
             Modify the core academic bylaw safely. A backup is automatically created on every save.
           </div>
         </div>
@@ -233,7 +233,7 @@ export default function AdminBylawEditor() {
 
             {activeTab === 'raw' && (
               <div>
-                <div style={{ background: '#fef2f2', color: '#991b1b', padding: '10px', borderRadius: '8px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ background: 'var(--color-error-light)', color: 'var(--color-error-dark)', padding: '10px', borderRadius: '8px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <AlertTriangle size={18} />
                   <span><strong>Warning:</strong> Invalid JSON will crash the backend. Edit carefully!</span>
                 </div>

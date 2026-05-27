@@ -24,10 +24,12 @@ const DEFAULT_BYLAW = {
   grading_system: [],
   academic_status: {
     warning_threshold: 2.0,
-    dismissal: { consecutive_warnings: 6, non_consecutive_warnings: 10 }
+    // Art. 26: dismiss after 4 consecutive or 6 non-consecutive warnings
+    dismissal: { consecutive_warnings: 4, non_consecutive_warnings: 6 }
   },
   registration_rules: {
-    regular_semester: { min_hours: 12, max_hours_new_students: 18, max_hours_by_gpa: [] },
+    // Art. 11: minimum 9 credit hours per regular semester
+    regular_semester: { min_hours: 9, max_hours_new_students: 18, max_hours_by_gpa: [] },
     summer_semester: { max_hours: 9, max_hours_graduating: 12 }
   },
   curriculum: {
@@ -94,12 +96,13 @@ async function getMaxCreditsForSemester(studentId, semesterId, { student, semest
     }
   }
 
-  // Graduating student allowance logic (+3 hours if exactly one course left)
+  // Art. 11 Graduating student exception: if remaining credits ≤ 21, always allow up to 21h
+  // regardless of CGPA bracket, so the student can finish in one semester.
   const totalRequired = bylaw.metadata.total_credit_hours;
   const passed = s.total_credits_passed || 0;
-  // If (passed + maxCredits + allowance >= required), allow the extra allowance to let them graduate
-  if (passed + maxCredits < totalRequired && passed + maxCredits + bylaw.registration_rules.regular_semester.graduating_student_allowance >= totalRequired) {
-    maxCredits += bylaw.registration_rules.regular_semester.graduating_student_allowance;
+  const remaining = totalRequired - passed;
+  if (remaining <= 21) {
+    maxCredits = Math.max(maxCredits, 21);
   }
 
   return maxCredits;
@@ -155,14 +158,13 @@ async function canStudentRegisterCourse(studentId, courseId, semesterId, offerin
     ? ['GENERAL']
     : [student.specialization || 'CS', 'GENERAL'];
 
-  // Relaxed curriculum check: course must exist within ±2 years of the student's level.
-  // Exact semester_in_year matching is removed for non-freshmen (students may retake,
-  // catch-up, or register slightly ahead). Prerequisites remain the hard academic gate.
+  // Art. 12: students may register courses at their current level or one level below.
+  // This allows retakes and catch-up without permitting registration far ahead of level.
   const cpCheck = (await query(
     `SELECT 1 FROM curriculum_plans
      WHERE course_id = $1
        AND specialization = ANY($2::text[])
-       AND year_of_study <= $3 + 2
+       AND year_of_study BETWEEN $3 - 1 AND $3
      LIMIT 1`,
     [courseId, specOptions, studentLevelNum]
   )).rows[0];
@@ -278,10 +280,9 @@ async function canWithdrawCourse(enrollmentId, studentId) {
     [studentId, enrollment.semester_id, enrollmentId]
   )).rows[0].total;
 
-  // 9-credit floor — see academic-regulations.json
-  // registration_rules.regular_semester.min_hours
+  // Art. 11/13a: block withdrawal if remaining credits would fall below min_hours (9h floor)
   const minHours = getBylaw().registration_rules.regular_semester.min_hours;
-  if (parseInt(currentCredits) < minHours && parseInt(currentCredits) > 0) {
+  if (parseInt(currentCredits) < minHours) {
     return { allowed: false, reason: `Cannot withdraw: would fall below minimum ${minHours} credit hours` };
   }
 
@@ -289,6 +290,9 @@ async function canWithdrawCourse(enrollmentId, studentId) {
 }
 
 function shouldReceiveWarning(student) {
+  // Art. 25: first semester exempt. semesters_enrolled here is AFTER the increment
+  // performed in finalizeSemester, so a student in their first semester will have
+  // semesters_enrolled === 1 at this point — exempt correctly when <= 1.
   if (student.semesters_enrolled <= 1) return false;
   return student.cgpa < getBylaw().academic_status.warning_threshold;
 }
@@ -314,8 +318,7 @@ async function checkHonorsEligibility(studentId) {
     reasons.push(`CGPA ${student.cgpa} is below ${C.HONORS_MIN_CGPA} required for honors`);
   if (student.semesters_enrolled > C.HONORS_MAX_SEMESTERS)
     reasons.push(`Completed in ${student.semesters_enrolled} semesters (max ${C.HONORS_MAX_SEMESTERS})`);
-  if (student.total_warnings > 0)
-    reasons.push('Has academic warnings on record');
+  // Art. 27: disqualifiers are failed or barred courses — academic warnings alone are NOT a disqualifier
 
   const fGrades = (await query(
     `SELECT COUNT(*) FROM enrollments e

@@ -48,6 +48,7 @@ const POST_SEED_MIGRATIONS = [
   'migration_v3.sql',
   'migration_prerequisites.sql',
   'migration_v4.sql',
+  'migration_v5.sql',   // [V5-FIX] adds section_label to course_offerings, drops old unique constraint
 ];
 
 async function setup() {
@@ -130,11 +131,16 @@ async function setup() {
       'seeds/005b_fix_seeds.sql',
       'seeds/006_demo_student_enrollments.sql',
       'seeds/007_fix_demo_student.sql',
+      'seeds/008_fix_total_grades_and_gpa.sql', // [V5-FIX] was missing from named list
       'migrations/sync_academic_status.sql',
       'migrations/fix_semester_status.sql',
       'migrations/fix_demo_fall_2025_enrollments.sql',
       'migrations/011_fix_timetable_grades_doctor.sql',
-      'migrations/012_fix_misc_issues.sql'
+      'migrations/012_fix_misc_issues.sql',
+      'migrations/013_fix_admin_data.sql',
+      'migrations/013_fix_curriculum_seed.sql',   // re-populates curriculum_plans with correct ON CONFLICT
+      'migrations/014_ensure_spring2026_offerings.sql', // guarantees Spring 2026 offerings exist and are active
+      'migrations/014_fix_curriculum_constraint.sql',
     ];
     for (const migFile of namedMigrations) {
       const key = path.basename(migFile);

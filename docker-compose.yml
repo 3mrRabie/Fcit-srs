@@ -16,10 +16,10 @@ services:
     image: postgres:16-alpine
     container_name: fcit-srs-audit-postgres
     environment:
-      POSTGRES_USER:        ${DB_USER:-postgres}
-      POSTGRES_PASSWORD:    ${DB_PASSWORD:-postgres}
-      POSTGRES_DB:          ${DB_NAME:-student_registration_system}
-      PGDATA:               /var/lib/postgresql/data/pgdata
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-student_registration_system}
+      PGDATA: /var/lib/postgresql/data/pgdata
       POSTGRES_INITDB_ARGS: "--locale=C --encoding=UTF8"
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -28,12 +28,13 @@ services:
       - ./database/migration_v3.sql:/docker-entrypoint-initdb.d/06-migration-v3.sql:ro
       - ./database/migration_prerequisites.sql:/docker-entrypoint-initdb.d/07-migration-prerequisites.sql:ro
       - ./database/migration_v4.sql:/docker-entrypoint-initdb.d/08-migration-v4.sql:ro
+      - ./database/migration_v5.sql:/docker-entrypoint-initdb.d/09-migration-v5.sql:ro
     ports:
       - "127.0.0.1:${DB_PORT:-5433}:5432"
     networks:
       - fcit-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-student_registration_system} -q && psql -U ${DB_USER:-postgres} -d ${DB_NAME:-student_registration_system} -c 'SELECT 1 FROM users LIMIT 1' -q >/dev/null 2>&1"]
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-student_registration_system} -q && psql -U ${DB_USER:-postgres} -d ${DB_NAME:-student_registration_system} -c 'SELECT 1 FROM users LIMIT 1' -q >/dev/null 2>&1" ]
       interval: 10s
       timeout: 8s
       retries: 15
@@ -51,20 +52,19 @@ services:
       context: .
       dockerfile: Dockerfile.backend
     environment:
-      NODE_ENV:            ${NODE_ENV:-production}
-      PORT:                3000
-      DB_HOST:             postgres
-      DB_PORT:             5432
-      DB_USER:             ${DB_USER:-postgres}
-      DB_PASSWORD:         ${DB_PASSWORD:-postgres}
-      DB_NAME:             ${DB_NAME:-student_registration_system}
-      JWT_SECRET:          ${JWT_SECRET:-fcit-srs-change-me-in-production}
-      JWT_REFRESH_SECRET:  ${JWT_REFRESH_SECRET:-fcit-srs-refresh-change-me}
-      JWT_EXPIRY:          ${JWT_EXPIRY:-15m}
-      JWT_REFRESH_EXPIRY:  ${JWT_REFRESH_EXPIRY:-7d}
-      API_RATE_LIMIT:      ${API_RATE_LIMIT:-200}
-      CORS_ORIGINS:        ${CORS_ORIGINS:-http://localhost:3003,http://localhost:8080}
-      LOG_LEVEL:           ${LOG_LEVEL:-info}
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_NAME: ${DB_NAME:-student_registration_system}
+      JWT_SECRET: ${JWT_SECRET:-fcit-srs-change-me-in-production}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-fcit-srs-refresh-change-me}
+      JWT_EXPIRY: ${JWT_EXPIRY:-15m}
+      JWT_REFRESH_EXPIRY: ${JWT_REFRESH_EXPIRY:-7d}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3003,http://localhost:8080}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
     ports:
       - "${BACKEND_PORT:-3001}:3000"
     depends_on:
@@ -76,7 +76,7 @@ services:
     networks:
       - fcit-network
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:3000/health || exit 1"]
+      test: [ "CMD-SHELL", "curl -sf http://localhost:3000/health || exit 1" ]
       interval: 20s
       timeout: 8s
       retries: 5
@@ -103,7 +103,7 @@ services:
     networks:
       - fcit-network
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/index.html || exit 1"]
+      test: [ "CMD-SHELL", "wget -q --spider http://localhost:8080/index.html || exit 1" ]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -122,9 +122,9 @@ services:
     container_name: fcit-srs-audit-postgres-exporter
     environment:
       DATA_SOURCE_NAME: "postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-student_registration_system}?sslmode=disable"
-      PG_EXPORTER_DISABLE_DEFAULT_METRICS:   "false"
-      PG_EXPORTER_DISABLE_SETTINGS_METRICS:  "false"
-      PG_EXPORTER_AUTO_DISCOVER_DATABASES:   "false"
+      PG_EXPORTER_DISABLE_DEFAULT_METRICS: "false"
+      PG_EXPORTER_DISABLE_SETTINGS_METRICS: "false"
+      PG_EXPORTER_AUTO_DISCOVER_DATABASES: "false"
     ports:
       - "9188:9187"
     depends_on:
@@ -133,7 +133,7 @@ services:
     networks:
       - fcit-network
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:9187/metrics || exit 1"]
+      test: [ "CMD-SHELL", "wget -q --spider http://localhost:9187/metrics || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -169,7 +169,7 @@ services:
     networks:
       - fcit-network
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:9090/-/healthy || exit 1"]
+      test: [ "CMD-SHELL", "wget -q --spider http://localhost:9090/-/healthy || exit 1" ]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -185,16 +185,16 @@ services:
     image: grafana/grafana:11.6.0
     container_name: fcit-srs-audit-grafana
     environment:
-      GF_SECURITY_ADMIN_USER:              ${GRAFANA_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD:          ${GRAFANA_PASSWORD:?GRAFANA_PASSWORD must be set in .env}
-      GF_USERS_ALLOW_SIGN_UP:              "false"
-      GF_ANALYTICS_REPORTING_ENABLED:      "false"
-      GF_ANALYTICS_CHECK_FOR_UPDATES:      "false"
-      GF_LOG_LEVEL:                        "warn"
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:?GRAFANA_PASSWORD must be set in .env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_LOG_LEVEL: "warn"
       GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: "/etc/grafana/dashboards/fcit-srs-overview.json"
-      GF_SERVER_ROOT_URL:                  "http://localhost:3050"
+      GF_SERVER_ROOT_URL: "http://localhost:3050"
       # Grafana 11: enable new navigation
-      GF_FEATURE_TOGGLES_ENABLE:           "newNavigation"
+      GF_FEATURE_TOGGLES_ENABLE: "newNavigation"
     volumes:
       - grafana_data:/var/lib/grafana
       - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
@@ -207,7 +207,7 @@ services:
     networks:
       - fcit-network
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:3000/api/health || exit 1"]
+      test: [ "CMD-SHELL", "wget -q --spider http://localhost:3000/api/health || exit 1" ]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -246,4 +246,3 @@ volumes:
   grafana_data:
     driver: local
     name: fcit-srs-audit-grafana-data
-

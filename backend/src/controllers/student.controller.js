@@ -108,9 +108,9 @@ const getDashboard = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-// [C5-FIX] Now filters courses by student level AND semester registration state
-// Students ONLY see courses at or below their academic level.
-// Level is now dynamically computed from bylaw via creditsToLevel()
+// [DYNAMIC-REG] Show ALL active course offerings for the semester.
+// Prerequisites, capacity, credit limits, and retake rules dynamically determine can_register.
+// No more curriculum plan year/semester filtering — students see the full offered catalog.
 
 const getAvailableCourses = async (req, res, next) => {
   try {
@@ -120,32 +120,26 @@ const getAvailableCourses = async (req, res, next) => {
     const student = (await query('SELECT * FROM students WHERE user_id = $1', [userId])).rows[0];
     if (!student) return res.status(404).json({ success: false, message: 'Student not found' });
 
-    // [C5-FIX] Determine numeric level for this student dynamically from bylaw
     const studentLevelNum = bylawService.creditsToLevel(student.total_credits_passed).id || 1;
-    // [FIX-REG-LEVEL] Only true first-year students (level 1) are restricted to the GENERAL
-    // curriculum track. From level 2 onward the student already belongs to a specialization
-    // and must see courses from both GENERAL and their own specialization track.
-    const isGeneralProgram = studentLevelNum <= 1;
 
-    // [C8-FIX] Verify registration is actually open for this semester
+    // Verify registration is actually open for this semester
     const semester = (await query('SELECT * FROM semesters WHERE id = $1', [semesterId])).rows[0];
     if (!semester) return res.status(404).json({ success: false, message: 'Semester not found' });
 
     const registrationOpen = semester.status === 'registration';
     const addDropOpen = semester.status === 'active' && new Date() <= new Date(semester.add_drop_deadline);
-    const canRegisterNew = registrationOpen || addDropOpen; // Fix: Allow registration during both
-    const canDropAdd = addDropOpen;          // Only within add/drop window
+    const canRegisterNew = registrationOpen || addDropOpen;
+    const canDropAdd = addDropOpen;
 
-    const sqlParams = isGeneralProgram
-      ? [student.id, semesterId, studentLevelNum, ['GENERAL']]
-      : [student.id, semesterId, studentLevelNum, [student.specialization || 'CS', 'GENERAL']];
-
-    // Get all offerings for the semester, filtering by student's level and specialization via curriculum_plans
+    // [DYNAMIC-REG] Query ALL active course offerings for this semester — no curriculum plan filtering
     const offerings = await query(
-      `SELECT DISTINCT co.id as offering_id, co.capacity, co.enrolled_count, co.schedule, co.room,
+      `SELECT DISTINCT ON (co.id)
+              co.id as offering_id, co.capacity, co.enrolled_count, co.schedule, co.room,
               c.id as course_id, c.code, c.name_ar, c.name_en, c.credits, c.category,
-              c.level as course_level, cp.is_mandatory,
+              c.level as course_level,
+              COALESCE(cp.is_mandatory, FALSE) as is_mandatory,
               u.full_name_en as doctor_name,
+              u.full_name_ar as doctor_name_ar,
               dep.code as department_code,
               -- Check if already registered
               CASE WHEN e.id IS NOT NULL THEN TRUE ELSE FALSE END as already_registered,
@@ -153,8 +147,8 @@ const getAvailableCourses = async (req, res, next) => {
               e.status as enrollment_status
        FROM course_offerings co
        JOIN courses c ON c.id = co.course_id
-       JOIN curriculum_plans cp ON cp.course_id = c.id
-       JOIN semesters sem ON sem.id = co.semester_id
+       LEFT JOIN curriculum_plans cp ON cp.course_id = c.id
+         AND cp.specialization IN ($3, 'GENERAL')
        LEFT JOIN doctors d ON d.id = co.doctor_id
        LEFT JOIN users u ON u.id = d.user_id
        LEFT JOIN departments dep ON dep.id = c.department_id
@@ -163,29 +157,12 @@ const getAvailableCourses = async (req, res, next) => {
        WHERE co.semester_id = $2
          AND co.is_active = TRUE
          AND c.is_active = TRUE
-         -- [FIX-REG-YEAR] Allow students to see courses up to 2 years ahead of their current
-         -- level so that year-3/4 courses become visible for planning and early registration.
-         -- Prerequisites enforced below still prevent actual registration until the student
-         -- has met all entry requirements.
-         AND cp.year_of_study >= $3
-         AND cp.year_of_study <= ($3 + 2)
-         AND cp.specialization = ANY($4::text[])
-         -- STRICT SEMESTER MAPPING FOR FRESHMEN: Ensure Level 1 students don't see Spring courses in Fall
-         AND (
-           $3 > 1 OR 
-           (sem.semester_type = 'fall' AND cp.semester_in_year = 1) OR 
-           (sem.semester_type = 'spring' AND cp.semester_in_year = 2) OR 
-           sem.semester_type = 'summer'
-         )
-       ORDER BY c.code`,
-      sqlParams
+       ORDER BY co.id, c.code`,
+      [student.id, semesterId, student.specialization || 'CS']
     );
 
-    let finalOfferings = offerings;
-    // Removed redundant summer fallback logic because relaxed curriculum rules handle it natively
-
     // Bulk fetch prerequisites
-    const courseIds = [...new Set(finalOfferings.rows.map(o => o.course_id))];
+    const courseIds = [...new Set(offerings.rows.map(o => o.course_id))];
     const prereqMap = {};
     if (courseIds.length > 0) {
       const prereqs = await query(
@@ -201,7 +178,7 @@ const getAvailableCourses = async (req, res, next) => {
       }
     }
 
-    // Bulk fetch passed courses for student
+    // Bulk fetch passed courses for student (non-failing grades)
     const passedCourses = await query(
       `SELECT co.course_id 
        FROM enrollments e
@@ -210,6 +187,7 @@ const getAvailableCourses = async (req, res, next) => {
       [student.id]
     );
     const passedSet = new Set(passedCourses.rows.map(r => r.course_id));
+
 
     // Bulk fetch retake logic
     const voluntaryCount = parseInt((await query(
@@ -227,13 +205,23 @@ const getAvailableCourses = async (req, res, next) => {
       [student.id, semesterId]
     )).rows[0].total, 10);
 
-    // For each offering, map the bulk-fetched rules in memory
-    const enriched = finalOfferings.rows.map((o) => {
+    // For each offering, apply dynamic eligibility rules
+    // Filter out courses the student already PASSED (they don't need to re-take them)
+    // Courses the student FAILED remain visible so they can re-register
+    const filteredOfferings = offerings.rows.filter(o => {
+      // Always keep courses the student is currently registered in this semester
+      if (o.already_registered) return true;
+      // Hide courses the student already passed successfully
+      if (passedSet.has(o.course_id)) return false;
+      return true;
+    });
+
+    const enriched = filteredOfferings.map((o) => {
       if (o.already_registered) {
         return { ...o, can_register: false, register_block_reason: 'Already registered' };
       }
 
-      // [C8-FIX] Block registration outside of open windows
+      // Block registration outside of open windows
       if (!canRegisterNew && !canDropAdd) {
         return {
           ...o,
@@ -277,17 +265,6 @@ const getAvailableCourses = async (req, res, next) => {
         };
       }
 
-      if (passedSet.has(o.course_id)) {
-        if (voluntaryCount >= C.MAX_VOLUNTARY_RETAKES) {
-          return {
-            ...o,
-            can_register: false,
-            register_block_reason: `Maximum ${C.MAX_VOLUNTARY_RETAKES} voluntary improvement retakes allowed`,
-            registration_window_open: canRegisterNew || canDropAdd
-          };
-        }
-      }
-
       return {
         ...o,
         can_register: true,
@@ -305,7 +282,6 @@ const getAvailableCourses = async (req, res, next) => {
         add_drop_open:     canDropAdd,
         student_level:     student.current_level,
         student_level_num: studentLevelNum,
-        // BUG-016: registered credits counter for UI
         registeredCredits: enriched.filter(c => c.already_registered).reduce((s,c) => s + (c.credits||0), 0),
         maxCredits:        await (async () => {
           try {

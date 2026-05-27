@@ -51,6 +51,14 @@
   --color-spec-se:        #ea580c;
   --color-spec-se-bg:     #fff7ed;
 
+  /* ── Role colors ───────────────────────────────────────────────────────── */
+  --color-role-admin:     #7c3aed;
+  --color-role-admin-bg:  #f3e8ff;
+  --color-role-doctor:    #0891b2;
+  --color-role-doctor-bg: #e0f2fe;
+  --color-role-student:   #2563eb;
+  --color-role-student-bg:#eff6ff;
+
   /* ── Surface ───────────────────────────────────────────────────────────── */
   --surface-page:         #f1f5f9;
   --surface-card:         #ffffff;
@@ -108,9 +116,12 @@
   --transition-fast:      0.1s ease;
   --transition-base:      0.15s ease;
   --transition-slow:      0.25s ease;
+
   /* ── Layout ────────────────────────────────────────────────────────────── */
   --topbar-height:        64px;
   --sidebar-width:        260px;
+  --sidebar-collapsed-width: 60px;
+  --sidebar-current-width: 260px;
   --content-max-width:    1400px;
 
   /* ── Z-index ───────────────────────────────────────────────────────────── */
@@ -120,4 +131,53 @@
   --z-overlay:            900;
   --z-modal:              1000;
   --z-toast:              1100;
+}
+
+/* ── Dark Mode ─────────────────────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --color-primary:        #3b82f6;
+  --color-primary-dark:   #2563eb;
+  --color-primary-light:  #60a5fa;
+  --color-primary-50:     rgba(59, 130, 246, 0.1);
+  --color-primary-100:    rgba(59, 130, 246, 0.15);
+  --color-primary-200:    rgba(59, 130, 246, 0.2);
+  --color-accent:         #fbbf24;
+
+  --color-success-light:  rgba(22, 163, 74, 0.15);
+  --color-error-light:    rgba(220, 38, 38, 0.15);
+  --color-warning-light:  rgba(217, 119, 6, 0.15);
+  --color-info-light:     rgba(37, 99, 235, 0.15);
+
+  --color-white:          #1e293b;
+  --color-gray-50:        #1e293b;
+  --color-gray-100:       #263548;
+  --color-gray-200:       #334155;
+  --color-gray-300:       #475569;
+  --color-gray-400:       #64748b;
+  --color-gray-500:       #94a3b8;
+  --color-gray-600:       #cbd5e1;
+  --color-gray-700:       #e2e8f0;
+  --color-gray-800:       #f1f5f9;
+  --color-gray-900:       #f8fafc;
+
+  --surface-page:         #0f172a;
+  --surface-card:         #1e293b;
+  --surface-sidebar:      #1a2540;
+  --surface-overlay:      rgba(0, 0, 0, 0.7);
+
+  --shadow-xs:            0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm:            0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md:            0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg:            0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+  --shadow-xl:            0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  --shadow-focus:         0 0 0 3px rgba(59, 130, 246, 0.3);
+
+  --color-spec-cs-bg:     rgba(37, 99, 235, 0.15);
+  --color-spec-it-bg:     rgba(22, 163, 74, 0.15);
+  --color-spec-is-bg:     rgba(124, 58, 237, 0.15);
+  --color-spec-se-bg:     rgba(234, 88, 12, 0.15);
+
+  --color-role-admin-bg:  rgba(124, 58, 237, 0.15);
+  --color-role-doctor-bg: rgba(8, 145, 178, 0.15);
+  --color-role-student-bg:rgba(37, 99, 235, 0.15);
 }

@@ -2,7 +2,7 @@
 
 DO $$
 DECLARE
-  v_student_id integer;
+  v_student_id uuid;
   v_offering_id integer;
   v_course_id integer;
   v_course_code varchar;
@@ -39,8 +39,8 @@ BEGIN
       IF v_offering_id IS NOT NULL THEN
         -- Insert enrollment if not exists
         IF NOT EXISTS (SELECT 1 FROM enrollments WHERE student_id = v_student_id AND offering_id = v_offering_id) THEN
-          INSERT INTO enrollments (student_id, offering_id, status)
-          VALUES (v_student_id, v_offering_id, 'registered');
+          INSERT INTO enrollments (student_id, semester_id, offering_id, status)
+          VALUES (v_student_id, 1, v_offering_id, 'registered');
           
           -- Update enrolled_count
           UPDATE course_offerings SET enrolled_count = enrolled_count + 1 WHERE id = v_offering_id;

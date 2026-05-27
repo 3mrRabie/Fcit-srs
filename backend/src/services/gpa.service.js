@@ -104,7 +104,8 @@ function calculateSemesterGPA(enrollments) {
   }
 
   if (totalCredits === 0) return 0;
-  return Math.round((totalQualityPoints / totalCredits) * 1000) / 1000;
+  // Art. 18: semester GPA rounds to 2 decimal places
+  return Math.round((totalQualityPoints / totalCredits) * 100) / 100;
 }
 
 /**

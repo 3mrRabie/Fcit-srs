@@ -9,6 +9,7 @@ const { query, withTransaction } = require('../config/database');
 const registrationService = require('../services/registration.service');
 const gpaService = require('../services/gpa.service');
 const bylawService = require('../services/bylaw.service');
+const { MIN_ATTENDANCE_PCT } = require('../config/constants');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DASHBOARD
@@ -84,7 +85,7 @@ const getDashboard = async (req, res, next) => {
            COUNT(e.id) FILTER (WHERE e.letter_grade NOT IN ('F','Abs') AND e.status = 'completed') as passed_count,
            COUNT(e.id) FILTER (WHERE e.letter_grade IN ('F','Abs') AND e.status = 'completed') as failed_count,
            ROUND(AVG(e.total_grade) FILTER (WHERE e.total_grade IS NOT NULL), 1) as avg_grade,
-           COUNT(e.id) FILTER (WHERE asm.attendance_pct < 42 AND asm.total_sessions > 0) as attendance_flagged,
+           COUNT(e.id) FILTER (WHERE asm.attendance_pct < 75 AND asm.total_sessions > 0) as attendance_flagged,
            -- Grade distribution buckets
            COUNT(e.id) FILTER (WHERE e.total_grade >= 88) as excellent_count,
            COUNT(e.id) FILTER (WHERE e.total_grade >= 76 AND e.total_grade < 88) as good_count,
@@ -150,7 +151,9 @@ const getCourseRoster = async (req, res, next) => {
     if (!offering) return res.status(404).json({ success: false, message: 'Offering not found' });
 
     const doctor = (await query('SELECT id FROM doctors WHERE user_id = $1', [req.user.id])).rows[0];
-    if (doctor && offering.doctor_id && offering.doctor_id !== doctor.id && req.user.role !== 'admin') {
+    // Art. security: always enforce doctor ownership unless role is admin.
+    // Removing the "offering.doctor_id &&" null-guard prevents any doctor from grading unassigned courses.
+    if (doctor && offering.doctor_id !== doctor.id && req.user.role !== 'admin') {
       return res.status(403).json({ success: false, message: 'Not your course' });
     }
 
@@ -174,7 +177,7 @@ const getCourseRoster = async (req, res, next) => {
          COALESCE(a.attended_sessions, 0) as attended_sessions,
          COALESCE(a.total_sessions, 0) as total_sessions,
          COALESCE(a.excused_absences, 0) as excused_absences,
-         CASE WHEN COALESCE(a.attendance_pct, 0) < 42 AND COALESCE(a.total_sessions, 0) > 0
+         CASE WHEN COALESCE(a.attendance_pct, 0) < 75 AND COALESCE(a.total_sessions, 0) > 0
               THEN TRUE ELSE FALSE END as below_minimum
        FROM enrollments e
        JOIN students s ON s.id = e.student_id
@@ -228,7 +231,8 @@ const enterGrades = async (req, res, next) => {
     if (!enrollment) return res.status(404).json({ success: false, message: 'Enrollment not found' });
 
     const doctor = (await query('SELECT id FROM doctors WHERE user_id = $1', [req.user.id])).rows[0];
-    if (doctor && enrollment.doctor_id && enrollment.doctor_id !== doctor.id && req.user.role !== 'admin') {
+    // Always enforce ownership — removing the null guard prevents grading unassigned courses
+    if (doctor && enrollment.doctor_id !== doctor.id && req.user.role !== 'admin') {
       return res.status(403).json({ success: false, message: 'Not authorized for this course' });
     }
 
@@ -332,7 +336,7 @@ const getAttendanceReport = async (req, res, next) => {
               COALESCE(a.attended_sessions, 0) as attended_sessions,
               COALESCE(a.excused_absences, 0) as excused_absences,
               COALESCE(a.attendance_pct, 0) as attendance_pct,
-              CASE WHEN COALESCE(a.attendance_pct, 0) < 42 AND COALESCE(a.total_sessions, 0) > 0 THEN TRUE ELSE FALSE END as below_minimum,
+              CASE WHEN COALESCE(a.attendance_pct, 0) < 75 AND COALESCE(a.total_sessions, 0) > 0 THEN TRUE ELSE FALSE END as below_minimum,
               CASE WHEN (100 - COALESCE(a.attendance_pct, 0)) > 25 THEN TRUE ELSE FALSE END as excessive_absence
        FROM enrollments e
        JOIN students s ON s.id = e.student_id

@@ -1,25 +1,22 @@
--- database/migrations/populate_curriculum_plans.sql
+-- database/migrations/013_fix_curriculum_seed.sql
+-- Fix: The populate_curriculum_plans.sql used ON CONFLICT (specialization, year_of_study, semester_in_year, course_id)
+-- but the actual unique constraint is UNIQUE (specialization, course_id) — causing silent insert failures.
+-- This migration re-populates the curriculum_plans with the correct ON CONFLICT clause.
 
 DO $$
-DECLARE
-  v_cs_id     INT;
-  v_is_id     INT;
-  v_it_id     INT;
 BEGIN
   IF EXISTS (
-    SELECT 1 FROM seed_logs WHERE seed_name = 'populate_curriculum_plans.sql'
+    SELECT 1 FROM seed_logs WHERE seed_name = '013_fix_curriculum_seed.sql'
   ) THEN
-    RAISE NOTICE 'curriculum_plans migration already applied, skipping.';
+    RAISE NOTICE '013_fix_curriculum_seed.sql already applied, skipping.';
     RETURN;
   END IF;
 
-  -- Clear any broken entries from old migration
-  DELETE FROM curriculum_plans
-  WHERE course_id NOT IN (SELECT id FROM courses);
+  -- Clear all existing curriculum_plans entries so we start fresh
+  DELETE FROM curriculum_plans;
 
   -- ══════════════════════════════════════════════════════════════
   -- YEAR 1 TERM 1 — specialization = 'GENERAL'
-  -- (year_of_study=1, semester_in_year=1)
   -- ══════════════════════════════════════════════════════════════
   INSERT INTO curriculum_plans
     (specialization, year_of_study, semester_in_year, course_id, is_mandatory, display_order)
@@ -29,10 +26,10 @@ BEGIN
     ('BS111', 4), ('BS116', 5), ('UNV113', 6)
   ) AS t(code, ord)
   JOIN courses c ON c.code = t.code
-  ON CONFLICT (specialization, year_of_study, semester_in_year, course_id)
-  DO UPDATE SET year_of_study = EXCLUDED.year_of_study,
-                semester_in_year = EXCLUDED.semester_in_year,
-                display_order = EXCLUDED.display_order;
+  ON CONFLICT (specialization, year_of_study, semester_in_year, course_id) DO UPDATE
+    SET year_of_study = EXCLUDED.year_of_study,
+        semester_in_year = EXCLUDED.semester_in_year,
+        display_order = EXCLUDED.display_order;
 
   -- ══════════════════════════════════════════════════════════════
   -- YEAR 1 TERM 2 — specialization = 'GENERAL'
@@ -45,10 +42,10 @@ BEGIN
     ('UNV114', 4), ('UNV111', 5), ('CS112', 6)
   ) AS t(code, ord)
   JOIN courses c ON c.code = t.code
-  ON CONFLICT (specialization, year_of_study, semester_in_year, course_id)
-  DO UPDATE SET year_of_study = EXCLUDED.year_of_study,
-                semester_in_year = EXCLUDED.semester_in_year,
-                display_order = EXCLUDED.display_order;
+  ON CONFLICT (specialization, year_of_study, semester_in_year, course_id) DO UPDATE
+    SET year_of_study = EXCLUDED.year_of_study,
+        semester_in_year = EXCLUDED.semester_in_year,
+        display_order = EXCLUDED.display_order;
 
   -- ══════════════════════════════════════════════════════════════
   -- YEAR 2 TERM 1 — specialization = 'GENERAL'
@@ -61,10 +58,10 @@ BEGIN
     ('SE211', 4), ('CS212', 5), ('IT211', 6)
   ) AS t(code, ord)
   JOIN courses c ON c.code = t.code
-  ON CONFLICT (specialization, year_of_study, semester_in_year, course_id)
-  DO UPDATE SET year_of_study = EXCLUDED.year_of_study,
-                semester_in_year = EXCLUDED.semester_in_year,
-                display_order = EXCLUDED.display_order;
+  ON CONFLICT (specialization, year_of_study, semester_in_year, course_id) DO UPDATE
+    SET year_of_study = EXCLUDED.year_of_study,
+        semester_in_year = EXCLUDED.semester_in_year,
+        display_order = EXCLUDED.display_order;
 
   -- ══════════════════════════════════════════════════════════════
   -- YEAR 2 TERM 2 — specialization = 'GENERAL'
@@ -77,10 +74,10 @@ BEGIN
     ('IS212', 4), ('CS213', 5)
   ) AS t(code, ord)
   JOIN courses c ON c.code = t.code
-  ON CONFLICT (specialization, year_of_study, semester_in_year, course_id)
-  DO UPDATE SET year_of_study = EXCLUDED.year_of_study,
-                semester_in_year = EXCLUDED.semester_in_year,
-                display_order = EXCLUDED.display_order;
+  ON CONFLICT (specialization, year_of_study, semester_in_year, course_id) DO UPDATE
+    SET year_of_study = EXCLUDED.year_of_study,
+        semester_in_year = EXCLUDED.semester_in_year,
+        display_order = EXCLUDED.display_order;
 
   -- ══════════════════════════════════════════════════════════════
   -- YEAR 3 TERM 1 — CS specialization
@@ -247,7 +244,7 @@ BEGIN
         display_order = EXCLUDED.display_order;
 
   INSERT INTO seed_logs (seed_name, rows_affected)
-  VALUES ('populate_curriculum_plans.sql', 1);
+  VALUES ('013_fix_curriculum_seed.sql', 1);
 
-  RAISE NOTICE 'curriculum_plans populated with real course codes.';
+  RAISE NOTICE 'curriculum_plans re-populated with correct ON CONFLICT clause.';
 END $$;

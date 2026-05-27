@@ -11,10 +11,31 @@ import styles from './layout.module.css';
 
 export default function AppLayout({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    try { return localStorage.getItem('unismart-sidebar-collapsed') === 'true'; }
+    catch { return false; }
+  });
   const [unread, setUnread] = useState(0);
   const { user } = useAuth();
 
-  // Fetch unread notification count
+  /* Sync sidebar width CSS variable */
+  useEffect(() => {
+    const w = collapsed
+      ? 'var(--sidebar-collapsed-width)'
+      : 'var(--sidebar-width)';
+    document.documentElement.style.setProperty('--sidebar-current-width', w);
+  }, [collapsed]);
+
+  const handleCollapseToggle = () => {
+    setCollapsed(p => {
+      const next = !p;
+      try { localStorage.setItem('unismart-sidebar-collapsed', String(next)); }
+      catch { /* ignore */ }
+      return next;
+    });
+  };
+
+  /* Fetch unread notification count */
   useEffect(() => {
     if (!user) return;
     const apiMap = { admin: adminAPI, doctor: doctorAPI, student: studentAPI };
@@ -31,17 +52,16 @@ export default function AppLayout({ children }) {
     return () => clearInterval(id);
   }, [user]);
 
-  // Close mobile sidebar on route change
+  /* Close mobile sidebar on route change */
   useEffect(() => {
     setMobileOpen(false);
   }, [children]);
 
-  const mainClass = [
-    styles.main,
-  ].filter(Boolean).join(' ');
-
   return (
-    <div className={styles.appLayout}>
+    <div
+      className={styles.appLayout}
+      style={{ '--sidebar-current-width': collapsed ? 'var(--sidebar-collapsed-width)' : 'var(--sidebar-width)' }}
+    >
       <TopBar
         unread={unread}
         onMobileMenuToggle={() => setMobileOpen(p => !p)}
@@ -49,8 +69,11 @@ export default function AppLayout({ children }) {
       <Sidebar
         mobileOpen={mobileOpen}
         onMobileClose={() => setMobileOpen(false)}
+        collapsed={collapsed}
+        onCollapseToggle={handleCollapseToggle}
+        unread={unread}
       />
-      <main className={mainClass}>
+      <main className={`${styles.main} ${collapsed ? styles.main_sidebarCollapsed : ''}`}>
         {children}
       </main>
     </div>

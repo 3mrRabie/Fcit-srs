@@ -121,3 +121,29 @@ a:hover {
   white-space: nowrap;
   border: 0;
 }
+
+/* ── Dark-mode smooth transitions ────────────────────────────────────────── */
+html {
+  transition: background-color var(--transition-slow), color var(--transition-slow);
+}
+
+/* ── Global animation: slideUpFade ─────────────────────────────────────── */
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Input / Select dark mode ────────────────────────────────────────────── */
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  color-scheme: dark;
+}
+
+/* ── Number input remove arrows ──────────────────────────────────────────── */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] { -moz-appearance: textfield; }

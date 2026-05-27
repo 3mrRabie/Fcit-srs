@@ -196,9 +196,11 @@ CREATE TABLE IF NOT EXISTS course_offerings (
     enrolled_count  INTEGER NOT NULL DEFAULT 0,
     schedule        JSONB, -- Array of objects: { day, start_time, end_time, room }
     room            VARCHAR(50),
+    section_label   VARCHAR(10) DEFAULT 'A',  -- e.g. A, B, C for multi-section courses
     is_active       BOOLEAN DEFAULT TRUE,
     created_at      TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (semester_id, course_id)
+    -- Allow multiple sections (A, B, etc.) of the same course in the same semester
+    UNIQUE (semester_id, course_id, section_label)
 );
 
 -- =============================================================================
@@ -227,6 +229,8 @@ CREATE TABLE IF NOT EXISTS enrollments (
     attempt_number      INT DEFAULT 1,
     is_improvement_retake BOOLEAN DEFAULT FALSE,  -- voluntary retake for GPA improvement
     is_counted_in_gpa   BOOLEAN DEFAULT TRUE,     -- highest attempt counts
+    -- Art. 14: excuse flag for Incomplete (I) grade assignment at finalization
+    excuse_approved     BOOLEAN DEFAULT FALSE,    -- TRUE if student submitted valid excuse for final exam
     -- Meta
     grade_entered_by    UUID REFERENCES users(id),
     grade_entered_at    TIMESTAMPTZ,
@@ -377,15 +381,19 @@ CREATE TABLE IF NOT EXISTS course_retake_log (
     id              SERIAL PRIMARY KEY,
     student_id      UUID NOT NULL REFERENCES students(id),
     course_id       INT NOT NULL REFERENCES courses(id),
-    -- Bylaw: max 3 voluntary improvement retakes
-    retake_type     VARCHAR(20) NOT NULL CHECK (retake_type IN ('failed', 'improvement')),
+    -- Art. 23: 'avoidance' = CGPA < 2.0, retaking failed course (uncapped)
+    -- Art. 24: 'improvement' = previously passed, wants better grade (capped at 3)
+    -- 'failed'  = retaking failed course without dismissal risk
+    retake_type     VARCHAR(20) NOT NULL CHECK (retake_type IN ('failed', 'improvement', 'avoidance')),
     attempt_count   INT DEFAULT 1,
+    original_enrollment_id UUID REFERENCES enrollments(id),
     best_grade      NUMERIC(5,2),
     best_letter     grade_code,
     best_points     NUMERIC(3,1),
     created_at      TIMESTAMPTZ DEFAULT NOW(),
     updated_at      TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE (student_id, course_id)
+    -- Allow multiple retake log entries per student per course (one per attempt)
+    UNIQUE (student_id, course_id, retake_type, original_enrollment_id)
 );
 
 -- =============================================================================

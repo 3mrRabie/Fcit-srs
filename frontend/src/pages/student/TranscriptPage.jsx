@@ -34,10 +34,10 @@ function CTh({ children, style }) {
       padding: '7px 12px',
       fontSize: 11,
       fontWeight: 700,
-      color: '#94a3b8',
-      borderBottom: '1px solid #e2e8f0',
+      color: 'var(--color-gray-400)',
+      borderBottom: '1px solid var(--color-gray-200)',
       whiteSpace: 'nowrap',
-      background: '#f8fafc',
+      background: 'var(--color-gray-50)',
       ...style,
     }}>
       {children}
@@ -50,8 +50,8 @@ function CTd({ children, style }) {
     <td style={{
       textAlign: 'right',
       padding: '8px 12px',
-      color: '#1e293b',
-      borderBottom: '1px solid #f1f5f9',
+      color: 'var(--color-gray-800)',
+      borderBottom: '1px solid var(--color-gray-100)',
       verticalAlign: 'middle',
       ...style,
     }}>
@@ -64,15 +64,15 @@ function CTd({ children, style }) {
 function GpaPill({ value, label }) {
   if (!value) return null;
   const n = parseFloat(value);
-  const color = n >= 3.6 ? '#16a34a' : n >= 3.0 ? '#2563eb' : n >= 2.0 ? '#d97706' : '#dc2626';
-  const bg    = n >= 3.6 ? '#f0fdf4' : n >= 3.0 ? '#eff6ff' : n >= 2.0 ? '#fefce8' : '#fef2f2';
+  const color = n >= 3.6 ? 'var(--color-success)' : n >= 3.0 ? 'var(--color-primary)' : n >= 2.0 ? 'var(--color-warning)' : 'var(--color-error)';
+  const bg    = n >= 3.6 ? 'var(--color-success-light)' : n >= 3.0 ? 'var(--color-primary-50)' : n >= 2.0 ? 'var(--color-warning-light)' : 'var(--color-error-light)';
   return (
     <div style={{
       display: 'inline-flex', alignItems: 'center', gap: 5,
       background: bg, border: `1px solid ${color}33`,
       borderRadius: 20, padding: '3px 10px',
     }}>
-      <span style={{ fontSize: 11, color: '#64748b' }}>{label}:</span>
+      <span style={{ fontSize: 11, color: 'var(--color-gray-500)' }}>{label}:</span>
       <span style={{ fontWeight: 800, fontSize: 13, color }}>{value}</span>
     </div>
   );
@@ -169,28 +169,28 @@ export default function TranscriptPage() {
 
         {/* Total credits */}
         <div style={{
-          background: '#fff', border: '1px solid #e2e8f0',
+          background: 'var(--surface-card)', border: '1px solid var(--color-gray-200)',
           borderRadius: 14, padding: '18px 22px', textAlign: 'center',
         }}>
-          <div style={{ fontSize: 11, color: '#64748b', marginBottom: 6 }}>إجمالي الساعات المكتملة</div>
-          <div style={{ fontSize: 34, fontWeight: 900, color: '#1b4f9e' }}>
+          <div style={{ fontSize: 11, color: 'var(--color-gray-500)', marginBottom: 6 }}>إجمالي الساعات المكتملة</div>
+          <div style={{ fontSize: 34, fontWeight: 900, color: 'var(--color-primary)' }}>
             {st.totalCreditsPassed ?? st.totalCredits ?? st.total_credits_passed ?? st.total_credits ?? 0}
           </div>
-          <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>ساعة معتمدة</div>
+          <div style={{ fontSize: 11, color: 'var(--color-gray-400)', marginTop: 4 }}>ساعة معتمدة</div>
         </div>
 
         {/* Level */}
         <div style={{
-          background: '#fff', border: '1px solid #e2e8f0',
+          background: 'var(--surface-card)', border: '1px solid var(--color-gray-200)',
           borderRadius: 14, padding: '18px 22px', textAlign: 'center',
         }}>
-          <div style={{ fontSize: 11, color: '#64748b', marginBottom: 6 }}>المستوى الدراسي</div>
-          <div style={{ fontSize: 22, fontWeight: 900, color: '#1b4f9e' }}>
+          <div style={{ fontSize: 11, color: 'var(--color-gray-500)', marginBottom: 6 }}>المستوى الدراسي</div>
+          <div style={{ fontSize: 22, fontWeight: 900, color: 'var(--color-primary)' }}>
             {st.currentLevel || st.current_level || '—'}
           </div>
           {st.academicStatus === 'warning'
-            ? <div style={{ fontSize: 11, color: '#d97706', marginTop: 4 }}>⚠️ إنذار أكاديمي</div>
-            : <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>
+            ? <div style={{ fontSize: 11, color: 'var(--color-warning)', marginTop: 4 }}>⚠️ إنذار أكاديمي</div>
+            : <div style={{ fontSize: 11, color: 'var(--color-gray-400)', marginTop: 4 }}>
                 {st.gpaClassification || ''}
               </div>
           }
@@ -199,7 +199,7 @@ export default function TranscriptPage() {
 
       {/* ── Semester cards ── */}
       {semesters.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8', background: '#fff', borderRadius: 14, border: '1px solid #e2e8f0' }}>
+        <div style={{ textAlign: 'center', padding: '40px', color: 'var(--color-gray-400)', background: 'var(--surface-card)', borderRadius: 14, border: '1px solid var(--color-gray-200)' }}>
           لا توجد سجلات درجات
         </div>
       ) : (
@@ -219,8 +219,8 @@ export default function TranscriptPage() {
             <div
               key={s.id || s.semester_id || semKey}
               style={{
-                background: '#fff',
-                border: '1px solid #e2e8f0',
+                background: 'var(--surface-card)',
+                border: '1px solid var(--color-gray-200)',
                 borderRadius: 14,
                 marginBottom: 12,
                 overflow: 'hidden',
@@ -230,19 +230,19 @@ export default function TranscriptPage() {
               {/* Semester header */}
               <div style={{
                 padding: '11px 16px',
-                borderBottom: '1px solid #e2e8f0',
+                borderBottom: '1px solid var(--color-gray-200)',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                background: '#f8fafc',
+                background: 'var(--color-gray-50)',
                 direction: 'rtl',
               }}>
-                <span style={{ fontWeight: 800, fontSize: 14, color: '#1e293b' }}>{semKey}</span>
+                <span style={{ fontWeight: 800, fontSize: 14, color: 'var(--color-gray-800)' }}>{semKey}</span>
 
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                   {isActive ? (
                     <span style={{
-                      fontSize: 11, background: '#fef3c7', color: '#92400e',
+                      fontSize: 11, background: 'var(--color-warning-light)', color: 'var(--color-warning-dark)',
                       padding: '3px 10px', borderRadius: 20, fontWeight: 600,
                     }}>
                       قيد الدراسة
@@ -253,8 +253,8 @@ export default function TranscriptPage() {
                       {cumGpa  && <GpaPill value={cumGpa}  label="تراكمي"    />}
                       {normalizeClassification(gpaRec?.classification) && (
                         <span style={{
-                          fontSize: 11, color: '#64748b',
-                          background: '#f1f5f9', borderRadius: 20,
+                          fontSize: 11, color: 'var(--color-gray-500)',
+                          background: 'var(--color-gray-100)', borderRadius: 20,
                           padding: '3px 10px',
                         }}>
                           {normalizeClassification(gpaRec.classification)}
@@ -282,19 +282,19 @@ export default function TranscriptPage() {
                     const gradeStr    = hasValue(rawGrade) ? String(rawGrade) : null;
 
                     return (
-                      <tr key={c.id || i} style={{ background: i % 2 === 0 ? '#fff' : '#fafbfc' }}>
+                      <tr key={c.id || i} style={{ background: i % 2 === 0 ? 'var(--surface-card)' : 'var(--color-gray-50)' }}>
                         <CTd>
-                          <span style={{ color: '#475569', fontSize: 12 }}>
+                          <span style={{ color: 'var(--color-gray-600)', fontSize: 12 }}>
                             {c.course_name_ar || c.nameAr || c.name_ar || c.courseName || c.course_name || '—'}
                           </span>
                         </CTd>
-                        <CTd style={{ textAlign: 'center', fontWeight: 700, color: '#1b4f9e', fontSize: 13 }}>
+                        <CTd style={{ textAlign: 'center', fontWeight: 700, color: 'var(--color-primary)', fontSize: 13 }}>
                           {c.credits || c.credit_hours || '—'}
                         </CTd>
                         {hasNumeric && (
                           <CTd style={{ textAlign: 'center', fontWeight: 700, fontSize: 13 }}>
                             {gradeStr ?? (
-                              <span style={{ fontSize: 11, color: '#cbd5e1', fontWeight: 400 }}>—</span>
+                              <span style={{ fontSize: 11, color: 'var(--color-gray-300)', fontWeight: 400 }}>—</span>
                             )}
                           </CTd>
                         )}
@@ -303,7 +303,7 @@ export default function TranscriptPage() {
                             {hasValue(letterGrade) ? (
                               <GradeBadge grade={letterGrade} />
                             ) : (
-                              <span style={{ fontSize: 11, color: '#cbd5e1' }}>—</span>
+                              <span style={{ fontSize: 11, color: 'var(--color-gray-300)' }}>—</span>
                             )}
                           </CTd>
                         )}
@@ -317,20 +317,20 @@ export default function TranscriptPage() {
               {!isActive && (
                 <div style={{
                   padding: '8px 14px',
-                  borderTop: '1px solid #f1f5f9',
+                  borderTop: '1px solid var(--color-gray-100)',
                   display: 'flex',
                   gap: 16,
                   justifyContent: 'flex-end',
                   direction: 'rtl',
                 }}>
                   {gpaRec?.credits_attempted && (
-                    <span style={{ fontSize: 11, color: '#94a3b8' }}>
-                      الساعات المقررة: <strong style={{ color: '#475569' }}>{gpaRec.credits_attempted}</strong>
+                    <span style={{ fontSize: 11, color: 'var(--color-gray-400)' }}>
+                      الساعات المقررة: <strong style={{ color: 'var(--color-gray-600)' }}>{gpaRec.credits_attempted}</strong>
                     </span>
                   )}
                   {gpaRec?.credits_passed && (
-                    <span style={{ fontSize: 11, color: '#94a3b8' }}>
-                      الساعات الناجح بها: <strong style={{ color: '#16a34a' }}>{gpaRec.credits_passed}</strong>
+                    <span style={{ fontSize: 11, color: 'var(--color-gray-400)' }}>
+                      الساعات الناجح بها: <strong style={{ color: 'var(--color-success)' }}>{gpaRec.credits_passed}</strong>
                     </span>
                   )}
                 </div>

@@ -54,7 +54,7 @@ export default function AdminDepartmentsPage() {
           onClick={e => e.target === e.currentTarget && setModal(null)}
           style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.45)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', direction: 'rtl', padding: '16px' }}
         >
-          <div style={{ background: '#fff', borderRadius: '16px', width: '100%', maxWidth: '420px', padding: '24px', boxShadow: '0 20px 60px rgba(0,0,0,.2)' }}>
+          <div style={{ background: 'var(--surface-card)', borderRadius: '16px', width: '100%', maxWidth: '420px', padding: '24px', boxShadow: '0 20px 60px rgba(0,0,0,.2)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
               <h3 style={{ margin: 0, color: 'var(--color-gray-800)' }}>{modal?.id ? 'تعديل قسم' : 'إضافة قسم جديد'}</h3>
               <button onClick={() => setModal(null)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'var(--color-gray-500)' }}>✕</button>
@@ -73,7 +73,7 @@ export default function AdminDepartmentsPage() {
                   disabled={f.disabled}
                   style={{
                     width: '100%', border: '1.5px solid var(--color-gray-200)', borderRadius: '8px', padding: '8px 12px', fontSize: '13px',
-                    background: f.disabled ? 'var(--color-gray-50)' : '#fff', fontFamily: 'var(--font-family)', outline: 'none'
+                    background: f.disabled ? 'var(--color-gray-50)' : 'var(--surface-card)', fontFamily: 'var(--font-family)', outline: 'none'
                   }}
                 />
               </div>
@@ -93,7 +93,7 @@ export default function AdminDepartmentsPage() {
         {loading ? <Spinner /> : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '14px' }}>
             {depts.map(d => (
-              <div key={d.id} style={{ border: '1px solid var(--color-gray-200)', borderRadius: '12px', padding: '16px', background: d.is_active ? '#fff' : 'var(--color-gray-50)' }}>
+              <div key={d.id} style={{ border: '1px solid var(--color-gray-200)', borderRadius: '12px', padding: '16px', background: d.is_active ? 'var(--surface-card)' : 'var(--color-gray-50)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
                   <span style={{ background: 'var(--color-primary-50)', color: 'var(--color-primary)', borderRadius: '8px', padding: '4px 10px', fontSize: '13px', fontWeight: 800, fontFamily: 'monospace' }}>
                     {d.code}

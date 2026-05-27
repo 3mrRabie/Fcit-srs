@@ -75,10 +75,10 @@ export default function AdminCurriculumPage() {
           onClick={e => e.target === e.currentTarget && setShowAdd(false)}
           style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.45)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', direction: 'rtl', padding: '16px' }}
         >
-          <div style={{ background: '#fff', borderRadius: '16px', width: '100%', maxWidth: '480px', padding: '24px', boxShadow: '0 20px 60px rgba(0,0,0,.2)' }}>
+          <div style={{ background: 'var(--surface-card)', borderRadius: '16px', width: '100%', maxWidth: '480px', padding: '24px', boxShadow: '0 20px 60px rgba(0,0,0,.2)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-              <h3 style={{ margin: 0, fontSize: '17px', color: '#1e293b' }}>إضافة مقرر للخطة</h3>
-              <button onClick={() => setShowAdd(false)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#64748b' }}>✕</button>
+              <h3 style={{ margin: 0, fontSize: '17px', color: 'var(--color-gray-800)' }}>إضافة مقرر للخطة</h3>
+              <button onClick={() => setShowAdd(false)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'var(--color-gray-500)' }}>✕</button>
             </div>
             <div style={{ marginBottom: '14px' }}>
               <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600, fontSize: '13px' }}>المقرر</label>
@@ -146,7 +146,7 @@ export default function AdminCurriculumPage() {
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '10px' }}>
                     {sem.courses?.map(c => (
-                      <div key={c.id} style={{ border: '1px solid var(--color-gray-200)', borderRadius: '10px', padding: '12px', position: 'relative', background: c.is_active ? '#fff' : 'var(--color-gray-50)' }}>
+                      <div key={c.id} style={{ border: '1px solid var(--color-gray-200)', borderRadius: '10px', padding: '12px', position: 'relative', background: c.is_active ? 'var(--surface-card)' : 'var(--color-gray-50)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
                           <span style={{ fontWeight: 800, fontSize: '12px', color: 'var(--color-primary)', letterSpacing: '0.5px' }}>{c.code}</span>
                           <button onClick={() => removeCourse(c.id, c.course_name_ar || c.name_ar)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-error)', fontSize: '14px', padding: '2px' }}>🗑</button>
@@ -156,7 +156,7 @@ export default function AdminCurriculumPage() {
                         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                           <span style={{ background: (CAT_COLORS[c.category] || '#64748b') + '15', color: CAT_COLORS[c.category] || '#64748b', fontSize: '10px', padding: '2px 7px', borderRadius: '20px', fontWeight: 600 }}>{CAT_AR[c.category] || c.category}</span>
                           <span style={{ background: 'var(--color-gray-100)', color: 'var(--color-gray-600)', fontSize: '10px', padding: '2px 7px', borderRadius: '20px' }}>{c.credits} ساعة</span>
-                          {c.prereq_count > 0 && <span style={{ background: '#fef3c7', color: '#92400e', fontSize: '10px', padding: '2px 7px', borderRadius: '20px' }}>{c.prereq_count} متطلب</span>}
+                          {c.prereq_count > 0 && <span style={{ background: 'var(--color-warning-light)', color: 'var(--color-warning-dark)', fontSize: '10px', padding: '2px 7px', borderRadius: '20px' }}>{c.prereq_count} متطلب</span>}
                         </div>
                       </div>
                     ))}

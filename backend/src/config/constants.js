@@ -20,23 +20,20 @@ module.exports = {
 
   // ── Registration Credit Limits (Art. 11) ─────────────────────────────────
   CREDIT_LIMITS: {
-    new_student_first_semester: 20,
-    freshman: 27,
-    sophomore: 30,
-    junior: 22,
-    senior: 132,
+    new_student_first_semester: 18,
     summer_min: 2,
-    summer_max: 7,
-    min_per_semester: 2,
+    summer_max: 9,
+    min_per_semester: 9,
   },
 
   // ── Credit limits by CGPA (Art. 11) ────────────────────────────────────────
   // Source of truth: academic-regulations.json registration_rules.regular_semester.max_hours_by_gpa
-  // CGPA >= 3.0 → max 24  |  >= 2.0 → max 21  |  < 2.0 → max 18
+  // CGPA >= 3.0 → max 21  |  >= 2.0 < 3.0 → max 18  |  >= 1.0 < 2.0 → max 15  |  < 1.0 → max 12
   CGPA_CREDIT_LIMITS: [
-    { minCgpa: 3.0, maxCredits: 24 },
-    { minCgpa: 2.0, maxCredits: 21 },
-    { minCgpa: 0.0, maxCredits: 18 },
+    { minCgpa: 3.0, maxCredits: 21 },
+    { minCgpa: 2.0, maxCredits: 18 },
+    { minCgpa: 1.0, maxCredits: 15 },
+    { minCgpa: 0.0, maxCredits: 12 },
   ],
 
   // ── Registration Deadlines ─────────────────────────────────────────────────
@@ -45,12 +42,12 @@ module.exports = {
   SUMMER_WITHDRAWAL_DEADLINE_WEEKS: 2,
 
   // ── Attendance (Art. 14) ──────────────────────────────────────────────────
-  MIN_ATTENDANCE_PCT: 42,          // Must have >= 42% to sit exam
-  EXCESSIVE_ABSENCE_THRESHOLD: 25, // >25% absence triggers warning
+  MIN_ATTENDANCE_PCT: 75,          // Must have >= 75% attendance to sit exam (Art. 14)
+  EXCESSIVE_ABSENCE_THRESHOLD: 25, // >25% absence = barred from final exam
 
   // ── Grading (Art. 16, 17) ────────────────────────────────────────────────
-  MIN_PASSING_TOTAL_PCT: 40,      // Must get >= 40% of total grade
-  MIN_PASSING_FINAL_PCT: 30,      // Must get >= 30% of final exam
+  MIN_PASSING_TOTAL_PCT: 50,      // Must get >= 50% of total grade (Art. 16: minimum D-)
+  MIN_PASSING_FINAL_PCT: 30,      // Must get >= 30% of final exam component
   GRADE_SCALE: [
     { grade: 'A+', minPct: 96, maxPct: 100, points: 4.0 },
     { grade: 'A',  minPct: 92, maxPct: 95,  points: 3.7 },
@@ -64,10 +61,8 @@ module.exports = {
     { grade: 'D+', minPct: 60, maxPct: 63,  points: 2.0 },
     { grade: 'D',  minPct: 55, maxPct: 59,  points: 1.5 },
     { grade: 'D-', minPct: 50, maxPct: 54,  points: 1.0 },
-    // BUG-008 FIX: Art. 16 — minimum passing is 40% (not 50%).
-    // 40-49% earns the minimum passing grade of 0.7 pts (bylaw wording: "D- equivalent")
-    { grade: 'D-', minPct: 40, maxPct: 49,  points: 0.7 },
-    { grade: 'F',  minPct: 0,  maxPct: 39,  points: 0.0 },
+    // Art. 16: below 50% = F (no phantom 0.7-point D- tier)
+    { grade: 'F',  minPct: 0,  maxPct: 49,  points: 0.0 },
   ],
 
   // ── CGPA Classification (Art. 18) ────────────────────────────────────────
@@ -82,33 +77,34 @@ module.exports = {
 
   // ── Academic Warning & Dismissal (Art. 25, 26) ───────────────────────────
   WARNING_CGPA_THRESHOLD: 2.0,
-  MAX_CONSECUTIVE_WARNINGS: 4,
-  MAX_TOTAL_WARNINGS: 6,
+  MAX_CONSECUTIVE_WARNINGS: 4,    // Art. 26: dismiss after 4 consecutive warnings
+  MAX_TOTAL_WARNINGS: 6,          // Art. 26: dismiss after 6 non-consecutive warnings
   FIRST_SEMESTER_EXEMPT_FROM_WARNING: true,
 
   // ── Graduation Project (Art. 21) ─────────────────────────────────────────
-  PROJECT_MIN_CREDITS_PREREQ: 85,
-  PROJECT_MIN_PASSING_PCT: 40,
-  PROJECT_MIN_DEFENSE_PCT: 15,
+  // Art. 21: must pass 70% of 138 = 96.6 → 97 credit hours before registering GP(1)
+  PROJECT_MIN_CREDITS_PREREQ: 97,
+  PROJECT_MIN_PASSING_PCT: 50,
+  PROJECT_MIN_DEFENSE_PCT: 40,   // Art. 21: oral defense = 40% of project grade
   PROJECT_TOTAL_CREDITS: 6,
 
-  // ── Course Repetition (Art. 22, 23) ──────────────────────────────────────
-  MAX_VOLUNTARY_RETAKES: 3,
-  MAX_RETAKE_GRADE_POINTS: 3.0,   // Cap at B
+  // ── Course Repetition (Art. 22, 23, 24) ──────────────────────────────────
+  MAX_VOLUNTARY_RETAKES: 3,       // Art. 24: max 3 voluntary improvement retakes
+  MAX_RETAKE_GRADE_POINTS: 3.0,   // Cap at B (Art. 22/23)
   MAX_RETAKE_LETTER: 'B',
 
   // ── Honors Degree (Art. 27) ───────────────────────────────────────────────
   HONORS_MIN_CGPA: 3.0,
-  // Art. 27 — Honors: no grade below B (3.0 points). B+ (3.2), A (3.7), A+ (4.0) all satisfy this.
-  // NOTE: If the bylaw is interpreted as "no grade below B+" set this to 3.2 and re-run honors checks.
+  // Art. 27: no failed or barred courses + CGPA >= 3.0 overall
   HONORS_MIN_GRADE: 3.0,
   HONORS_MAX_SEMESTERS: 8,
 
   // ── Leave of Absence (Art. 15) ────────────────────────────────────────────
-  MAX_CONSECUTIVE_LEAVE_SEMESTERS: 4,
-  MAX_TOTAL_LEAVE_SEMESTERS: 6,
+  MAX_CONSECUTIVE_LEAVE_SEMESTERS: 2,   // Art. 15: max 2 consecutive leave semesters
+  MAX_TOTAL_LEAVE_SEMESTERS: 4,         // Art. 15: max 4 non-consecutive leave semesters
 
   // ── Specialization ────────────────────────────────────────────────────────
+  // Art. 4z: after completing 63 credit hours (second semester of Level 2)
   SPECIALIZATION_START_CREDITS: 63,
 
   // ── Training ──────────────────────────────────────────────────────────────

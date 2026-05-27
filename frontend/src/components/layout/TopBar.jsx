@@ -1,13 +1,21 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   TopBar — Fixed top header with search, notifications, user menu
+   TopBar — Fixed top header with search, dark-mode toggle, notifications,
+            role badge, and user menu
    ═══════════════════════════════════════════════════════════════════════════ */
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { PAGE_TITLES } from '../../utils/constants';
 import { getInitials, ROLE_AR } from '../../utils/helpers';
-import { Bell, Search, Menu, Lock, LogOut, ChevronDown } from 'lucide-react';
+import { Bell, Search, Menu, Lock, LogOut, ChevronDown, Sun, Moon } from 'lucide-react';
 import styles from './layout.module.css';
+
+/* Role badge label + color mapping */
+const ROLE_BADGE = {
+  admin:   { label: 'مسؤول',  cls: styles.roleBadge_admin },
+  doctor:  { label: 'دكتور',  cls: styles.roleBadge_doctor },
+  student: { label: 'طالب',   cls: styles.roleBadge_student },
+};
 
 export default function TopBar({ unread, onMobileMenuToggle }) {
   const { user, logout } = useAuth();
@@ -17,17 +25,40 @@ export default function TopBar({ unread, onMobileMenuToggle }) {
   const [showNotif, setShowNotif] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isDark, setIsDark] = useState(() => {
+    try { return localStorage.getItem('unismart-theme') === 'dark'; }
+    catch { return false; }
+  });
 
   const notifRef = useRef(null);
   const profileRef = useRef(null);
 
-  // Find current page title
+  /* Apply / persist theme */
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    try { localStorage.setItem('unismart-theme', isDark ? 'dark' : 'light'); }
+    catch { /* ignore */ }
+  }, [isDark]);
+
+  /* On mount, restore saved theme */
+  useEffect(() => {
+    const saved = (() => { try { return localStorage.getItem('unismart-theme'); } catch { return null; } })();
+    if (saved === 'dark') {
+      setIsDark(true);
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  }, []);
+
+  const toggleDark = () => setIsDark(p => !p);
+
+  /* Find current page title */
   const title = Object.entries(PAGE_TITLES)
     .find(([k]) => location.pathname.startsWith(k))?.[1] || 'UniSmart';
 
   const initials = getInitials(user);
+  const roleBadge = ROLE_BADGE[user?.role];
 
-  // Close dropdowns on outside click
+  /* Close dropdowns on outside click */
   useEffect(() => {
     const handler = (e) => {
       if (notifRef.current && !notifRef.current.contains(e.target)) setShowNotif(false);
@@ -43,25 +74,18 @@ export default function TopBar({ unread, onMobileMenuToggle }) {
     setShowProfile(false);
   };
 
-  // Role-aware search: navigates to the right page with a search query
   const executeSearch = useCallback(() => {
     const q = searchQuery.trim();
     if (!q) return;
     const role = user?.role;
-    if (role === 'student') {
-      navigate(`/student/courses?search=${encodeURIComponent(q)}`);
-    } else if (role === 'doctor') {
-      navigate(`/doctor/courses?search=${encodeURIComponent(q)}`);
-    } else if (role === 'admin') {
-      navigate(`/admin/students?search=${encodeURIComponent(q)}`);
-    }
+    if (role === 'student')     navigate(`/student/courses?search=${encodeURIComponent(q)}`);
+    else if (role === 'doctor') navigate(`/doctor/courses?search=${encodeURIComponent(q)}`);
+    else if (role === 'admin')  navigate(`/admin/students?search=${encodeURIComponent(q)}`);
     setSearchQuery('');
   }, [searchQuery, user, navigate]);
 
   const handleSearchKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      executeSearch();
-    }
+    if (e.key === 'Enter') executeSearch();
   };
 
   return (
@@ -74,7 +98,6 @@ export default function TopBar({ unread, onMobileMenuToggle }) {
       >
         <Menu size={20} />
       </button>
-
 
       {/* Page title */}
       <div className={styles.topbarTitle}>
@@ -90,12 +113,30 @@ export default function TopBar({ unread, onMobileMenuToggle }) {
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
           onKeyDown={handleSearchKeyDown}
-          placeholder="بحث سريع... (Enter للبحث)"
+          placeholder="بحث سريع…"
           className={styles.topbarSearchInput}
           aria-label="بحث سريع"
         />
-        <Search size={14} className={styles.topbarSearchIcon} onClick={executeSearch} style={{ cursor: 'pointer' }} />
+        <Search
+          size={14}
+          className={styles.topbarSearchIcon}
+          onClick={executeSearch}
+          style={{ cursor: 'pointer', pointerEvents: 'all' }}
+          aria-hidden="true"
+        />
       </div>
+
+      {/* Dark-mode toggle */}
+      <button
+        className={styles.topbarIconBtn}
+        onClick={toggleDark}
+        aria-label={isDark ? 'تفعيل الوضع الفاتح' : 'تفعيل الوضع الداكن'}
+        title={isDark ? 'وضع فاتح' : 'وضع داكن'}
+      >
+        <span className={`${styles.themeIconWrap} ${isDark ? styles.themeIconWrap_dark : ''}`}>
+          {isDark ? <Sun size={16} /> : <Moon size={16} />}
+        </span>
+      </button>
 
       {/* Notifications */}
       <div ref={notifRef} className={styles.topbarDropdownWrap}>
@@ -119,7 +160,7 @@ export default function TopBar({ unread, onMobileMenuToggle }) {
             </div>
             <div className={styles.dropdownBody}>
               <button
-                className={`${styles.dropdownAction}`}
+                className={styles.dropdownAction}
                 onClick={() => {
                   setShowNotif(false);
                   navigate(`/${user?.role}/notifications`);
@@ -145,6 +186,11 @@ export default function TopBar({ unread, onMobileMenuToggle }) {
             <div className={styles.profileRole}>{ROLE_AR[user?.role] || user?.role}</div>
           </div>
           <div className={styles.profileAvatar}>{initials}</div>
+          {roleBadge && (
+            <span className={`${styles.roleBadge} ${roleBadge.cls}`} aria-label={`الدور: ${roleBadge.label}`}>
+              {roleBadge.label}
+            </span>
+          )}
         </button>
 
         {showProfile && (

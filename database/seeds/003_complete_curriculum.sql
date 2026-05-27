@@ -30,10 +30,10 @@ BEGIN
     -- UNIVERSITY REQUIREMENTS (12 credits total)
     -- =========================================================================
     INSERT INTO courses (code, name_ar, name_en, credits, category, level, is_mandatory) VALUES
-    ('UNV111', 'كتابة التقارير التقنية',   'Technical Report Writing', 1, 'university_req', 1, TRUE),
-    ('UNV112', 'قضايا مجتمعية',             'Societal Issues',          1, 'university_req', 1, TRUE),
-    ('UNV113', 'اللغة الإنجليزية (1)',      'English Language (1)',     1, 'university_req', 1, TRUE),
-    ('UNV114', 'مهارات التواصل',            'Communication Skills',     1, 'university_req', 1, TRUE),
+    ('UNV111', 'كتابة التقارير التقنية',   'Technical Report Writing', 2, 'university_req', 1, TRUE),
+    ('UNV112', 'قضايا مجتمعية',             'Societal Issues',          2, 'university_req', 1, TRUE),
+    ('UNV113', 'اللغة الإنجليزية (1)',      'English Language (1)',     2, 'university_req', 1, TRUE),
+    ('UNV114', 'مهارات التواصل',            'Communication Skills',     2, 'university_req', 1, TRUE),
     ('UNV211', 'اللغة الإنجليزية (2)',      'English Language (2)',     1, 'university_req', 2, FALSE),
     ('UNV212', 'مهارات التفكير النقدي',     'Critical Thinking Skills', 1, 'university_req', 2, FALSE),
     ('UNV311', 'إدارة المشاريع',            'Project Management Basics',2, 'university_req', 3, FALSE),

@@ -67,13 +67,13 @@ export default function AdminBylawConfigPage() {
 
   return (
     <AppLayout>
-      <div style={{ background: '#fef9c3', border: '1px solid #fbbf24', borderRadius: '12px', padding: '14px 16px', marginBottom: '16px', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-        <Scale size={24} color="#92400e" />
+      <div style={{ background: 'var(--color-warning-light)', border: '1px solid var(--color-accent)', borderRadius: '12px', padding: '14px 16px', marginBottom: '16px', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+        <Scale size={24} color="var(--color-warning-dark)" />
         <div>
-          <div style={{ fontWeight: 700, color: '#92400e', marginBottom: '4px' }}>
+          <div style={{ fontWeight: 700, color: 'var(--color-warning-dark)', marginBottom: '4px' }}>
             إعدادات اللوائح الأكاديمية — صلاحيات المدير العليا (Superadmin)
           </div>
-          <div style={{ fontSize: '13px', color: '#78350f' }}>
+          <div style={{ fontSize: '13px', color: 'var(--color-warning-dark)' }}>
             يمكنك تعديل أي معامل من معاملات نظام اللوائح. كل تغيير يُسجَّل في سجل المراجعة ويؤثر فورًا على حسابات النظام.
           </div>
         </div>
@@ -88,15 +88,15 @@ export default function AdminBylawConfigPage() {
               const isModified = p.value !== p.default_value;
 
               return (
-                <div key={p.key} style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: '12px', padding: '12px 10px', borderBottom: '1px solid var(--color-gray-100)', alignItems: 'center', background: isModified ? '#fffbeb' : 'transparent', borderRadius: '8px', marginBottom: '2px' }}>
+                <div key={p.key} style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: '12px', padding: '12px 10px', borderBottom: '1px solid var(--color-gray-100)', alignItems: 'center', background: isModified ? 'var(--color-warning-light)' : 'transparent', borderRadius: '8px', marginBottom: '2px' }}>
                   <div>
                     <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--color-gray-800)', marginBottom: '2px' }}>
                       {p.label_ar}
-                      {isModified && <span style={{ marginRight: '8px', fontSize: '10px', color: '#d97706', background: '#fef3c7', padding: '1px 6px', borderRadius: '10px' }}>معدّل</span>}
+                      {isModified && <span style={{ marginRight: '8px', fontSize: '10px', color: 'var(--color-warning)', background: 'var(--color-warning-light)', padding: '1px 6px', borderRadius: '10px' }}>معدّل</span>}
                     </div>
                     <div style={{ fontSize: '11px', color: 'var(--color-gray-500)', marginBottom: '4px' }}>{p.description}</div>
                     <div style={{ display: 'flex', gap: '6px' }}>
-                      <span style={{ fontSize: '10px', color: '#7c3aed', background: '#f3e8ff', padding: '1px 7px', borderRadius: '10px' }}>{p.article_ref || '—'}</span>
+                      <span style={{ fontSize: '10px', color: 'var(--color-spec-is)', background: 'var(--color-spec-is-bg)', padding: '1px 7px', borderRadius: '10px' }}>{p.article_ref || '—'}</span>
                       <span style={{ fontSize: '10px', color: 'var(--color-gray-400)', fontFamily: 'monospace' }}>{p.key}</span>
                     </div>
                   </div>
@@ -112,7 +112,7 @@ export default function AdminBylawConfigPage() {
                       />
                     ) : (
                       <div>
-                        <span style={{ fontSize: '20px', fontWeight: 800, color: isModified ? '#d97706' : 'var(--color-gray-800)' }}>{p.value}</span>
+                        <span style={{ fontSize: '20px', fontWeight: 800, color: isModified ? 'var(--color-warning)' : 'var(--color-gray-800)' }}>{p.value}</span>
                         <div style={{ fontSize: '10px', color: 'var(--color-gray-400)' }}>افتراضي: {p.default_value}</div>
                       </div>
                     )}

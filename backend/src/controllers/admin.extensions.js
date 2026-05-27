@@ -93,9 +93,8 @@ const addCourseToCurriculum = async (req, res, next) => {
     const row = (await query(
       `INSERT INTO curriculum_plans (specialization, year_of_study, semester_in_year, course_id, is_mandatory, display_order, notes, created_by)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-       ON CONFLICT (specialization, course_id) DO UPDATE SET
-         year_of_study = $2, semester_in_year = $3, is_mandatory = $5,
-         display_order = $6, notes = $7, updated_at = NOW()
+       ON CONFLICT (specialization, year_of_study, semester_in_year, course_id) DO UPDATE SET
+         is_mandatory = $5, display_order = $6, notes = $7, updated_at = NOW()
        RETURNING *`,
       [specialization, yearOfStudy, semesterInYear, courseId, isMandatory, displayOrder, notes, req.user.id]
     )).rows[0];

@@ -1,3 +1,6 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   NotificationsPage — Read/unread state, relative time, mark-all-as-read
+   ═══════════════════════════════════════════════════════════════════════════ */
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
@@ -5,10 +8,25 @@ import { adminAPI, doctorAPI, studentAPI } from '../../services/api';
 import { D } from '../../utils/helpers';
 import { NOTIF_CONFIG } from '../../utils/constants';
 import AppLayout from '../../components/layout/AppLayout';
-import { Card, Button, Badge, Spinner } from '../../components/ui';
-// Removed NewPages import
+import { Card, Button, Badge, EmptyState, SkeletonTable } from '../../components/ui';
 import * as Icons from 'lucide-react';
 
+/* ── Relative time using Intl.RelativeTimeFormat ─────────────────────────── */
+function relativeTime(dateStr) {
+  if (!dateStr) return '';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const rtf  = new Intl.RelativeTimeFormat('ar', { numeric: 'auto' });
+  const secs  = Math.floor(diff / 1000);
+  const mins  = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days  = Math.floor(diff / 86400000);
+  if (secs  < 60)  return 'الآن';
+  if (mins  < 60)  return rtf.format(-mins, 'minute');
+  if (hours < 24)  return rtf.format(-hours, 'hour');
+  return rtf.format(-days, 'day');
+}
+
+/* ── Notification Modal ──────────────────────────────────────────────────── */
 export function NotificationModal({ notif, onClose, apiGet }) {
   const [detail, setDetail] = useState(notif);
   const [loading, setLoading] = useState(false);
@@ -46,6 +64,9 @@ export function NotificationModal({ notif, onClose, apiGet }) {
   return (
     <div
       onClick={e => e.target === e.currentTarget && onClose()}
+      role="dialog"
+      aria-modal="true"
+      aria-label={d.title}
       style={{
         position: 'fixed', inset: 0, background: 'rgba(0,0,0,.45)',
         zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -53,10 +74,9 @@ export function NotificationModal({ notif, onClose, apiGet }) {
       }}
     >
       <div style={{
-        background: 'var(--color-white)', borderRadius: 16, width: '100%', maxWidth: 560,
-        boxShadow: '0 20px 60px rgba(0,0,0,.25)', overflow: 'hidden',
+        background: 'var(--surface-card)', borderRadius: 16, width: '100%', maxWidth: 560,
+        boxShadow: 'var(--shadow-xl)', overflow: 'hidden',
       }}>
-        {/* Header */}
         <div style={{
           background: typeColor, padding: '16px 20px',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -72,6 +92,7 @@ export function NotificationModal({ notif, onClose, apiGet }) {
           </div>
           <button
             onClick={onClose}
+            aria-label="إغلاق"
             style={{
               background: 'rgba(255,255,255,.2)', border: 'none', borderRadius: '50%',
               width: 32, height: 32, cursor: 'pointer', color: '#fff', fontSize: 16,
@@ -80,7 +101,6 @@ export function NotificationModal({ notif, onClose, apiGet }) {
           >✕</button>
         </div>
 
-        {/* Body */}
         <div style={{ padding: 20 }}>
           {loading ? (
             <div style={{ textAlign: 'center', padding: 32, color: 'var(--color-gray-500)' }}>جارٍ التحميل…</div>
@@ -110,11 +130,7 @@ export function NotificationModal({ notif, onClose, apiGet }) {
                 borderTop: '1px solid var(--color-gray-200)', paddingTop: 10,
                 display: 'flex', justifyContent: 'space-between',
               }}>
-                <span>
-                  {(d.created_at || d.createdAt)
-                    ? new Date(d.created_at || d.createdAt).toLocaleString('ar-EG')
-                    : ''}
-                </span>
+                <span>{(d.created_at || d.createdAt) ? new Date(d.created_at || d.createdAt).toLocaleString('ar-EG') : ''}</span>
                 <span style={{
                   padding: '2px 8px', borderRadius: 20,
                   background: d.is_read || d.isRead ? 'var(--color-gray-100)' : 'var(--color-primary-50)',
@@ -127,13 +143,13 @@ export function NotificationModal({ notif, onClose, apiGet }) {
             </>
           )}
         </div>
-
         <div style={{ padding: '0 20px 16px', display: 'flex', justifyContent: 'flex-end' }}>
           <button
             onClick={onClose}
             style={{
               background: 'var(--color-gray-100)', border: 'none', borderRadius: 8,
               padding: '8px 20px', cursor: 'pointer', fontSize: 13, color: 'var(--color-gray-600)',
+              fontFamily: 'var(--font-family)',
             }}
           >إغلاق</button>
         </div>
@@ -142,6 +158,7 @@ export function NotificationModal({ notif, onClose, apiGet }) {
   );
 }
 
+/* ── Main Page ───────────────────────────────────────────────────────────── */
 export default function NotificationsPage() {
   const { user } = useAuth();
   const [notifs, setNotifs] = useState([]);
@@ -158,9 +175,7 @@ export default function NotificationsPage() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => {
-    load();
-  }, [user?.role]);
+  useEffect(() => { load(); }, [user?.role]);
 
   const markRead = async id => {
     try {
@@ -186,6 +201,8 @@ export default function NotificationsPage() {
     headers: { Authorization: 'Bearer ' + localStorage.getItem('accessToken') }
   }).then(r => r.json());
 
+  const unreadCount = notifs.filter(n => !n.isRead && !n.is_read).length;
+
   return (
     <AppLayout>
       {selectedNotif && (
@@ -196,57 +213,77 @@ export default function NotificationsPage() {
         />
       )}
       <Card
-        title="الإشعارات"
-        headerActions={<Button variant="ghost" size="sm" onClick={markAll}>تعليم الكل كمقروء</Button>}
+        title={`الإشعارات${unreadCount > 0 ? ` (${unreadCount} غير مقروءة)` : ''}`}
+        headerActions={
+          unreadCount > 0
+            ? <Button variant="ghost" size="sm" onClick={markAll}>تعليم الكل كمقروء</Button>
+            : null
+        }
       >
-        {loading ? <Spinner /> : (
+        {loading ? (
+          <SkeletonTable rows={5} cols={3} />
+        ) : notifs.length === 0 ? (
+          <EmptyState
+            icon={<Icons.Bell size={28} color="var(--color-gray-400)" />}
+            title="لا توجد إشعارات"
+            description="ستظهر هنا إشعاراتك الجديدة"
+          />
+        ) : (
           <div>
             {notifs.map(n => {
               const read = n.isRead || n.is_read;
               const conf = NOTIF_CONFIG[n.type] || NOTIF_CONFIG.system;
               const Icon = Icons[conf.icon] || Icons.Bell;
-              
+
               return (
                 <div
                   key={n.id}
                   onClick={() => openNotif(n)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={e => e.key === 'Enter' && openNotif(n)}
+                  aria-label={n.title}
                   style={{
-                    display: 'flex', gap: '12px', padding: '13px 10px',
-                    borderBottom: '1px solid var(--color-gray-100)', cursor: 'pointer',
+                    display: 'flex',
+                    gap: 12,
+                    padding: '13px 12px',
+                    borderBottom: '1px solid var(--color-gray-100)',
+                    cursor: 'pointer',
                     background: read ? 'transparent' : 'var(--color-primary-50)',
-                    borderRadius: 'var(--radius-md)', marginBottom: '2px',
-                    transition: 'background 0.15s'
+                    borderRadius: 'var(--radius-md)',
+                    marginBottom: 2,
+                    transition: 'background 0.15s',
+                    /* Unread right-border indicator */
+                    borderRight: read ? '3px solid transparent' : '3px solid var(--color-primary)',
+                    fontWeight: read ? 400 : 600,
                   }}
-                  onMouseEnter={e => e.currentTarget.style.background = read ? 'var(--color-gray-50)' : 'var(--color-primary-100)'}
-                  onMouseLeave={e => e.currentTarget.style.background = read ? 'transparent' : 'var(--color-primary-50)'}
+                  onMouseEnter={e => { e.currentTarget.style.background = read ? 'var(--color-gray-50)' : 'var(--color-primary-100)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = read ? 'transparent' : 'var(--color-primary-50)'; }}
                 >
-                  <div style={{ fontSize: '20px', flexShrink: 0, marginTop: '2px', color: conf.color }}>
+                  <div style={{ fontSize: 20, flexShrink: 0, marginTop: 2, color: conf.color }}>
                     <Icon size={20} />
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                      <div style={{ fontSize: '11px', color: 'var(--color-gray-500)' }}>
-                        {n.createdAt || n.created_at ? new Date(n.createdAt || n.created_at).toLocaleDateString('ar-EG') : ''}
-                      </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, gap: 8 }}>
+                      <span style={{ fontSize: 11, color: 'var(--color-gray-400)' }}>
+                        {relativeTime(n.createdAt || n.created_at)}
+                      </span>
                       <Badge variant={conf.badgeClass}>{conf.label}</Badge>
                     </div>
-                    <div style={{ fontWeight: read ? 500 : 700, fontSize: '14px', color: 'var(--color-gray-800)', marginBottom: '3px' }}>
+                    <div style={{ fontWeight: read ? 500 : 700, fontSize: 14, color: 'var(--color-gray-800)', marginBottom: 3 }}>
                       {n.title}
                     </div>
-                    <div style={{ fontSize: '12px', color: 'var(--color-gray-600)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', maxWidth: '380px' }}>
+                    <div style={{ fontSize: 12, color: 'var(--color-gray-500)', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', maxWidth: 380 }}>
                       {n.message}
                     </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    {!read && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--color-primary)', flexShrink: 0 }} />}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                    {!read && <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-primary)' }} />}
                     <Icons.ChevronLeft size={16} color="var(--color-gray-400)" />
                   </div>
                 </div>
               );
             })}
-            {notifs.length === 0 && (
-              <div style={{ textAlign: 'center', padding: '40px', color: 'var(--color-gray-500)' }}>لا توجد إشعارات</div>
-            )}
           </div>
         )}
       </Card>

@@ -77,8 +77,13 @@ api.interceptors.response.use(
 
         const refreshToken = localStorage.getItem('refreshToken');
         if (!refreshToken) {
+          // No refresh token — reject queued requests, clear state, redirect
+          isRefreshing = false;
+          processQueue(new Error('No refresh token'), null);
           localStorage.clear();
-          window.location.href = '/login';
+          if (window.location.pathname !== '/login') {
+            window.location.href = '/login';
+          }
           return Promise.reject(error);
         }
 
@@ -93,7 +98,10 @@ api.interceptors.response.use(
         } catch (refreshErr) {
           processQueue(refreshErr, null);
           localStorage.clear();
-          window.location.href = '/login';
+          // Avoid reloading the page if we are already on /login
+          if (window.location.pathname !== '/login') {
+            window.location.href = '/login';
+          }
           return Promise.reject(refreshErr);
         } finally {
           isRefreshing = false;

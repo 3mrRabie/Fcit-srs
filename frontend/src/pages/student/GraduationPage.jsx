@@ -70,7 +70,7 @@ export default function GraduationPage() {
             verify credit completion — so we gate the banner behind isEligible as well. */}
         {isEligible && (d?.honorsEligible || d?.honors_eligible) && (
           <div style={{ marginTop: '16px', background: 'linear-gradient(135deg, #fef3c7, #fffbeb)', border: '1px solid #fde68a', borderRadius: '12px', padding: '14px', textAlign: 'center' }}>
-            <div style={{ fontSize: '16px', fontWeight: 800, color: '#92400e' }}>🏆 مؤهل للتخرج بمرتبة الشرف</div>
+            <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-warning-dark)' }}>🏆 مؤهل للتخرج بمرتبة الشرف</div>
           </div>
         )}
       </Card>

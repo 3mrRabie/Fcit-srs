@@ -86,7 +86,7 @@ BEGIN
   -- ── 2. INSERT 17 new doctor users ─────────────────────────────────────
   INSERT INTO users (id, email, password_hash, role, full_name_ar, full_name_en, national_id, phone, must_change_pw, is_active)
   VALUES
-    ('00000000-0000-0000-0000-000000000010', 'dr.aida@fci.tanta.edu.eg', '$2b$10$cOqt6YZKmMqMr6noJ5ymiu7D6T08JdSNlVT3dXyM9f/.y9WHgT7tW', 'doctor', 'د. أيدة نصر', 'Dr. Aida Nasr', '19780215223344', '01011112233', FALSE, TRUE),
+    ('00000000-0000-0000-0000-000000000010', 'dr.aida@fci.tanta.edu.eg', '$2b$10$cOqt6YZKmMqMr6noJ5ymiu7D6T08JdSNlVT3dXyM9f/.y9WHgT7tW', 'doctor', 'د. عايده نصر', 'Dr. Aida Nasr', '19780215223344', '01011112233', FALSE, TRUE),
     ('00000000-0000-0000-0000-000000000011', 'dr.osama.g@fci.tanta.edu.eg', '$2b$10$cOqt6YZKmMqMr6noJ5ymiu7D6T08JdSNlVT3dXyM9f/.y9WHgT7tW', 'doctor', 'د. أسامة غنيم', 'Dr. Osama Ghoneim', '19790315223344', '01011112234', FALSE, TRUE),
     ('00000000-0000-0000-0000-000000000012', 'dr.omnia@fci.tanta.edu.eg', '$2b$10$cOqt6YZKmMqMr6noJ5ymiu7D6T08JdSNlVT3dXyM9f/.y9WHgT7tW', 'doctor', 'أ.م.د. أمنية البربري', 'Assoc. Prof. Omnia El Barbary', '19800415223344', '01011112235', FALSE, TRUE),
     ('00000000-0000-0000-0000-000000000013', 'dr.nancy@fci.tanta.edu.eg', '$2b$10$cOqt6YZKmMqMr6noJ5ymiu7D6T08JdSNlVT3dXyM9f/.y9WHgT7tW', 'doctor', 'أ.د. نانسي الحفناوي', 'Prof. Nancy Al-Hafnawi', '19750515223344', '01011112236', FALSE, TRUE),

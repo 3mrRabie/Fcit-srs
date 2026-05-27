@@ -170,18 +170,9 @@
       "description_en": "Very Weak"
     },
     {
-      "grade": "D-",
-      "min_percent": 40,
-      "max_percent": 49.99,
-      "points": 0.7,
-      "passing": true,
-      "description_ar": "ضعيف جداً",
-      "description_en": "Very Weak (Conditional Pass)"
-    },
-    {
       "grade": "F",
       "min_percent": 0,
-      "max_percent": 39.99,
+      "max_percent": 49.99,
       "points": 0,
       "description_ar": "راسب",
       "description_en": "Fail"
@@ -193,23 +184,28 @@
       "consecutive_warnings": 4,
       "non_consecutive_warnings": 6
     },
-    "max_years_regular": 3
+    "max_years_regular": 3,
+    "max_semesters": 12
   },
   "registration_rules": {
     "regular_semester": {
       "min_hours": 9,
       "max_hours_by_gpa": [
         {
-          "min_cgpa": 3,
-          "max_hours": 24
-        },
-        {
-          "min_cgpa": 2,
+          "min_cgpa": 3.0,
           "max_hours": 21
         },
         {
-          "min_cgpa": 0,
+          "min_cgpa": 2.0,
           "max_hours": 18
+        },
+        {
+          "min_cgpa": 1.0,
+          "max_hours": 15
+        },
+        {
+          "min_cgpa": 0.0,
+          "max_hours": 12
         }
       ],
       "max_hours_new_students": 18,

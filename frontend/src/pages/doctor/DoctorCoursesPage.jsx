@@ -81,9 +81,9 @@ export default function DoctorCoursesPage() {
   }, [courses, sems, searchQ]);
 
   const statusBadge = (status) => {
-    const map = { active: ['نشط', '#16a34a', '#dcfce7'], registration: ['تسجيل', '#2563eb', '#dbeafe'],
-                  grading: ['درجات', '#d97706', '#fef3c7'], closed: ['مغلق', '#6b7280', '#f1f5f9'] };
-    const [label, color, bg] = map[status] || ['—', '#94a3b8', '#f8fafc'];
+    const map = { active: ['نشط', 'var(--color-success)', 'var(--color-success-light)'], registration: ['تسجيل', 'var(--color-primary)', 'var(--color-primary-100)'],
+                  grading: ['درجات', 'var(--color-warning)', 'var(--color-warning-light)'], closed: ['مغلق', 'var(--color-gray-500)', 'var(--color-gray-100)'] };
+    const [label, color, bg] = map[status] || ['—', 'var(--color-gray-400)', 'var(--color-gray-50)'];
     return (
       <span style={{ padding: '2px 10px', borderRadius: 99, background: bg, color, fontWeight: 700, fontSize: 10 }}>
         {label}
@@ -107,10 +107,10 @@ export default function DoctorCoursesPage() {
               onChange={e => setSearchQ(e.target.value)}
               style={{
                 width: '100%', padding: '9px 36px 9px 14px', borderRadius: 10,
-                border: '1px solid #e5e7eb', fontSize: 13, outline: 'none', background: '#fff',
+                border: '1px solid var(--color-gray-200)', fontSize: 13, outline: 'none', background: 'var(--surface-card)',
               }}
             />
-            <Search size={15} color="#9ca3af" style={{ position: 'absolute', right: 12, top: 11 }} />
+            <Search size={15} color="var(--color-gray-400)" style={{ position: 'absolute', right: 12, top: 11 }} />
           </div>
         </div>
 
@@ -118,12 +118,12 @@ export default function DoctorCoursesPage() {
           <div style={{ display: 'flex', justifyContent: 'center', padding: 80 }}><Spinner /></div>
         ) : filteredAndGrouped.length === 0 ? (
           <div style={{
-            textAlign: 'center', padding: '60px 24px', background: '#fff',
-            borderRadius: 14, border: '1px solid #e5e7eb',
+            textAlign: 'center', padding: '60px 24px', background: 'var(--surface-card)',
+            borderRadius: 14, border: '1px solid var(--color-gray-200)',
           }}>
             <div style={{ fontSize: 48, marginBottom: 12, opacity: 0.3 }}>📚</div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#64748b', marginBottom: 6 }}>لا توجد مقررات</div>
-            <div style={{ fontSize: 13, color: '#94a3b8' }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-gray-500)', marginBottom: 6 }}>لا توجد مقررات</div>
+            <div style={{ fontSize: 13, color: 'var(--color-gray-400)' }}>
               {searchQ ? 'لا توجد نتائج مطابقة للبحث' : 'لم يتم إسناد مقررات إليك حتى الآن'}
             </div>
           </div>
@@ -138,7 +138,7 @@ export default function DoctorCoursesPage() {
                 <Calendar size={17} color={PRIMARY} />
                 <h2 style={{ fontSize: 15, fontWeight: 800, color: PRIMARY, margin: 0 }}>{semLabel}</h2>
                 {statusBadge(status)}
-                <span style={{ marginRight: 'auto', fontSize: 12, color: '#94a3b8' }}>
+                <span style={{ marginRight: 'auto', fontSize: 12, color: 'var(--color-gray-400)' }}>
                   {semCourses.length} {semCourses.length === 1 ? 'مقرر' : 'مقررات'}
                 </span>
               </div>
@@ -155,7 +155,7 @@ export default function DoctorCoursesPage() {
                   const level     = c.level_label || c.level || '—';
                   return (
                     <div key={rosterId} style={{
-                      background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb',
+                      background: 'var(--surface-card)', borderRadius: 12, border: '1px solid var(--color-gray-200)',
                       overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,.04)',
                       display: 'flex', flexDirection: 'column', transition: 'box-shadow .15s',
                     }}>
@@ -164,32 +164,32 @@ export default function DoctorCoursesPage() {
                       <div style={{ padding: '14px 16px', flex: 1 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
                           <span style={{
-                            padding: '2px 10px', borderRadius: 6, background: '#eff6ff',
+                            padding: '2px 10px', borderRadius: 6, background: 'var(--color-primary-50)',
                             color: PRIMARY, fontWeight: 800, fontSize: 11,
                           }}>{code}</span>
-                          <BookOpen size={15} color="#94a3b8" />
+                          <BookOpen size={15} color="var(--color-gray-400)" />
                         </div>
-                        <div style={{ fontWeight: 700, fontSize: 14, color: '#111827', marginBottom: 10, lineHeight: 1.4 }}>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--color-gray-900)', marginBottom: 10, lineHeight: 1.4 }}>
                           {name}
                         </div>
-                        <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 12 }}>
+                        <div style={{ fontSize: 12, color: 'var(--color-gray-500)', marginBottom: 12 }}>
                           المستوى: <strong>{level}</strong>
                         </div>
 
                         {/* Enrollment bar */}
                         <div style={{ marginBottom: 4 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#374151' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'var(--color-gray-700)' }}>
                               <Users size={13} />
                               <span>الطلاب المسجلون</span>
                             </div>
-                            <span style={{ fontWeight: 800, fontSize: 13, color: enrolled > 0 ? '#111827' : '#94a3b8' }}>
+                            <span style={{ fontWeight: 800, fontSize: 13, color: enrolled > 0 ? 'var(--color-gray-900)' : 'var(--color-gray-400)' }}>
                               {enrolled}
-                              {capacity > 0 && <span style={{ color: '#94a3b8', fontWeight: 400 }}>/{capacity}</span>}
+                              {capacity > 0 && <span style={{ color: 'var(--color-gray-400)', fontWeight: 400 }}>/{capacity}</span>}
                             </span>
                           </div>
                           {capacity > 0 && (
-                            <div style={{ height: 5, background: '#f1f5f9', borderRadius: 99, overflow: 'hidden' }}>
+                            <div style={{ height: 5, background: 'var(--color-gray-100)', borderRadius: 99, overflow: 'hidden' }}>
                               <div style={{
                                 width: `${fillPct}%`, height: '100%', borderRadius: 99,
                                 background: fillPct > 85 ? '#ef4444' : fillPct > 60 ? '#f97316' : PRIMARY,

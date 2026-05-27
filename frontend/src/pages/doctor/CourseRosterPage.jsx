@@ -4,7 +4,8 @@ import { toast } from 'react-hot-toast';
 import { doctorAPI } from '../../services/api';
 import { D } from '../../utils/helpers';
 import AppLayout from '../../components/layout/AppLayout';
-import { Button, Spinner } from '../../components/ui';
+import { Button, Spinner, EmptyState, Card } from '../../components/ui';
+import { Clock } from 'lucide-react';
 
 // ─── Grade Scale (mirrors gpa.service.js) ────────────────────────────────────
 // Scores: midterm 0-20, coursework 0-10, practical 0-10, final 0-60 (sum = 0-100)
@@ -49,7 +50,7 @@ function GradeInput({ value, onChange, max, disabled }) {
         style={{
           width: 52, padding: '5px 6px', border: `1.5px solid ${over ? DANGER : '#d1d5db'}`,
           borderRadius: 7, fontSize: 12, textAlign: 'center', fontFamily: 'inherit',
-          background: disabled ? '#f9fafb' : '#fff', color: over ? DANGER : '#111827',
+          background: disabled ? 'var(--color-gray-50)' : 'var(--surface-card)', color: over ? DANGER : 'var(--color-gray-900)',
           outline: 'none', transition: 'border-color .15s',
         }}
       />
@@ -66,12 +67,12 @@ function GradeInput({ value, onChange, max, disabled }) {
 
 // ─── Grade Badge ──────────────────────────────────────────────────────────────
 function LetterBadge({ grade }) {
-  if (!grade) return <span style={{ color: '#9ca3af', fontSize: 12 }}>—</span>;
+  if (!grade) return <span style={{ color: 'var(--color-gray-400)', fontSize: 12 }}>—</span>;
   const ok = !['F','Abs','W'].includes(grade);
   return (
     <span style={{
       display: 'inline-block', minWidth: 34, padding: '2px 8px', borderRadius: 6,
-      background: ok ? '#dcfce7' : '#fee2e2',
+      background: ok ? 'var(--color-success-light)' : 'var(--color-error-light)',
       color: ok ? SUCCESS : DANGER,
       fontWeight: 800, fontSize: 12, textAlign: 'center',
     }}>
@@ -82,11 +83,11 @@ function LetterBadge({ grade }) {
 
 // ─── Attendance Pill ──────────────────────────────────────────────────────────
 function AttPill({ pct }) {
-  if (pct == null) return <span style={{ color: '#9ca3af', fontSize: 11 }}>—</span>;
+  if (pct == null) return <span style={{ color: 'var(--color-gray-400)', fontSize: 11 }}>—</span>;
   const color = pct < 42 ? DANGER : pct < 60 ? WARN : SUCCESS;
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-      <div style={{ flex: 1, height: 5, background: '#e5e7eb', borderRadius: 99, overflow: 'hidden', minWidth: 36 }}>
+      <div style={{ flex: 1, height: 5, background: 'var(--color-gray-200)', borderRadius: 99, overflow: 'hidden', minWidth: 36 }}>
         <div style={{ width: `${Math.min(pct, 100)}%`, height: '100%', background: color, borderRadius: 99 }} />
       </div>
       <span style={{ fontSize: 10, fontWeight: 700, color, minWidth: 30 }}>{pct}%</span>
@@ -98,12 +99,12 @@ function AttPill({ pct }) {
 function StatCard({ label, value, icon, color = PRIMARY }) {
   return (
     <div style={{
-      background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12,
+      background: 'var(--surface-card)', border: '1px solid var(--color-gray-200)', borderRadius: 12,
       padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, direction: 'rtl',
     }}>
       <div style={{ fontSize: 26, lineHeight: 1 }}>{icon}</div>
       <div>
-        <div style={{ fontSize: 10, color: '#64748b', marginBottom: 2 }}>{label}</div>
+        <div style={{ fontSize: 10, color: 'var(--color-gray-500)', marginBottom: 2 }}>{label}</div>
         <div style={{ fontWeight: 800, fontSize: 16, color }}>{value}</div>
       </div>
     </div>
@@ -115,6 +116,7 @@ function GradesTab({ roster, canEnter, offeringId, onReload }) {
   const [grades, setGrades]   = useState({});
   const [saving, setSaving]   = useState(null);
   const [savingAll, setSavingAll] = useState(false);
+  const [focusedRow, setFocusedRow] = useState(null);
   const [dirty, setDirty]     = useState({});
 
   // init grades from roster
@@ -175,16 +177,60 @@ function GradesTab({ roster, canEnter, offeringId, onReload }) {
     { key: 'final_exam_grade', label: 'نهائي',  max: 60 },
   ];
 
+
   const dirtyCount = Object.values(dirty).filter(Boolean).length;
+
+  /* Grade distribution buckets for mini chart */
+  const gradeBuckets = ['A+','A','A-','B+','B','B-','C+','C','C-','D+','D','D-','F'];
+  const gradeCounts = gradeBuckets.reduce((acc, g) => ({ ...acc, [g]: 0 }), {});
+  roster.forEach(s => {
+    if (s.letter_grade && gradeCounts[s.letter_grade] !== undefined) gradeCounts[s.letter_grade]++;
+  });
+  const totalGraded = Object.values(gradeCounts).reduce((a, b) => a + b, 0);
+  const bucketColors = {
+    'A+': '#166534','A': '#16a34a','A-': '#22c55e',
+    'B+': '#1e40af','B': '#2563eb','B-': '#3b82f6',
+    'C+': '#92400e','C': '#d97706','C-': '#fbbf24',
+    'D+': '#9a3412','D': '#ea580c','D-': '#f97316',
+    'F':  '#991b1b',
+  };
 
   return (
     <div>
+      {/* Grade distribution mini chart */}
+      {totalGraded > 0 && (
+        <div style={{ marginBottom: 16 }}>
+          <Card title="توزيع الدرجات" collapsible style={{ marginBottom: 0 }}>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'flex-end', flexWrap: 'wrap', paddingBottom: 8, minHeight: 60 }}>
+              {gradeBuckets.map(g => {
+                const count = gradeCounts[g] || 0;
+                if (!count) return null;
+                const pct = totalGraded > 0 ? Math.round(count / totalGraded * 100) : 0;
+                const barH = Math.max(8, Math.round(pct * 0.6));
+                return (
+                  <div key={g} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, minWidth: 32 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-gray-600)' }}>{count}</span>
+                    <div style={{
+                      width: 28, height: barH, borderRadius: 4,
+                      background: bucketColors[g] || 'var(--color-gray-400)',
+                      transition: 'height 0.6s ease',
+                      opacity: 0.85,
+                    }} title={`${g}: ${count} طالب (${pct}%)`} />
+                    <span style={{ fontSize: 10, fontWeight: 700, color: bucketColors[g] || 'var(--color-gray-500)' }}>{g}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        </div>
+      )}
+
       {/* Toolbar */}
       <div style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         marginBottom: 14, padding: '10px 16px',
-        background: canEnter ? '#f0fdf4' : '#fef2f2',
-        borderRadius: 10, border: `1px solid ${canEnter ? '#bbf7d0' : '#fecaca'}`,
+        background: canEnter ? 'var(--color-success-light)' : 'var(--color-error-light)',
+        borderRadius: 10, border: `1px solid ${canEnter ? 'var(--color-success)' : 'var(--color-error)'}`,
         direction: 'rtl',
       }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: canEnter ? SUCCESS : DANGER }}>
@@ -206,14 +252,14 @@ function GradesTab({ roster, canEnter, offeringId, onReload }) {
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, direction: 'rtl' }}>
           <thead>
-            <tr style={{ background: '#f8fafc' }}>
+            <tr style={{ background: 'var(--color-gray-50)' }}>
               {['#', 'الطالب', 'الكود', 'حضور',
                 ...FIELDS.map(f => `${f.label}\n/${f.max}`),
                 'المجموع', 'التقدير', 'حفظ'
               ].map((h, i) => (
                 <th key={i} style={{
                   padding: '9px 10px', borderBottom: '2px solid #e5e7eb',
-                  color: '#374151', fontWeight: 700, fontSize: 11, textAlign: 'center',
+                  color: 'var(--color-gray-700)', fontWeight: 700, fontSize: 11, textAlign: 'center',
                   whiteSpace: 'pre-line', lineHeight: 1.3,
                 }}>{h}</th>
               ))}
@@ -240,19 +286,26 @@ function GradesTab({ roster, canEnter, offeringId, onReload }) {
                 ? computeLetterGrade(total, g.final_exam_grade)
                 : (dbGradeEntered ? s.letter_grade : null);
               const isDirty = dirty[eid];
+              const isFocused = focusedRow === eid;
               return (
-                <tr key={eid} style={{
-                  background: isDirty ? '#fffbeb' : idx % 2 === 0 ? '#fff' : '#fafafa',
-                  transition: 'background .15s',
-                }}>
-                  <td style={{ padding: '8px 10px', textAlign: 'center', color: '#9ca3af', fontSize: 11 }}>{idx + 1}</td>
-                  <td style={{ padding: '8px 10px', fontWeight: 600, color: '#111827', minWidth: 140 }}>
+                <tr
+                  key={eid}
+                  onFocus={() => setFocusedRow(eid)}
+                  onBlur={() => setFocusedRow(null)}
+                  style={{
+                    background: isFocused ? 'var(--color-primary-50)' : isDirty ? 'var(--color-warning-light)' : idx % 2 === 0 ? 'var(--surface-card)' : 'var(--color-gray-50)',
+                    transition: 'background .15s',
+                    outline: isFocused ? '2px solid var(--color-primary-200)' : 'none',
+                  }}
+                >
+                  <td style={{ padding: '8px 10px', textAlign: 'center', color: 'var(--color-gray-400)', fontSize: 11 }}>{idx + 1}</td>
+                  <td style={{ padding: '8px 10px', fontWeight: 600, color: 'var(--color-gray-900)', minWidth: 140 }}>
                     {s.student_name || '—'}
                     {s.below_minimum && (
                       <span title="حضور دون الحد الأدنى" style={{ marginRight: 6, fontSize: 10, color: DANGER }}>⚠️</span>
                     )}
                   </td>
-                  <td style={{ padding: '8px 10px', fontSize: 11, color: '#6b7280', textAlign: 'center' }}>{s.student_code}</td>
+                  <td style={{ padding: '8px 10px', fontSize: 11, color: 'var(--color-gray-500)', textAlign: 'center' }}>{s.student_code}</td>
                   <td style={{ padding: '8px 10px', minWidth: 80 }}>
                     <AttPill pct={Math.round(s.attendance_pct)} />
                   </td>
@@ -267,7 +320,7 @@ function GradesTab({ roster, canEnter, offeringId, onReload }) {
                     </td>
                   ))}
                   <td style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 800,
-                    color: total !== null ? (total >= 60 ? SUCCESS : DANGER) : '#9ca3af', fontSize: 13 }}>
+                    color: total !== null ? (total >= 60 ? SUCCESS : DANGER) : 'var(--color-gray-400)', fontSize: 13 }}>
                     {total !== null ? total.toFixed(0) : (dbGradeEntered ? s.total_grade : '—')}
                   </td>
                   <td style={{ padding: '8px 8px', textAlign: 'center' }}>
@@ -289,7 +342,7 @@ function GradesTab({ roster, canEnter, offeringId, onReload }) {
                         {saving === eid ? '…' : 'حفظ'}
                       </button>
                     ) : (
-                      <span style={{ fontSize: 10, color: '#9ca3af' }}>
+                      <span style={{ fontSize: 10, color: 'var(--color-gray-400)' }}>
                         {s.grade_locked ? '🔒' : '—'}
                       </span>
                     )}
@@ -299,8 +352,10 @@ function GradesTab({ roster, canEnter, offeringId, onReload }) {
             })}
             {roster.length === 0 && (
               <tr>
-                <td colSpan={10} style={{ textAlign: 'center', padding: 40, color: '#9ca3af' }}>
-                  لا يوجد طلاب مسجلون في هذا المقرر
+                <td colSpan={10}>
+                  <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--color-gray-400)' }}>
+                    لا يوجد طلاب مسجلون في هذا المقرر
+                  </div>
                 </td>
               </tr>
             )}
@@ -370,10 +425,10 @@ function AttendanceTab({ offeringId, roster }) {
       <div style={{
         display: 'grid', gridTemplateColumns: '1fr 1fr auto auto', gap: 10,
         alignItems: 'flex-end', marginBottom: 16,
-        padding: 14, background: '#f8fafc', borderRadius: 10, border: '1px solid #e5e7eb',
+        padding: 14, background: 'var(--color-gray-50)', borderRadius: 10, border: '1px solid var(--color-gray-200)',
       }}>
         <div>
-          <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#374151', marginBottom: 4 }}>تاريخ الجلسة</label>
+          <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--color-gray-700)', marginBottom: 4 }}>تاريخ الجلسة</label>
           <input
             type="date" value={sessionDate}
             onChange={e => setSessionDate(e.target.value)}
@@ -382,11 +437,11 @@ function AttendanceTab({ offeringId, roster }) {
           />
         </div>
         <div>
-          <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#374151', marginBottom: 4 }}>نوع الجلسة</label>
+          <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--color-gray-700)', marginBottom: 4 }}>نوع الجلسة</label>
           <select
             value={sessionType} onChange={e => setSessionType(e.target.value)}
             style={{ width: '100%', padding: '8px 10px', border: '1.5px solid #d1d5db',
-              borderRadius: 8, fontSize: 13, fontFamily: 'inherit', outline: 'none', background: '#fff' }}
+              borderRadius: 8, fontSize: 13, fontFamily: 'inherit', outline: 'none', background: 'var(--surface-card)' }}
           >
             <option value="lecture">محاضرة</option>
             <option value="lab">معمل</option>
@@ -394,12 +449,12 @@ function AttendanceTab({ offeringId, roster }) {
           </select>
         </div>
         <button onClick={() => toggleAll(true)}
-          style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#dcfce7',
+          style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: 'var(--color-success-light)',
             color: SUCCESS, fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
           حضور الكل ✓
         </button>
         <button onClick={() => toggleAll(false)}
-          style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#fee2e2',
+          style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: 'var(--color-error-light)',
             color: DANGER, fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
           غياب الكل ✗
         </button>
@@ -410,9 +465,9 @@ function AttendanceTab({ offeringId, roster }) {
         display: 'flex', gap: 12, marginBottom: 14, direction: 'rtl',
       }}>
         {[
-          { label: 'حضور', val: presentCount, color: SUCCESS, bg: '#dcfce7' },
-          { label: 'غياب', val: absentCount,  color: DANGER,  bg: '#fee2e2' },
-          { label: 'إجمالي', val: roster.length, color: '#1e293b', bg: '#f1f5f9' },
+          { label: 'حضور', val: presentCount, color: SUCCESS, bg: 'var(--color-success-light)' },
+          { label: 'غياب', val: absentCount,  color: DANGER,  bg: 'var(--color-error-light)' },
+          { label: 'إجمالي', val: roster.length, color: 'var(--color-gray-800)', bg: 'var(--color-gray-100)' },
         ].map(s => (
           <div key={s.label} style={{
             padding: '8px 18px', borderRadius: 8, background: s.bg,
@@ -437,8 +492,8 @@ function AttendanceTab({ offeringId, roster }) {
               style={{
                 display: 'flex', alignItems: 'center', gap: 10,
                 padding: '10px 14px', borderRadius: 10, cursor: 'pointer',
-                border: `2px solid ${present ? '#86efac' : '#fca5a5'}`,
-                background: present ? '#f0fdf4' : '#fff5f5',
+                border: `2px solid ${present ? 'var(--color-success)' : 'var(--color-error)'}`,
+                background: present ? 'var(--color-success-light)' : 'var(--color-error-light)',
                 transition: 'all .15s', textAlign: 'right',
               }}
             >
@@ -451,11 +506,11 @@ function AttendanceTab({ offeringId, roster }) {
                 {present ? '✓' : '✗'}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 600, fontSize: 12, color: '#111827',
+                <div style={{ fontWeight: 600, fontSize: 12, color: 'var(--color-gray-900)',
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {s.student_name}
                 </div>
-                <div style={{ fontSize: 10, color: '#6b7280' }}>{s.student_code}</div>
+                <div style={{ fontSize: 10, color: 'var(--color-gray-500)' }}>{s.student_code}</div>
               </div>
             </button>
           );
@@ -478,7 +533,7 @@ function AttendanceTab({ offeringId, roster }) {
           onClick={() => setShowForm(false)}
           style={{
             padding: '10px 20px', borderRadius: 9, border: '1px solid #d1d5db',
-            background: '#fff', color: '#374151', fontWeight: 600, fontSize: 14, cursor: 'pointer',
+            background: 'var(--surface-card)', color: 'var(--color-gray-700)', fontWeight: 600, fontSize: 14, cursor: 'pointer',
           }}
         >
           إلغاء
@@ -491,7 +546,7 @@ function AttendanceTab({ offeringId, roster }) {
   return (
     <div style={{ direction: 'rtl' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-        <div style={{ fontSize: 12, color: '#64748b' }}>
+        <div style={{ fontSize: 12, color: 'var(--color-gray-500)' }}>
           {sessions.length > 0 ? `${sessions.length} جلسة مسجلة` : 'لا توجد جلسات بعد'}
         </div>
         <button
@@ -510,11 +565,11 @@ function AttendanceTab({ offeringId, roster }) {
       ) : sessions.length === 0 ? (
         <div style={{
           textAlign: 'center', padding: '48px 24px',
-          background: '#f8fafc', borderRadius: 12, border: '1px dashed #d1d5db',
+          background: 'var(--color-gray-50)', borderRadius: 12, border: '1px dashed #d1d5db',
         }}>
           <div style={{ fontSize: 40, marginBottom: 10, opacity: 0.3 }}>📋</div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: '#64748b', marginBottom: 4 }}>لا توجد جلسات مسجلة</div>
-          <div style={{ fontSize: 12, color: '#94a3b8' }}>اضغط على "تسجيل جلسة جديدة" لتسجيل أول جلسة</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-gray-500)', marginBottom: 4 }}>لا توجد جلسات مسجلة</div>
+          <div style={{ fontSize: 12, color: 'var(--color-gray-400)' }}>اضغط على "تسجيل جلسة جديدة" لتسجيل أول جلسة</div>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -533,28 +588,28 @@ function AttendanceTab({ offeringId, roster }) {
             return (
               <div key={ses.id || i} style={{
                 display: 'flex', alignItems: 'center', gap: 14,
-                padding: '12px 16px', background: '#fff',
-                border: '1px solid #e5e7eb', borderRadius: 10,
+                padding: '12px 16px', background: 'var(--surface-card)',
+                border: '1px solid var(--color-gray-200)', borderRadius: 10,
               }}>
                 <div style={{
                   width: 40, height: 40, borderRadius: 10,
-                  background: '#f1f5f9', display: 'flex', alignItems: 'center',
+                  background: 'var(--color-gray-100)', display: 'flex', alignItems: 'center',
                   justifyContent: 'center', fontSize: 18, flexShrink: 0,
                 }}>
                   {sType === 'lab' ? '🔬' : sType === 'tutorial' ? '✏️' : '📖'}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                    <span style={{ fontWeight: 700, fontSize: 13, color: '#111827' }}>{dateStr}</span>
+                    <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--color-gray-900)' }}>{dateStr}</span>
                     <span style={{
-                      padding: '1px 8px', borderRadius: 99, background: '#f1f5f9',
-                      fontSize: 10, color: '#64748b', fontWeight: 600,
+                      padding: '1px 8px', borderRadius: 99, background: 'var(--color-gray-100)',
+                      fontSize: 10, color: 'var(--color-gray-500)', fontWeight: 600,
                     }}>
                       {typeMap[sType] || 'محاضرة'}
                     </span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{ flex: 1, height: 6, background: '#e5e7eb', borderRadius: 99, overflow: 'hidden', maxWidth: 120 }}>
+                    <div style={{ flex: 1, height: 6, background: 'var(--color-gray-200)', borderRadius: 99, overflow: 'hidden', maxWidth: 120 }}>
                       <div style={{ width: `${pct}%`, height: '100%', background: barColor, borderRadius: 99 }} />
                     </div>
                     <span style={{ fontSize: 11, fontWeight: 700, color: barColor }}>{pct}%</span>
@@ -563,11 +618,11 @@ function AttendanceTab({ offeringId, roster }) {
                 <div style={{ display: 'flex', gap: 16, flexShrink: 0 }}>
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: 16, fontWeight: 800, color: SUCCESS }}>{presentCount}</div>
-                    <div style={{ fontSize: 9, color: '#94a3b8' }}>حضور</div>
+                    <div style={{ fontSize: 9, color: 'var(--color-gray-400)' }}>حضور</div>
                   </div>
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: 16, fontWeight: 800, color: DANGER }}>{absentCount}</div>
-                    <div style={{ fontSize: 9, color: '#94a3b8' }}>غياب</div>
+                    <div style={{ fontSize: 9, color: 'var(--color-gray-400)' }}>غياب</div>
                   </div>
                 </div>
               </div>
@@ -615,28 +670,28 @@ export default function CourseRosterPage() {
 
         {/* ── Header ── */}
         <div style={{
-          background: '#fff', borderRadius: 14, padding: '14px 18px',
-          border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,.05)',
+          background: 'var(--surface-card)', borderRadius: 14, padding: '14px 18px',
+          border: '1px solid var(--color-gray-200)', boxShadow: 'var(--shadow-sm)',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
               width: 44, height: 44, borderRadius: 12,
-              background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
+              background: 'var(--color-primary-50)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
             }}>📚</div>
             <div>
               <div style={{ fontWeight: 800, fontSize: 16, color: PRIMARY }}>
                 {course.name_ar || course.name || 'كشف الطلاب'}
               </div>
-              <div style={{ fontSize: 12, color: '#64748b', marginTop: 1 }}>
+              <div style={{ fontSize: 12, color: 'var(--color-gray-500)', marginTop: 1 }}>
                 {course.code || '—'} · {course.semester_label || '—'}
               </div>
             </div>
           </div>
           <Link to="/doctor/courses" style={{ textDecoration: 'none' }}>
             <button style={{
-              padding: '7px 16px', borderRadius: 8, border: '1px solid #e5e7eb',
-              background: '#fff', color: '#374151', fontWeight: 600, fontSize: 13, cursor: 'pointer',
+              padding: '7px 16px', borderRadius: 8, border: '1px solid var(--color-gray-200)',
+              background: 'var(--surface-card)', color: 'var(--color-gray-700)', fontWeight: 600, fontSize: 13, cursor: 'pointer',
             }}>
               ← رجوع
             </button>
@@ -655,19 +710,19 @@ export default function CourseRosterPage() {
         )}
 
         {/* ── Tabs + Content ── */}
-        <div style={{ background: '#fff', borderRadius: 14, border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,.05)', overflow: 'hidden' }}>
+        <div style={{ background: 'var(--surface-card)', borderRadius: 14, border: '1px solid var(--color-gray-200)', boxShadow: '0 2px 8px rgba(0,0,0,.05)', overflow: 'hidden' }}>
           {/* Tab bar */}
-          <div style={{ display: 'flex', borderBottom: '2px solid #e5e7eb', background: '#f8fafc' }}>
+          <div style={{ display: 'flex', borderBottom: '2px solid #e5e7eb', background: 'var(--color-gray-50)' }}>
             {TABS.map(t => (
               <button
                 key={t.id}
                 onClick={() => setTab(t.id)}
                 style={{
                   flex: 1, padding: '12px 16px', border: 'none', cursor: 'pointer',
-                  background: tab === t.id ? '#fff' : 'transparent',
+                  background: tab === t.id ? 'var(--surface-card)' : 'transparent',
                   borderBottom: tab === t.id ? `3px solid ${PRIMARY}` : '3px solid transparent',
                   fontWeight: tab === t.id ? 800 : 600,
-                  fontSize: 13, color: tab === t.id ? PRIMARY : '#64748b',
+                  fontSize: 13, color: tab === t.id ? PRIMARY : 'var(--color-gray-500)',
                   transition: 'all .15s',
                 }}
               >
@@ -679,7 +734,22 @@ export default function CourseRosterPage() {
           {/* Content */}
           <div style={{ padding: 16 }}>
             {loading ? (
-              <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}><Spinner /></div>
+              <div style={{ padding: 24 }}>
+                {[0,1,2,3,4].map(i => (
+                  <div key={i} style={{ display: 'flex', gap: 10, padding: '10px 0', borderBottom: '1px solid var(--color-gray-100)', alignItems: 'center' }}>
+                    {[35,15,10,10,10,10,10].map((w, j) => (
+                      <div key={j} style={{
+                        flex: j === 0 ? 2 : 1,
+                        height: 13,
+                        background: 'linear-gradient(90deg, var(--color-gray-100) 25%, var(--color-gray-200) 50%, var(--color-gray-100) 75%)',
+                        backgroundSize: '400px 100%',
+                        animation: 'shimmer 1.4s infinite linear',
+                        borderRadius: 6,
+                      }} />
+                    ))}
+                  </div>
+                ))}
+              </div>
             ) : tab === 'grades' ? (
               <GradesTab
                 roster={roster}

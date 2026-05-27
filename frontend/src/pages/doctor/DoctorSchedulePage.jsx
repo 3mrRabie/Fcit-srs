@@ -7,13 +7,25 @@ import { Button, Spinner, Badge } from '../../components/ui';
 // ─── Constants ────────────────────────────────────────────────────────────────
 const DAYS = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu'];
 const DAY_AR = { Sat: 'السبت', Sun: 'الأحد', Mon: 'الاثنين', Tue: 'الثلاثاء', Wed: 'الأربعاء', Thu: 'الخميس' };
+
+// Day-based colors — matching student schedule style
+const DAY_COLORS = {
+  Sat: { bg: 'var(--color-primary-50)', border: '#3b82f6', text: 'var(--color-primary)', light: 'var(--color-primary-100)' },
+  Sun: { bg: 'var(--color-success-light)', border: '#22c55e', text: 'var(--color-success)', light: 'var(--color-success-light)' },
+  Mon: { bg: 'rgba(168, 85, 247, 0.12)', border: '#a855f7', text: '#a855f7', light: 'rgba(168, 85, 247, 0.08)' },
+  Tue: { bg: 'var(--color-warning-light)', border: '#f97316', text: 'var(--color-warning)', light: 'var(--color-warning-light)' },
+  Wed: { bg: 'var(--color-error-light)', border: '#ef4444', text: 'var(--color-error)', light: 'var(--color-error-light)' },
+  Thu: { bg: 'rgba(6, 182, 212, 0.12)', border: '#06b6d4', text: '#06b6d4', light: 'rgba(6, 182, 212, 0.08)' },
+};
+
+// Keep course palette only for the course listing cards
 const COURSE_PALETTE = [
-  { bg: '#eff6ff', border: '#3b82f6', text: '#1d4ed8' },
-  { bg: '#f0fdf4', border: '#22c55e', text: '#15803d' },
-  { bg: '#fdf4ff', border: '#a855f7', text: '#7e22ce' },
-  { bg: '#fff7ed', border: '#f97316', text: '#c2410c' },
-  { bg: '#fef2f2', border: '#ef4444', text: '#b91c1c' },
-  { bg: '#f0f9ff', border: '#06b6d4', text: '#0e7490' },
+  { bg: 'var(--color-primary-50)', border: '#3b82f6', text: 'var(--color-primary)' },
+  { bg: 'var(--color-success-light)', border: '#22c55e', text: 'var(--color-success)' },
+  { bg: 'rgba(168, 85, 247, 0.12)', border: '#a855f7', text: '#a855f7' },
+  { bg: 'var(--color-warning-light)', border: '#f97316', text: 'var(--color-warning)' },
+  { bg: 'var(--color-error-light)', border: '#ef4444', text: 'var(--color-error)' },
+  { bg: 'rgba(6, 182, 212, 0.12)', border: '#06b6d4', text: '#06b6d4' },
 ];
 
 const timeToMinutes = (t) => {
@@ -21,39 +33,45 @@ const timeToMinutes = (t) => {
   const [h, m] = t.split(':').map(Number);
   return h * 60 + (m || 0);
 };
-// Fixed window: 07:00 – 15:00, compact spacing matching student timetable
-const DAY_START    = 7 * 60;
-const DAY_END      = 15 * 60;
-const PX_PER_MIN   = 0.75;  // 45px per hour — compact
-const topPx    = (t) => (timeToMinutes(t) - DAY_START) * PX_PER_MIN;
+
+// Fixed window: 7:00 – 15:00
+const PX_PER_MIN = 0.75;
+
+function computeTimeRange(_grid) {
+  return { startMin: 7 * 60, endMin: 15 * 60 };
+}
+
+function buildHourLabels(startMin, endMin) {
+  const labels = [];
+  for (let m = startMin; m <= endMin; m += 60) {
+    const h = Math.floor(m / 60);
+    labels.push(`${String(h).padStart(2, '0')}:00`);
+  }
+  return labels;
+}
+
+const topPx    = (t, startMin) => (timeToMinutes(t) - startMin) * PX_PER_MIN;
 const heightPx = (s, e) => (timeToMinutes(e) - timeToMinutes(s)) * PX_PER_MIN;
-const HOUR_LABELS  = Array.from({ length: 9 }, (_, i) => `${String(7 + i).padStart(2, '0')}:00`);
 
 // ── Overlap layout helpers ────────────────────────────────────────────────────
 
-/**
- * Given a list of slots for one day, assign each a { col, totalCols }
- * so that simultaneously-running slots are placed side-by-side.
- */
 function assignColumns(slots) {
   if (!slots.length) return [];
 
-  // Sort by start time
   const sorted = [...slots].map((s, origIdx) => ({ ...s, origIdx }))
     .sort((a, b) => timeToMinutes(a.start) - timeToMinutes(b.start));
 
-  const columns = []; // each entry: [{ slot, endMin }]
+  const columns = [];
 
   sorted.forEach(slot => {
     const startMin = timeToMinutes(slot.start);
-    const endMin   = timeToMinutes(slot.end);
     let placed = false;
 
     for (let c = 0; c < columns.length; c++) {
       const col = columns[c];
       const lastEnd = Math.max(...col.map(x => x.endMin));
       if (startMin >= lastEnd) {
-        col.push({ slot, endMin });
+        col.push({ slot, endMin: timeToMinutes(slot.end) });
         slot._col = c;
         placed = true;
         break;
@@ -62,15 +80,13 @@ function assignColumns(slots) {
 
     if (!placed) {
       slot._col = columns.length;
-      columns.push([{ slot, endMin }]);
+      columns.push([{ slot, endMin: timeToMinutes(slot.end) }]);
     }
   });
 
-  // Determine totalCols for each slot: how many columns overlap at its time range
   return sorted.map(slot => {
     const startMin = timeToMinutes(slot.start);
     const endMin   = timeToMinutes(slot.end);
-    // count how many columns have a slot overlapping [startMin, endMin)
     const activeCols = columns.filter(col =>
       col.some(({ slot: s, endMin: e }) =>
         timeToMinutes(s.start) < endMin && e > startMin
@@ -80,18 +96,18 @@ function assignColumns(slots) {
   });
 }
 
-function SlotCard({ slot, colorIdx, col = 0, totalCols = 1 }) {
-  const col_def    = COURSE_PALETTE[colorIdx % COURSE_PALETTE.length];
-  const h          = heightPx(slot.start, slot.end);
-  const top        = topPx(slot.start);
-  const isTiny     = h < 36;
-  const isSmall    = h < 58;
-  // [FIX-CONFLICTS] Slots flagged by backend overlap detection get distinct red styling
+// ── Slot card (matches student schedule style with day-based colors) ──────────
+function SlotCard({ slot, day, startMin, col = 0, totalCols = 1 }) {
+  const colDef    = DAY_COLORS[day] || DAY_COLORS['Sat'];
+  const h         = heightPx(slot.start, slot.end);
+  const top       = topPx(slot.start, startMin);
+  const isTiny    = h < 36;
+  const isSmall   = h < 58;
   const isConflict = !!slot.hasConflict;
 
   const pct   = 100 / totalCols;
-  const left  = `calc(${col * pct}% + 2px)`;
-  const width = `calc(${pct}% - 4px)`;
+  const left  = `calc(${col * pct}% + 3px)`;
+  const width = `calc(${pct}% - 6px)`;
 
   return (
     <div
@@ -102,9 +118,9 @@ function SlotCard({ slot, colorIdx, col = 0, totalCols = 1 }) {
         left,
         width,
         height: Math.max(h - 2, 22),
-        background: isConflict ? '#fff1f2' : col_def.bg,
-        border: `1.5px solid ${isConflict ? '#f87171' : col_def.border}`,
-        borderLeft: `4px solid ${isConflict ? '#ef4444' : col_def.border}`,
+        background: isConflict ? 'rgba(220,38,38,0.08)' : colDef.bg,
+        border: `1.5px solid ${isConflict ? '#f87171' : colDef.border}`,
+        borderLeft: `4px solid ${isConflict ? '#ef4444' : colDef.border}`,
         borderRadius: 7,
         padding: isTiny ? '2px 6px' : '4px 7px',
         overflow: 'hidden',
@@ -112,6 +128,7 @@ function SlotCard({ slot, colorIdx, col = 0, totalCols = 1 }) {
         boxShadow: isConflict
           ? '0 0 0 1px #fca5a5, 0 2px 6px rgba(239,68,68,.18)'
           : '0 1px 3px rgba(0,0,0,.07)',
+        cursor: 'default',
         zIndex: 2,
         display: 'flex',
         flexDirection: 'column',
@@ -119,68 +136,60 @@ function SlotCard({ slot, colorIdx, col = 0, totalCols = 1 }) {
       }}
     >
       {isConflict && !isTiny && (
-        <div style={{ fontSize: 8, fontWeight: 800, color: '#ef4444', letterSpacing: 0.2 }}>⚠ تعارض</div>
+        <div style={{ fontSize: 8, fontWeight: 800, color: 'var(--color-error)', letterSpacing: 0.2 }}>⚠ تعارض</div>
       )}
-      <div style={{ fontWeight: 800, fontSize: 11, color: isConflict ? '#b91c1c' : col_def.text }}>
-        {slot.courseCode}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <span style={{ fontWeight: 800, fontSize: isTiny ? 9 : 11, color: isConflict ? 'var(--color-error)' : colDef.text, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '60%' }}>
+          {slot.courseCode}
+        </span>
+        {!isTiny && (
+          <span style={{ fontSize: 9, color: isConflict ? 'var(--color-error)' : colDef.text, opacity: 0.7, whiteSpace: 'nowrap', lineHeight: 1.3, flexShrink: 0 }}>
+            {slot.start?.slice(0,5)}–{slot.end?.slice(0,5)}
+          </span>
+        )}
       </div>
       {!isTiny && (
-        <>
-          <div style={{ fontSize: 10, color: '#374151', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-            {slot.courseNameAr || slot.courseName}
-          </div>
-          {!isSmall && (
-            <>
-              <div style={{ fontSize: 10, color: '#6b7280' }}>
-                {slot.start?.slice(0,5)} – {slot.end?.slice(0,5)}
-              </div>
-              {slot.room && <div style={{ fontSize: 10, color: '#9ca3af' }}>{slot.room}</div>}
-            </>
-          )}
-        </>
+        <div style={{ fontSize: 10, color: 'var(--color-gray-700)', lineHeight: 1.3, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+          {slot.courseNameAr || slot.courseName}
+        </div>
+      )}
+      {!isSmall && slot.room && (
+        <div style={{ fontSize: 9, color: 'var(--color-gray-400)', lineHeight: 1.2 }}>{slot.room}</div>
       )}
     </div>
   );
 }
 
-// ── Course code → color index map ─────────────────────────────────────────────
-function buildColorMap(grid) {
-  const map = {};
-  let idx = 0;
-  DAYS.forEach(day => {
-    (grid[day] || []).forEach(slot => {
-      if (slot.courseCode && !(slot.courseCode in map)) {
-        map[slot.courseCode] = idx++;
-      }
-    });
-  });
-  return map;
-}
-
-// ── Weekly grid ───────────────────────────────────────────────────────────────
+// ── Weekly grid (matches student schedule style) ──────────────────────────────
 function WeeklyGrid({ grid }) {
-  const colorMap = buildColorMap(grid);
-  const totalH   = (DAY_END - DAY_START) * PX_PER_MIN;
+  const { startMin, endMin } = computeTimeRange(grid);
+  const hourLabels = buildHourLabels(startMin, endMin);
+  const totalH     = (endMin - startMin) * PX_PER_MIN;
 
   return (
     <div style={{ overflowX: 'auto', direction: 'ltr' }}>
       <div style={{ display: 'flex', minWidth: 820 }}>
 
         {/* Time column */}
-        <div style={{ width: 52, flexShrink: 0, position: 'relative', height: totalH + 24 }}>
-          <div style={{ height: 24 }} />
+        <div style={{ width: 50, flexShrink: 0, position: 'relative', height: totalH + 32 }}>
+          <div style={{ height: 32 }} />
           <div style={{ position: 'relative', height: totalH }}>
-            {HOUR_LABELS.map(label => (
-              <div key={label} style={{
-                position: 'absolute',
-                top: topPx(label) - 7,
-                right: 0,
-                width: '100%',
-                textAlign: 'right',
-                fontSize: 10,
-                color: '#94a3b8',
-                paddingRight: 6,
-              }}>
+            {hourLabels.map(label => (
+              <div
+                key={label}
+                style={{
+                  position: 'absolute',
+                  top: topPx(label, startMin) - 8,
+                  right: 0,
+                  width: '100%',
+                  textAlign: 'right',
+                  fontSize: 10,
+                  color: 'var(--color-gray-400)',
+                  paddingRight: 6,
+                  lineHeight: 1,
+                  fontWeight: 600,
+                }}
+              >
                 {label}
               </div>
             ))}
@@ -189,34 +198,70 @@ function WeeklyGrid({ grid }) {
 
         {/* Day columns */}
         {[...DAYS].reverse().map(day => {
+          const hasSlots = (grid[day] || []).length > 0;
           const layoutSlots = assignColumns(grid[day] || []);
           return (
-            <div key={day} style={{ flex: 1, minWidth: 110, display: 'flex', flexDirection: 'column' }}>
+            <div key={day} style={{ flex: 1, minWidth: 120, display: 'flex', flexDirection: 'column' }}>
+              {/* Day header */}
               <div style={{
-                height: 24,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: '#1b4f9e',
-                color: '#fff',
-                fontSize: 12, fontWeight: 700,
+                height: 32,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: hasSlots ? 'var(--color-primary)' : 'var(--color-gray-200)',
+                color: hasSlots ? '#fff' : '#94a3b8',
+                fontSize: 12,
+                fontWeight: 700,
                 borderRight: '1px solid rgba(255,255,255,.15)',
               }}>
                 {DAY_AR[day]}
               </div>
-              <div style={{ position: 'relative', height: totalH, borderRight: '1px solid #e5e7eb' }}>
-                {HOUR_LABELS.map(label => (
-                  <div key={label} style={{ position: 'absolute', top: topPx(label), left: 0, right: 0, borderTop: '1px solid #f1f5f9' }} />
+
+              {/* Day body */}
+              <div style={{
+                position: 'relative',
+                height: totalH,
+                borderRight: '1px solid var(--color-gray-200)',
+                background: hasSlots ? 'var(--surface-card)' : 'var(--color-gray-50)',
+              }}>
+                {/* Hour grid lines */}
+                {hourLabels.map(label => (
+                  <div
+                    key={label}
+                    style={{
+                      position: 'absolute',
+                      top: topPx(label, startMin),
+                      left: 0, right: 0,
+                      borderTop: '1px solid var(--color-gray-100)',
+                    }}
+                  />
                 ))}
-                {HOUR_LABELS.map(label => {
+                {/* Half-hour lines */}
+                {hourLabels.map(label => {
                   const [h] = label.split(':').map(Number);
+                  const halfHour = `${String(h).padStart(2,'0')}:30`;
+                  const halfMin  = timeToMinutes(halfHour);
+                  if (halfMin <= startMin || halfMin >= endMin) return null;
                   return (
-                    <div key={`${h}:30`} style={{ position: 'absolute', top: topPx(`${String(h).padStart(2,'0')}:30`), left: 0, right: 0, borderTop: '1px dashed #f1f5f9' }} />
+                    <div
+                      key={halfHour}
+                      style={{
+                        position: 'absolute',
+                        top: topPx(halfHour, startMin),
+                        left: 0, right: 0,
+                        borderTop: '1px dashed var(--color-gray-100)',
+                      }}
+                    />
                   );
                 })}
+
+                {/* Course slots */}
                 {layoutSlots.map((slot, i) => (
                   <SlotCard
                     key={`${slot.courseCode}-${i}`}
                     slot={slot}
-                    colorIdx={colorMap[slot.courseCode] ?? i}
+                    day={day}
+                    startMin={startMin}
                     col={slot.col}
                     totalCols={slot.totalCols}
                   />
@@ -266,9 +311,7 @@ export default function DoctorSchedulePage() {
   const offerings        = data?.offerings || [];
   const hasSchedule      = offerings.length > 0;
   const currentSem       = sems.find(s => s.id == selSem);
-  // [FIX-ENROLLED] Use live count from backend (fixed from stale co.enrolled_count)
   const totalStudents    = data?.totalStudents ?? offerings.reduce((s, o) => s + (parseInt(o.enrolled_count) || 0), 0);
-  // [FIX-CONFLICTS] Conflicts detected server-side; shown as a warning banner
   const scheduleConflicts = data?.scheduleConflicts || [];
 
   const offeringsByLevel = offerings.reduce((acc, off) => {
@@ -277,6 +320,8 @@ export default function DoctorSchedulePage() {
     acc[level].push(off);
     return acc;
   }, {});
+
+  const activeDays = DAYS.filter(d => (grid[d] || []).length > 0);
 
   const printSchedule = () => {
     const semLabel = currentSem?.label || '';
@@ -316,9 +361,9 @@ ${courses.map(o=>`<div class="row"><strong style="min-width:70px;color:#1d4ed8">
     <AppLayout>
       {/* ── Header ──────────────────────────────────────────────── */}
       <div style={{
-        background: '#fff',
+        background: 'var(--surface-card)',
         borderRadius: 14,
-        padding: '12px 18px',
+        padding: '14px 20px',
         marginBottom: 14,
         display: 'flex',
         justifyContent: 'space-between',
@@ -326,19 +371,19 @@ ${courses.map(o=>`<div class="row"><strong style="min-width:70px;color:#1d4ed8">
         flexWrap: 'wrap',
         gap: 10,
         boxShadow: '0 2px 8px rgba(0,0,0,.06)',
-        border: '1px solid #e2e8f0',
+        border: '1px solid var(--color-gray-200)',
         direction: 'rtl',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{ fontSize: 22 }}>🏛️</span>
           <div>
-            <div style={{ fontWeight: 800, fontSize: 16, color: '#1b4f9e' }}>جدول عضو هيئة التدريس</div>
+            <div style={{ fontWeight: 800, fontSize: 16, color: 'var(--color-primary)' }}>جدول عضو هيئة التدريس</div>
             {currentSem && (() => {
             const typeAr = { fall: 'الترم الأول', spring: 'الترم الثاني', summer: 'الترم الصيفي' };
             const arLabel = (currentSem.semester_type && currentSem.year_label)
               ? `${typeAr[currentSem.semester_type] || currentSem.semester_type} ${currentSem.year_label}`
               : currentSem.label;
-            return <div style={{ fontSize: 12, color: '#64748b', marginTop: 1 }}>{arLabel}</div>;
+            return <div style={{ fontSize: 12, color: 'var(--color-gray-500)', marginTop: 1 }}>{arLabel}</div>;
           })()}
           </div>
         </div>
@@ -355,7 +400,7 @@ ${courses.map(o=>`<div class="row"><strong style="min-width:70px;color:#1d4ed8">
             );
           })()}
           <select
-            style={{ padding: '7px 12px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, background: '#f8fafc' }}
+            style={{ padding: '7px 12px', borderRadius: 8, border: '1px solid var(--color-gray-200)', fontSize: 12, background: 'var(--color-gray-50)', cursor: 'pointer' }}
             value={selSem}
             onChange={e => setSelSem(e.target.value)}
           >
@@ -376,36 +421,36 @@ ${courses.map(o=>`<div class="row"><strong style="min-width:70px;color:#1d4ed8">
       {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}><Spinner /></div>
       ) : hasSchedule ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
           {/* ── Schedule conflict warning banner ─────────────── */}
           {scheduleConflicts.length > 0 && (
             <div style={{
-              background: '#fff1f2', border: '1.5px solid #fca5a5', borderRadius: 12,
+              background: 'rgba(220, 38, 38, 0.08)', border: '1.5px solid var(--color-error)', borderRadius: 12,
               padding: '12px 16px', direction: 'rtl',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                 <span style={{ fontSize: 20 }}>⚠️</span>
-                <span style={{ fontWeight: 800, fontSize: 14, color: '#b91c1c' }}>
+                <span style={{ fontWeight: 800, fontSize: 14, color: 'var(--color-error)' }}>
                   تعارض في الجدول الدراسي ({scheduleConflicts.length} {scheduleConflicts.length === 1 ? 'تعارض' : 'تعارضات'})
                 </span>
               </div>
-              <div style={{ fontSize: 12, color: '#7f1d1d', marginBottom: 8 }}>
+              <div style={{ fontSize: 12, color: 'var(--color-error-dark)', marginBottom: 8 }}>
                 يوجد تداخل في مواعيد المقررات التالية. يُرجى مراجعة الإدارة لإعادة ترتيب الجداول.
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {scheduleConflicts.map((c, i) => (
                   <div key={i} style={{
                     display: 'flex', alignItems: 'center', gap: 8,
-                    background: '#fff', borderRadius: 8, padding: '6px 12px',
+                    background: 'var(--surface-card)', borderRadius: 8, padding: '6px 12px',
                     border: '1px solid #fecaca',
                   }}>
                     <span style={{ fontSize: 13 }}>🔴</span>
-                    <span style={{ fontWeight: 700, color: '#dc2626', fontSize: 12 }}>
+                    <span style={{ fontWeight: 700, color: 'var(--color-error)', fontSize: 12 }}>
                       {c.courses.join(' ، ')}
                     </span>
-                    <span style={{ color: '#64748b', fontSize: 11 }}>—</span>
-                    <span style={{ color: '#374151', fontSize: 11 }}>{c.message}</span>
+                    <span style={{ color: 'var(--color-gray-500)', fontSize: 11 }}>—</span>
+                    <span style={{ color: 'var(--color-gray-700)', fontSize: 11 }}>{c.message}</span>
                   </div>
                 ))}
               </div>
@@ -417,36 +462,36 @@ ${courses.map(o=>`<div class="row"><strong style="min-width:70px;color:#1d4ed8">
             {[
               { icon: '📚', label: 'عدد المقررات', value: offerings.length },
               { icon: '👥', label: 'إجمالي الطلاب', value: `${totalStudents} طالب` },
-              { icon: '📆', label: 'أيام التدريس', value: DAYS.filter(d => (grid[d]||[]).length > 0).map(d => DAY_AR[d]).join(' · ') || '—' },
+              { icon: '📆', label: 'أيام التدريس', value: activeDays.map(d => DAY_AR[d]).join(' · ') || '—' },
             ].map(s => (
-              <div key={s.label} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, direction: 'rtl' }}>
-                <span style={{ fontSize: 24 }}>{s.icon}</span>
+              <div key={s.label} style={{ background: 'var(--surface-card)', border: '1px solid var(--color-gray-200)', borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, direction: 'rtl' }}>
+                <span style={{ fontSize: 22 }}>{s.icon}</span>
                 <div>
-                  <div style={{ fontSize: 11, color: '#64748b' }}>{s.label}</div>
-                  <div style={{ fontWeight: 800, fontSize: 15, color: '#1e293b' }}>{s.value}</div>
+                  <div style={{ fontSize: 11, color: 'var(--color-gray-500)' }}>{s.label}</div>
+                  <div style={{ fontWeight: 800, fontSize: 15, color: 'var(--color-gray-800)' }}>{s.value}</div>
                 </div>
               </div>
             ))}
           </div>
 
           {/* ── Weekly grid ──────────────────────────────────── */}
-          <div style={{ background: '#fff', borderRadius: 14, border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,.05)', direction: 'rtl' }}>
-            <div style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, fontSize: 14, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ background: 'var(--surface-card)', borderRadius: 14, border: '1px solid var(--color-gray-200)', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,.05)', direction: 'rtl' }}>
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--color-gray-200)', fontWeight: 700, fontSize: 14, color: 'var(--color-gray-800)', display: 'flex', alignItems: 'center', gap: 8 }}>
               <span>🗓️</span> الجدول الأسبوعي
             </div>
-            <div style={{ padding: 8 }}>
+            <div style={{ padding: 10 }}>
               <WeeklyGrid grid={grid} />
             </div>
           </div>
 
           {/* ── Courses by level ─────────────────────────────── */}
-          <div style={{ background: '#fff', borderRadius: 14, border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,.05)', direction: 'rtl' }}>
-            <div style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, fontSize: 14, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ background: 'var(--surface-card)', borderRadius: 14, border: '1px solid var(--color-gray-200)', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,.05)', direction: 'rtl' }}>
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--color-gray-200)', fontWeight: 700, fontSize: 14, color: 'var(--color-gray-800)', display: 'flex', alignItems: 'center', gap: 8 }}>
               <span>🎓</span> المقررات والمهام التدريسية
             </div>
             {Object.entries(offeringsByLevel).map(([level, courses]) => (
               <div key={level} style={{ marginBottom: 0 }}>
-                <div style={{ padding: '8px 16px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', fontWeight: 700, fontSize: 13, color: '#374151', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ padding: '8px 16px', background: 'var(--color-gray-50)', borderBottom: '1px solid var(--color-gray-200)', fontWeight: 700, fontSize: 13, color: 'var(--color-gray-700)', display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span>🎓</span> {level}
                 </div>
                 {courses.map((o, i) => {
@@ -460,19 +505,19 @@ ${courses.map(o=>`<div class="row"><strong style="min-width:70px;color:#1d4ed8">
                       <div style={{ width: 4, height: 38, borderRadius: 4, background: col.border, flexShrink: 0 }} />
                       <div style={{ fontWeight: 800, color: col.text, width: 72, fontSize: 13 }}>{o.code}</div>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 600, color: '#1e293b', fontSize: 13 }}>{o.name_ar || o.name_en}</div>
-                        <div style={{ fontSize: 11, color: '#64748b', marginTop: 1 }}>
+                        <div style={{ fontWeight: 600, color: 'var(--color-gray-800)', fontSize: 13 }}>{o.name_ar || o.name_en}</div>
+                        <div style={{ fontSize: 11, color: 'var(--color-gray-500)', marginTop: 1 }}>
                           {o.schedule_slots && o.schedule_slots.length > 0
                             ? (o.room || 'القاعة غير محددة')
-                            : <span style={{ color: '#f59e0b', fontWeight: 600 }}>⚠ لم يتم تحديد وقت المحاضرة</span>
+                            : <span style={{ color: 'var(--color-accent)', fontWeight: 600 }}>⚠ لم يتم تحديد وقت المحاضرة</span>
                           }
                         </div>
                       </div>
                       <div style={{ textAlign: 'center', minWidth: 70 }}>
-                        <div style={{ fontSize: 10, color: '#94a3b8', marginBottom: 2 }}>الطلاب</div>
-                        <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 13 }}>
+                        <div style={{ fontSize: 10, color: 'var(--color-gray-400)', marginBottom: 2 }}>الطلاب</div>
+                        <div style={{ fontWeight: 700, color: 'var(--color-gray-800)', fontSize: 13 }}>
                           {o.enrolled_count || 0}
-                          <span style={{ color: '#94a3b8', fontWeight: 400 }}>/{o.capacity || 0}</span>
+                          <span style={{ color: 'var(--color-gray-400)', fontWeight: 400 }}>/{o.capacity || 0}</span>
                         </div>
                       </div>
                     </div>
@@ -484,10 +529,10 @@ ${courses.map(o=>`<div class="row"><strong style="min-width:70px;color:#1d4ed8">
 
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 20px', background: '#fff', borderRadius: 14, border: '1px solid #e2e8f0', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 20px', background: 'var(--surface-card)', borderRadius: 14, border: '1px solid var(--color-gray-200)', gap: 12 }}>
           <div style={{ fontSize: 56, opacity: 0.15 }}>📅</div>
-          <div style={{ fontWeight: 700, fontSize: 16, color: '#64748b' }}>لا يوجد جدول دراسي</div>
-          <div style={{ fontSize: 13, color: '#94a3b8', textAlign: 'center', maxWidth: 360 }}>
+          <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--color-gray-500)' }}>لا يوجد جدول دراسي</div>
+          <div style={{ fontSize: 13, color: 'var(--color-gray-400)', textAlign: 'center', maxWidth: 360 }}>
             لم يتم إسناد مقررات لك في هذا الفصل، أو لم يتم رفع الجداول بعد لـ {currentSem?.label || 'هذا الفصل'}
           </div>
         </div>

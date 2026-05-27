@@ -9,12 +9,12 @@ const DAYS     = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu'];
 const DAY_AR   = { Sat: 'السبت', Sun: 'الأحد', Mon: 'الاثنين', Tue: 'الثلاثاء', Wed: 'الأربعاء', Thu: 'الخميس' };
 
 const DAY_COLORS = {
-  Sat: { bg: '#eff6ff', border: '#3b82f6', text: '#1d4ed8', light: '#dbeafe' },
-  Sun: { bg: '#f0fdf4', border: '#22c55e', text: '#15803d', light: '#dcfce7' },
-  Mon: { bg: '#fdf4ff', border: '#a855f7', text: '#7e22ce', light: '#f3e8ff' },
-  Tue: { bg: '#fff7ed', border: '#f97316', text: '#c2410c', light: '#ffedd5' },
-  Wed: { bg: '#fef2f2', border: '#ef4444', text: '#b91c1c', light: '#fee2e2' },
-  Thu: { bg: '#f0f9ff', border: '#06b6d4', text: '#0e7490', light: '#e0f2fe' },
+  Sat: { bg: 'var(--color-primary-50)', border: '#3b82f6', text: 'var(--color-primary)', light: 'var(--color-primary-100)' },
+  Sun: { bg: 'var(--color-success-light)', border: '#22c55e', text: 'var(--color-success)', light: 'var(--color-success-light)' },
+  Mon: { bg: 'rgba(168, 85, 247, 0.12)', border: '#a855f7', text: '#a855f7', light: 'rgba(168, 85, 247, 0.08)' },
+  Tue: { bg: 'var(--color-warning-light)', border: '#f97316', text: 'var(--color-warning)', light: 'var(--color-warning-light)' },
+  Wed: { bg: 'var(--color-error-light)', border: '#ef4444', text: 'var(--color-error)', light: 'var(--color-error-light)' },
+  Thu: { bg: 'rgba(6, 182, 212, 0.12)', border: '#06b6d4', text: '#06b6d4', light: 'rgba(6, 182, 212, 0.08)' },
 };
 
 const COURSE_COLORS = ['#3b82f6','#22c55e','#a855f7','#f97316','#ef4444','#06b6d4','#ec4899','#84cc16','#f59e0b','#14b8a6'];
@@ -88,12 +88,12 @@ function SlotCard({ slot, startMin }) {
         )}
       </div>
       {!isTiny && (
-        <div style={{ fontSize: 10, color: '#374151', lineHeight: 1.3, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+        <div style={{ fontSize: 10, color: 'var(--color-gray-700)', lineHeight: 1.3, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
           {slot.courseNameAr || slot.courseName}
         </div>
       )}
       {!isSmall && slot.room && (
-        <div style={{ fontSize: 9, color: '#9ca3af', lineHeight: 1.2 }}>{slot.room}</div>
+        <div style={{ fontSize: 9, color: 'var(--color-gray-400)', lineHeight: 1.2 }}>{slot.room}</div>
       )}
     </div>
   );
@@ -124,7 +124,7 @@ function WeeklyGrid({ grid }) {
                   width: '100%',
                   textAlign: 'right',
                   fontSize: 10,
-                  color: '#94a3b8',
+                  color: 'var(--color-gray-400)',
                   paddingRight: 6,
                   lineHeight: 1,
                   fontWeight: 600,
@@ -147,7 +147,7 @@ function WeeklyGrid({ grid }) {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: hasSlots ? '#1b4f9e' : '#e2e8f0',
+                background: hasSlots ? 'var(--color-primary)' : 'var(--color-gray-200)',
                 color: hasSlots ? '#fff' : '#94a3b8',
                 fontSize: 12,
                 fontWeight: 700,
@@ -160,8 +160,8 @@ function WeeklyGrid({ grid }) {
               <div style={{
                 position: 'relative',
                 height: totalH,
-                borderRight: '1px solid #e5e7eb',
-                background: hasSlots ? '#fff' : '#f9fafb',
+                borderRight: '1px solid var(--color-gray-200)',
+                background: hasSlots ? 'var(--surface-card)' : 'var(--color-gray-50)',
               }}>
                 {/* Hour grid lines */}
                 {hourLabels.map((label) => (
@@ -171,7 +171,7 @@ function WeeklyGrid({ grid }) {
                       position: 'absolute',
                       top: topPx(label, startMin),
                       left: 0, right: 0,
-                      borderTop: '1px solid #f1f5f9',
+                      borderTop: '1px solid var(--color-gray-100)',
                     }}
                   />
                 ))}
@@ -188,7 +188,7 @@ function WeeklyGrid({ grid }) {
                         position: 'absolute',
                         top: topPx(halfHour, startMin),
                         left: 0, right: 0,
-                        borderTop: '1px dashed #f1f5f9',
+                        borderTop: '1px dashed var(--color-gray-100)',
                       }}
                     />
                   );
@@ -298,7 +298,7 @@ export default function SchedulePage() {
     <AppLayout>
       {/* ── Header bar ── */}
       <div style={{
-        background: '#fff',
+        background: 'var(--surface-card)',
         borderRadius: 14,
         padding: '14px 20px',
         marginBottom: 14,
@@ -308,15 +308,15 @@ export default function SchedulePage() {
         flexWrap: 'wrap',
         gap: 10,
         boxShadow: '0 2px 8px rgba(0,0,0,.06)',
-        border: '1px solid #e2e8f0',
+        border: '1px solid var(--color-gray-200)',
         direction: 'rtl',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{ fontSize: 22 }}>📅</span>
           <div>
-            <div style={{ fontWeight: 800, fontSize: 16, color: '#1b4f9e' }}>جدولي الدراسي</div>
+            <div style={{ fontWeight: 800, fontSize: 16, color: 'var(--color-primary)' }}>جدولي الدراسي</div>
             {currentSem && (
-              <div style={{ fontSize: 12, color: '#64748b', marginTop: 1 }}>{currentSem.label}</div>
+              <div style={{ fontSize: 12, color: 'var(--color-gray-500)', marginTop: 1 }}>{currentSem.label}</div>
             )}
           </div>
         </div>
@@ -330,7 +330,7 @@ export default function SchedulePage() {
             </Badge>
           )}
           <select
-            style={{ padding: '7px 12px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, background: '#f8fafc', cursor: 'pointer' }}
+            style={{ padding: '7px 12px', borderRadius: 8, border: '1px solid var(--color-gray-200)', fontSize: 12, background: 'var(--color-gray-50)', cursor: 'pointer' }}
             value={semId || ''}
             onChange={e => { setSemId(e.target.value); setData(null); }}
           >
@@ -356,19 +356,19 @@ export default function SchedulePage() {
               { icon: '⏱️', label: 'إجمالي الساعات', value: `${totalCredits} ساعة` },
               { icon: '📆', label: 'أيام الدراسة', value: activeDays.map(d => DAY_AR[d]).join(' · ') || '—' },
             ].map(s => (
-              <div key={s.label} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, direction: 'rtl' }}>
+              <div key={s.label} style={{ background: 'var(--surface-card)', border: '1px solid var(--color-gray-200)', borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, direction: 'rtl' }}>
                 <span style={{ fontSize: 22 }}>{s.icon}</span>
                 <div>
-                  <div style={{ fontSize: 11, color: '#64748b' }}>{s.label}</div>
-                  <div style={{ fontWeight: 800, fontSize: 15, color: '#1e293b' }}>{s.value}</div>
+                  <div style={{ fontSize: 11, color: 'var(--color-gray-500)' }}>{s.label}</div>
+                  <div style={{ fontWeight: 800, fontSize: 15, color: 'var(--color-gray-800)' }}>{s.value}</div>
                 </div>
               </div>
             ))}
           </div>
 
           {/* ── Weekly grid ── */}
-          <div style={{ background: '#fff', borderRadius: 14, border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,.05)', direction: 'rtl' }}>
-            <div style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, fontSize: 14, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ background: 'var(--surface-card)', borderRadius: 14, border: '1px solid var(--color-gray-200)', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,.05)', direction: 'rtl' }}>
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--color-gray-200)', fontWeight: 700, fontSize: 14, color: 'var(--color-gray-800)', display: 'flex', alignItems: 'center', gap: 8 }}>
               <span>🗓️</span> الجدول الأسبوعي
             </div>
             <div style={{ padding: 10 }}>
@@ -377,15 +377,15 @@ export default function SchedulePage() {
           </div>
 
           {/* ── Course cards grid ── */}
-          <div style={{ background: '#fff', borderRadius: 14, border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,.05)', direction: 'rtl' }}>
-            <div style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, fontSize: 14, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ background: 'var(--surface-card)', borderRadius: 14, border: '1px solid var(--color-gray-200)', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,.05)', direction: 'rtl' }}>
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--color-gray-200)', fontWeight: 700, fontSize: 14, color: 'var(--color-gray-800)', display: 'flex', alignItems: 'center', gap: 8 }}>
               <span>📋</span> المقررات المسجلة
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10, padding: 12 }}>
               {enrollments.map((c, i) => {
                 const col = DAY_COLORS[DAYS[i % DAYS.length]];
                 const att = Number(c.attendance_pct || 0);
-                const attColor = att < 42 ? '#dc2626' : att < 75 ? '#d97706' : '#16a34a';
+                const attColor = att < 42 ? 'var(--color-error)' : att < 75 ? 'var(--color-warning)' : 'var(--color-success)';
                 return (
                   <div
                     key={c.enrollment_id || i}
@@ -402,22 +402,22 @@ export default function SchedulePage() {
                     {/* Code + credits row */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontWeight: 800, color: col.text, fontSize: 13 }}>{c.code || '—'}</span>
-                      <span style={{ fontSize: 11, background: '#fff', color: col.text, border: `1px solid ${col.border}55`, padding: '1px 8px', borderRadius: 20, fontWeight: 600 }}>
+                      <span style={{ fontSize: 11, background: 'var(--surface-card)', color: col.text, border: `1px solid ${col.border}55`, padding: '1px 8px', borderRadius: 20, fontWeight: 600 }}>
                         {c.credits} ساعات
                       </span>
                     </div>
                     {/* Course name */}
-                    <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 12, lineHeight: 1.4 }}>
+                    <div style={{ fontWeight: 700, color: 'var(--color-gray-800)', fontSize: 12, lineHeight: 1.4 }}>
                       {c.name_ar || c.name_en || '—'}
                     </div>
                     {/* Doctor */}
-                    <div style={{ fontSize: 11, color: '#64748b' }}>
-                      د. {c.doctor_name_ar || c.doctor_name || '—'}
+                    <div style={{ fontSize: 11, color: 'var(--color-gray-500)' }}>
+                      {c.doctor_name_ar || c.doctor_name || '—'}
                     </div>
                     {/* Attendance */}
                     {att > 0 && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
-                        <div style={{ flex: 1, height: 4, borderRadius: 4, background: '#e5e7eb', overflow: 'hidden' }}>
+                        <div style={{ flex: 1, height: 4, borderRadius: 4, background: 'var(--color-gray-200)', overflow: 'hidden' }}>
                           <div style={{ width: `${Math.min(att, 100)}%`, height: '100%', background: attColor, borderRadius: 4 }} />
                         </div>
                         <span style={{ fontSize: 11, fontWeight: 700, color: attColor }}>{att.toFixed(0)}%</span>
@@ -431,10 +431,10 @@ export default function SchedulePage() {
 
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 20px', background: '#fff', borderRadius: 14, border: '1px solid #e2e8f0', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 20px', background: 'var(--surface-card)', borderRadius: 14, border: '1px solid var(--color-gray-200)', gap: 12 }}>
           <div style={{ fontSize: 56, opacity: 0.15 }}>📅</div>
-          <div style={{ fontWeight: 700, fontSize: 16, color: '#64748b' }}>لا يوجد جدول دراسي</div>
-          <div style={{ fontSize: 13, color: '#94a3b8', textAlign: 'center', maxWidth: 360 }}>
+          <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--color-gray-500)' }}>لا يوجد جدول دراسي</div>
+          <div style={{ fontSize: 13, color: 'var(--color-gray-400)', textAlign: 'center', maxWidth: 360 }}>
             لا توجد مقررات مسجلة لهذا الفصل، أو لم يتم رفع الجداول بعد لـ {currentSem?.label || 'هذا الفصل'}
           </div>
         </div>

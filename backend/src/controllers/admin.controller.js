@@ -534,6 +534,7 @@ const getStudentDetail = async (req, res, next) => {
       semestersMap.set(sId, {
         semesterId: sId,
         semesterName: r.label,
+        yearLabel: r.year_label,
         gpa: r.semester_gpa,
         courses: []
       });
@@ -546,6 +547,7 @@ const getStudentDetail = async (req, res, next) => {
         semestersMap.set(sId, {
           semesterId: sId,
           semesterName: r.semester_name,
+          yearLabel: r.year_label,
           gpa: 0,
           courses: []
         });

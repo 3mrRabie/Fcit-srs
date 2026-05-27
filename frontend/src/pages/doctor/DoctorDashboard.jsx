@@ -1,38 +1,45 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   DoctorDashboard — StatCard upgrades, skeleton loaders, EmptyState
+   ═══════════════════════════════════════════════════════════════════════════ */
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { doctorAPI, sharedAPI } from '../../services/api';
 import { D } from '../../utils/helpers';
 import AppLayout from '../../components/layout/AppLayout';
-import { Spinner } from '../../components/ui';
+import {
+  StatCard, EmptyState, SkeletonCard, Skeleton,
+} from '../../components/ui';
 import { BookOpen, Users, Edit3, Calendar, ChevronLeft } from 'lucide-react';
 
-const PRIMARY = '#1b4f9e';
-const SUCCESS = '#16a34a';
-const WARN    = '#d97706';
-
-function StatCard({ label, value, icon, bg, color }) {
-  return (
-    <div style={{
-      background: '#fff', borderRadius: 16, padding: '18px 20px',
-      display: 'flex', alignItems: 'center', gap: 16,
-      border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,.05)',
-      direction: 'rtl',
-    }}>
-      <div style={{
-        width: 50, height: 50, borderRadius: 14,
-        background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-      }}>
-        {icon}
-      </div>
-      <div>
-        <div style={{ fontSize: 11, color: '#64748b', marginBottom: 3 }}>{label}</div>
-        <div style={{ fontWeight: 800, fontSize: 22, color: color || '#1e293b' }}>{value}</div>
-      </div>
-    </div>
-  );
-}
+const PRIMARY = 'var(--color-primary)';
+const SUCCESS = 'var(--color-success)';
+const WARN    = 'var(--color-warning)';
 
 const SEMESTER_TYPE_AR = { fall: 'الترم الأول', spring: 'الترم الثاني', summer: 'الترم الصيفي' };
+
+function DoctorSkeleton() {
+  return (
+    <AppLayout>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 14 }}>
+          {[0,1,2].map(i => <SkeletonCard key={i} />)}
+        </div>
+        <div style={{ background: 'var(--surface-card)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--color-gray-200)', padding: 24 }}>
+          <Skeleton width="200px" height="18px" radius="var(--radius-sm)" style={{ marginBottom: 16 }} />
+          {[0,1,2,3].map(i => (
+            <div key={i} style={{ display: 'flex', gap: 12, padding: '12px 0', borderBottom: '1px solid var(--color-gray-100)' }}>
+              <Skeleton width="35%" height="13px" radius="var(--radius-sm)" />
+              <Skeleton width="15%" height="13px" radius="var(--radius-sm)" />
+              <Skeleton width="10%" height="13px" radius="var(--radius-sm)" />
+              <Skeleton width="20%" height="13px" radius="var(--radius-sm)" />
+              <Skeleton width="15%" height="13px" radius="var(--radius-sm)" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </AppLayout>
+  );
+}
 
 export default function DoctorDashboard() {
   const [courses, setCourses] = useState([]);
@@ -48,7 +55,7 @@ export default function DoctorDashboard() {
     ]).then(([dashRes, coursesRes, semsRes]) => {
       const d = D(dashRes) || {};
       setStats({
-        totalCourses:  d.totalCourses || 0,
+        totalCourses:  d.totalCourses  || 0,
         totalStudents: d.totalStudents || 0,
         pendingGrades: d.pendingGrades || d.pendingGradeCount || 0,
       });
@@ -58,7 +65,6 @@ export default function DoctorDashboard() {
     }).finally(() => setLoading(false));
   }, []);
 
-  // Group courses by semester — only active/registration/grading semesters, Arabic labels
   const grouped = useMemo(() => {
     const ACTIVE_STATUSES = ['active', 'registration', 'grading'];
     const groups = {};
@@ -66,25 +72,17 @@ export default function DoctorDashboard() {
       const semId  = c.semester_id || c.semesterId;
       const sem    = sems.find(s => s.id === semId);
       const status = c.semester_status || sem?.status || '';
-
-      // Skip completed/closed semesters
       if (!ACTIVE_STATUSES.includes(status)) return;
-
-      // Prefer the Arabic label already computed by the backend (c.semester),
-      // fall back to the SEMESTER_TYPE_AR map, then the raw DB label.
       const type  = c.semester_type || sem?.semester_type || '';
       const year  = c.year_label    || sem?.year_label    || '';
       const label = c.semester
         || (type && year ? `${SEMESTER_TYPE_AR[type] || type} ${year}` : null)
         || sem?.label
         || 'فصل غير محدد';
-
       const startDate = sem?.start_date || '';
       if (!groups[label]) groups[label] = { courses: [], status, startDate };
       groups[label].courses.push(c);
     });
-
-    // Sort: registration → active → grading
     const ORDER = { registration: 0, active: 1, grading: 2 };
     return Object.entries(groups).sort(([,a], [,b]) => {
       const ao = ORDER[a.status] ?? 99;
@@ -96,12 +94,12 @@ export default function DoctorDashboard() {
 
   const semesterBadge = (status) => {
     const map = {
-      active:       { label: 'نشط',    bg: '#dcfce7', color: SUCCESS },
-      registration: { label: 'تسجيل',  bg: '#dbeafe', color: '#2563eb' },
-      grading:      { label: 'درجات',  bg: '#fef3c7', color: WARN },
-      closed:       { label: 'مغلق',   bg: '#f1f5f9', color: '#6b7280' },
+      active:       { label: 'نشط',   bg: 'var(--color-success-light)', color: 'var(--color-success)' },
+      registration: { label: 'تسجيل', bg: 'var(--color-primary-100)',   color: 'var(--color-primary)' },
+      grading:      { label: 'درجات', bg: 'var(--color-warning-light)',  color: 'var(--color-warning)' },
+      closed:       { label: 'مغلق',  bg: 'var(--color-gray-100)',       color: 'var(--color-gray-500)' },
     };
-    const s = map[status] || { label: '—', bg: '#f1f5f9', color: '#94a3b8' };
+    const s = map[status] || { label: '—', bg: 'var(--color-gray-100)', color: 'var(--color-gray-400)' };
     return (
       <span style={{
         padding: '3px 10px', borderRadius: 99, background: s.bg,
@@ -110,64 +108,83 @@ export default function DoctorDashboard() {
     );
   };
 
-  if (loading) return <AppLayout><div style={{ display: 'flex', justifyContent: 'center', padding: 80 }}><Spinner /></div></AppLayout>;
+  if (loading) return <DoctorSkeleton />;
+
+  const statCards = [
+    {
+      label: 'مقرراتي',
+      value: stats?.totalCourses ?? '—',
+      icon: <BookOpen size={22} color="var(--color-primary)" />,
+      bg: 'var(--color-primary-50)',
+      trend: { value: 'مقرر دراسي', direction: 'neutral' },
+    },
+    {
+      label: 'إجمالي الطلاب',
+      value: stats?.totalStudents ?? '—',
+      icon: <Users size={22} color="var(--color-success)" />,
+      bg: 'var(--color-success-light)',
+      trend: { value: 'طالب مسجل', direction: 'neutral' },
+    },
+    {
+      label: 'درجات منتظرة',
+      value: stats?.pendingGrades ?? '—',
+      icon: <Edit3 size={22} color="var(--color-warning)" />,
+      bg: 'var(--color-warning-light)',
+      trend: stats?.pendingGrades > 0
+        ? { value: 'تحتاج إدخال', direction: 'down' }
+        : { value: 'مكتملة', direction: 'up' },
+    },
+  ];
 
   return (
     <AppLayout>
       <div style={{ direction: 'rtl', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-        {/* ── Stat cards ───────────────────────────────────────── */}
+        {/* ── Stat cards ─────────────────────────────────────────────────── */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 14 }}>
-          <StatCard
-            label="مقرراتي"
-            value={stats?.totalCourses ?? '—'}
-            icon={<BookOpen size={24} color={PRIMARY} />}
-            bg="#eff6ff"
-            color={PRIMARY}
-          />
-          <StatCard
-            label="إجمالي الطلاب"
-            value={stats?.totalStudents ?? '—'}
-            icon={<Users size={24} color={SUCCESS} />}
-            bg="#f0fdf4"
-            color={SUCCESS}
-          />
-          <StatCard
-            label="درجات منتظرة"
-            value={stats?.pendingGrades ?? '—'}
-            icon={<Edit3 size={24} color={WARN} />}
-            bg="#fefce8"
-            color={WARN}
-          />
+          {statCards.map((s, i) => (
+            <StatCard
+              key={s.label}
+              label={s.label}
+              value={s.value}
+              icon={s.icon}
+              iconBg={s.bg}
+              trend={s.trend}
+              style={{ '--item-index': i }}
+            />
+          ))}
         </div>
 
-        {/* ── Courses grouped by semester ────────────────────── */}
+        {/* ── Courses grouped by semester ─────────────────────────────────── */}
         {grouped.length === 0 ? (
-          <div style={{
-            textAlign: 'center', padding: '60px 24px', background: '#fff',
-            borderRadius: 16, border: '1px dashed #d1d5db',
-          }}>
-            <div style={{ fontSize: 48, opacity: 0.2, marginBottom: 12 }}>📚</div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#64748b' }}>لا توجد مقررات</div>
-          </div>
+          <EmptyState
+            icon={<BookOpen size={28} color="var(--color-gray-400)" />}
+            title="لا توجد مقررات نشطة"
+            description="لا توجد مقررات مسندة إليك في الفصل الدراسي الحالي"
+          />
         ) : (
           grouped.map(([semLabel, { courses: semCourses, status }]) => (
-            <div key={semLabel} style={{
-              background: '#fff', borderRadius: 16,
-              border: '1px solid #e5e7eb', overflow: 'hidden',
-              boxShadow: '0 2px 8px rgba(0,0,0,.05)',
-            }}>
+            <div
+              key={semLabel}
+              style={{
+                background: 'var(--surface-card)',
+                borderRadius: 'var(--radius-xl)',
+                border: '1px solid var(--color-gray-200)',
+                overflow: 'hidden',
+                boxShadow: 'var(--shadow-xs)',
+              }}
+            >
               {/* Semester header */}
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 10,
-                padding: '14px 18px', borderBottom: '1px solid #e5e7eb',
-                background: '#f8fafc',
+                padding: '14px 18px', borderBottom: '1px solid var(--color-gray-200)',
+                background: 'var(--color-gray-50)',
               }}>
-                <Calendar size={16} color={PRIMARY} />
-                <span style={{ fontWeight: 800, fontSize: 15, color: PRIMARY }}>{semLabel}</span>
+                <Calendar size={16} color="var(--color-primary)" />
+                <span style={{ fontWeight: 800, fontSize: 15, color: 'var(--color-primary)' }}>{semLabel}</span>
                 {semesterBadge(status)}
-                <span style={{ marginRight: 'auto', fontSize: 12, color: '#94a3b8' }}>
-                  {semCourses.length} {semCourses.length === 1 ? 'مقرر' : 'مقررات'} ·{' '}
+                <span style={{ marginRight: 'auto', fontSize: 12, color: 'var(--color-gray-400)' }}>
+                  {semCourses.length} مقررات ·{' '}
                   {semCourses.reduce((s, c) => s + (parseInt(c.enrolled_count || c.enrolledCount) || 0), 0)} طالب
                 </span>
               </div>
@@ -175,12 +192,12 @@ export default function DoctorDashboard() {
               {/* Table */}
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
-                  <tr style={{ background: '#f8fafc' }}>
+                  <tr style={{ background: 'var(--color-gray-50)' }}>
                     {['المقرر', 'الكود', 'المستوى', 'الطلاب', 'الإجراء'].map(h => (
                       <th key={h} style={{
                         padding: '10px 16px', textAlign: 'right',
-                        fontWeight: 700, fontSize: 11, color: '#64748b',
-                        borderBottom: '1px solid #e5e7eb',
+                        fontWeight: 700, fontSize: 11, color: 'var(--color-gray-500)',
+                        borderBottom: '1px solid var(--color-gray-200)',
                       }}>{h}</th>
                     ))}
                   </tr>
@@ -195,25 +212,35 @@ export default function DoctorDashboard() {
                     const level    = c.level_label || c.level || '—';
                     const fillPct  = capacity > 0 ? Math.min(Math.round(enrolled / capacity * 100), 100) : 0;
                     return (
-                      <tr key={rid} style={{ background: idx % 2 === 0 ? '#fff' : '#fafafa', borderBottom: '1px solid #f1f5f9' }}>
-                        <td style={{ padding: '12px 16px', fontWeight: 600, color: '#111827' }}>{name}</td>
+                      <tr
+                        key={rid}
+                        style={{
+                          background: idx % 2 === 0 ? 'var(--surface-card)' : 'var(--color-gray-50)',
+                          borderBottom: '1px solid var(--color-gray-100)',
+                          transition: 'background var(--transition-fast)',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-primary-50)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = idx % 2 === 0 ? 'var(--surface-card)' : 'var(--color-gray-50)'; }}
+                      >
+                        <td style={{ padding: '12px 16px', fontWeight: 600, color: 'var(--color-gray-800)' }}>{name}</td>
                         <td style={{ padding: '12px 16px' }}>
                           <span style={{
                             padding: '2px 9px', borderRadius: 6,
-                            background: '#eff6ff', color: PRIMARY, fontWeight: 700, fontSize: 11,
+                            background: 'var(--color-primary-50)', color: 'var(--color-primary)', fontWeight: 700, fontSize: 11,
                           }}>{code}</span>
                         </td>
-                        <td style={{ padding: '12px 16px', fontSize: 12, color: '#6b7280' }}>{level}</td>
+                        <td style={{ padding: '12px 16px', fontSize: 12, color: 'var(--color-gray-500)' }}>{level}</td>
                         <td style={{ padding: '12px 16px', minWidth: 120 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <div style={{ flex: 1, height: 5, background: '#e5e7eb', borderRadius: 99, overflow: 'hidden', maxWidth: 80 }}>
+                            <div style={{ flex: 1, height: 5, background: 'var(--color-gray-200)', borderRadius: 99, overflow: 'hidden', maxWidth: 80 }}>
                               <div style={{
                                 width: `${fillPct}%`, height: '100%', borderRadius: 99,
-                                background: fillPct > 85 ? '#ef4444' : fillPct > 60 ? '#f97316' : PRIMARY,
+                                background: fillPct > 85 ? 'var(--color-error)' : fillPct > 60 ? 'var(--color-warning)' : 'var(--color-primary)',
+                                transition: 'width 0.6s ease',
                               }} />
                             </div>
-                            <span style={{ fontWeight: 700, fontSize: 12, color: '#374151' }}>
-                              {enrolled}{capacity > 0 && <span style={{ color: '#94a3b8', fontWeight: 400 }}>/{capacity}</span>}
+                            <span style={{ fontWeight: 700, fontSize: 12, color: 'var(--color-gray-700)' }}>
+                              {enrolled}{capacity > 0 && <span style={{ color: 'var(--color-gray-400)', fontWeight: 400 }}>/{capacity}</span>}
                             </span>
                           </div>
                         </td>
@@ -222,9 +249,14 @@ export default function DoctorDashboard() {
                             <button style={{
                               display: 'flex', alignItems: 'center', gap: 6,
                               padding: '7px 14px', borderRadius: 8, border: 'none',
-                              background: PRIMARY, color: '#fff',
+                              background: 'var(--color-primary)', color: '#fff',
                               fontWeight: 700, fontSize: 12, cursor: 'pointer',
-                            }}>
+                              fontFamily: 'var(--font-family)',
+                              transition: 'all var(--transition-base)',
+                            }}
+                              onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-primary-dark)'; }}
+                              onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-primary)'; }}
+                            >
                               عرض الطلاب <ChevronLeft size={13} />
                             </button>
                           </Link>

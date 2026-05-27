@@ -1,45 +1,35 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { toast } from 'react-hot-toast';
 import AuthLayout from '../../components/layout/AuthLayout';
 import styles from './auth.module.css';
 
+/**
+ * ForgotPage — Password reset is handled by admins only.
+ * There is no self-service reset endpoint, so we direct the user to contact
+ * their system administrator rather than faking an email dispatch.
+ */
 export default function ForgotPage() {
-  const [email, setEmail] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [sent, setSent] = useState(false);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setBusy(true);
-    await new Promise(r => setTimeout(r, 800));
-    setSent(true);
-    toast.success('إذا كان البريد مسجلاً، ستصل رسالة الاستعادة');
-    setBusy(false);
-  };
-
   return (
     <AuthLayout>
       <h2 className={styles.title}>إعادة تعيين كلمة المرور</h2>
-      {sent ? (
-        <div className={styles.successMsg}>✅ تم الإرسال</div>
-      ) : (
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.inputWrap}>
-            <span className={styles.inputIcon}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                <polyline points="22,6 12,13 2,6"></polyline>
-              </svg>
-            </span>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-              required placeholder="البريد الإلكتروني" autoFocus className={styles.authInput} />
-          </div>
-          <button type="submit" disabled={busy} className={styles.submitBtn}>
-            {busy ? 'جاري الإرسال…' : 'إرسال'}
-          </button>
-        </form>
-      )}
+
+      <div style={{ textAlign: 'center', lineHeight: '1.7', color: 'var(--color-text-secondary, #555)', marginBottom: '1.5rem' }}>
+        <p style={{ marginBottom: '0.75rem' }}>
+          لا يمكن إعادة تعيين كلمة المرور ذاتياً في هذا النظام.
+        </p>
+        <p>
+          يُرجى التواصل مع{' '}
+          <strong style={{ color: 'var(--color-primary, #7c3aed)' }}>مسؤول النظام</strong>
+          {' '}لإعادة تعيين كلمة المرور الخاصة بك.
+        </p>
+        <p style={{ marginTop: '0.75rem', fontSize: '0.875rem', opacity: 0.8 }}>
+          بريد الدعم:{' '}
+          <a href="mailto:admin@fci.tanta.edu.eg" style={{ color: 'var(--color-primary, #7c3aed)' }}>
+            admin@fci.tanta.edu.eg
+          </a>
+        </p>
+      </div>
+
       <div className={styles.backLink}>
         <Link to="/login">العودة إلى تسجيل الدخول &rarr;</Link>
       </div>

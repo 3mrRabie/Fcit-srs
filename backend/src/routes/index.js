@@ -25,7 +25,7 @@ const path = require('path');
 // ─────────────────────────────────────────────────────────────────────────────
 router.post('/auth/login',           validateLogin, authCtrl.login);
 router.post('/auth/refresh',         authCtrl.refreshToken);
-router.post('/auth/logout',          authenticate, authCtrl.logout);
+router.post('/auth/logout',          authCtrl.logout);  // No authenticate — must work with expired tokens
 router.post('/auth/change-password', authenticate, authCtrl.changePassword);
 router.get('/auth/me',               authenticate, authCtrl.getMe);
 
@@ -201,7 +201,7 @@ router.get('/semesters', authenticate, async (req, res, next) => {
 
 
 // Keep /admin/semesters alias for admin panel use
-router.get('/admin/semesters',  authenticate, adminCtrl.getSemesters);
+router.get('/admin/semesters',  authenticate, aOnly, adminCtrl.getSemesters);
 router.post('/admin/semesters', authenticate, aOnly, adminCtrl.createSemester);
 
 router.get('/semesters/current', authenticate, async (req, res, next) => {

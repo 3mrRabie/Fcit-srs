@@ -39,7 +39,27 @@ export default function AdminTimetablePage() {
     if (!semId) return;
     setLoading(true);
     adminAPI.getOfferings({ semesterId: semId })
-      .then(r => setOfferings(D(r) || []))
+      .then(r => {
+        const data = D(r) || [];
+        // Deduplicate: one row per course_id — prefer offerings that already have a schedule
+        const seenCourseIds = new Set();
+        const withSchedule = [];
+        const withoutSchedule = [];
+        data.forEach(o => {
+          if (o.schedule_slots && o.schedule_slots.length > 0) withSchedule.push(o);
+          else withoutSchedule.push(o);
+        });
+        const deduped = [];
+        [...withSchedule, ...withoutSchedule].forEach(o => {
+          if (!seenCourseIds.has(o.course_id)) {
+            seenCourseIds.add(o.course_id);
+            deduped.push(o);
+          }
+        });
+        // Sort by level then code
+        deduped.sort((a, b) => (a.level || 0) - (b.level || 0) || (a.code || '').localeCompare(b.code || ''));
+        setOfferings(deduped);
+      })
       .catch(() => toast.error('فشل تحميل المقررات'))
       .finally(() => setLoading(false));
   };
