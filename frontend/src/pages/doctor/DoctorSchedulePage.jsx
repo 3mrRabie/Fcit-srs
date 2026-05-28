@@ -379,7 +379,7 @@ ${courses.map(o=>`<div class="row"><strong style="min-width:70px;color:#1d4ed8">
           <div>
             <div style={{ fontWeight: 800, fontSize: 16, color: 'var(--color-primary)' }}>جدول عضو هيئة التدريس</div>
             {currentSem && (() => {
-            const typeAr = { fall: 'الترم الأول', spring: 'الترم الثاني', summer: 'الترم الصيفي' };
+            const typeAr = { first: 'الترم الأول', second: 'الترم الثاني', summer: 'الترم الصيفي' };
             const arLabel = (currentSem.semester_type && currentSem.year_label)
               ? `${typeAr[currentSem.semester_type] || currentSem.semester_type} ${currentSem.year_label}`
               : currentSem.label;
@@ -405,7 +405,7 @@ ${courses.map(o=>`<div class="row"><strong style="min-width:70px;color:#1d4ed8">
             onChange={e => setSelSem(e.target.value)}
           >
             {sems.map(s => {
-              const typeAr = { fall: 'الترم الأول', spring: 'الترم الثاني', summer: 'الترم الصيفي' };
+              const typeAr = { first: 'الترم الأول', second: 'الترم الثاني', summer: 'الترم الصيفي' };
               const arLabel = (s.semester_type && s.year_label)
                 ? `${typeAr[s.semester_type] || s.semester_type} ${s.year_label}`
                 : s.label || `${s.semester_type||''} ${s.year_label||''}`;

@@ -120,19 +120,19 @@ function assignGrades(targetGpa, coursesList) {
 }
 
 // Map courses to their credits and dr
-const y1Fall = [
+const y1First Semester = [
   { c: 'BS112', cr: 3, dr: 'v_dr_aida' }, { c: 'CS111', cr: 3, dr: 'v_dr_osama' }, { c: 'IS111', cr: 3, dr: 'v_dr_omnia' },
   { c: 'BS111', cr: 3, dr: 'v_dr_nancy' }, { c: 'BS116', cr: 3, dr: 'v_dr_shimaa' }, { c: 'UNV113', cr: 2, dr: 'v_dr_walid_s' }
 ];
-const y1Spring = [
+const y1Second Semester = [
   { c: 'BS115', cr: 3, dr: 'v_dr_aida' }, { c: 'UNV112', cr: 2, dr: 'v_dr_ahmed' }, { c: 'BS113', cr: 3, dr: 'v_dr_mostafa' },
   { c: 'UNV114', cr: 2, dr: 'v_dr_arwa' }, { c: 'UNV111', cr: 2, dr: 'v_dr_shimaa' }, { c: 'CS112', cr: 3, dr: 'v_dr_osama' }
 ];
-const y2Fall = [
+const y2First Semester = [
   { c: 'BS114', cr: 3, dr: 'v_dr_hanaa_h' }, { c: 'BS117', cr: 3, dr: 'v_dr_nancy' }, { c: 'CS211', cr: 3, dr: 'v_dr_osama' },
   { c: 'SE211', cr: 3, dr: 'v_dr_arwa' }, { c: 'CS212', cr: 3, dr: 'v_dr_mostafa' }, { c: 'IT211', cr: 3, dr: 'v_dr_aida' }
 ];
-const y2Spring = [
+const y2Second Semester = [
   { c: 'IS211', cr: 3, dr: 'v_dr_omnia' }, { c: 'CS214', cr: 3, dr: 'v_dr_hanaa_e' }, { c: 'IT317', cr: 3, dr: 'v_dr_marian' },
   { c: 'IS212', cr: 3, dr: 'v_dr_nancy' }, { c: 'CS213', cr: 3, dr: 'v_dr_osama' }
 ];
@@ -240,20 +240,20 @@ BEGIN
 
   INSERT INTO semesters (academic_year_id, label, semester_type, start_date, end_date, status, registration_start, registration_end, add_drop_deadline, withdrawal_deadline)
   VALUES
-    (101, 'Fall 2022',   'fall',   '2022-09-15', '2023-01-31', 'closed', '2022-09-01', '2022-09-14', '2022-09-29', '2022-11-03'),
-    (101, 'Spring 2023', 'spring', '2023-02-15', '2023-06-30', 'closed', '2023-02-01', '2023-02-14', '2023-03-01', '2023-04-05'),
-    (1,   'Fall 2023',   'fall',   '2023-09-15', '2024-01-31', 'closed', '2023-09-01', '2023-09-14', '2023-09-29', '2023-11-03'),
-    (1,   'Spring 2024', 'spring', '2024-02-15', '2024-06-30', 'closed', '2024-02-01', '2024-02-14', '2024-03-01', '2024-04-05'),
-    (2,   'Fall 2024',   'fall',   '2024-09-15', '2025-01-31', 'closed', '2024-09-01', '2024-09-14', '2024-09-29', '2024-11-03'),
-    (2,   'Spring 2025', 'spring', '2025-02-15', '2025-06-30', 'closed', '2025-02-01', '2025-02-14', '2025-03-01', '2025-04-05')
+    (101, 'First Semester 2022',   'first',   '2022-09-15', '2023-01-31', 'closed', '2022-09-01', '2022-09-14', '2022-09-29', '2022-11-03'),
+    (101, 'Second Semester 2023', 'second', '2023-02-15', '2023-06-30', 'closed', '2023-02-01', '2023-02-14', '2023-03-01', '2023-04-05'),
+    (1,   'First Semester 2023',   'first',   '2023-09-15', '2024-01-31', 'closed', '2023-09-01', '2023-09-14', '2023-09-29', '2023-11-03'),
+    (1,   'Second Semester 2024', 'second', '2024-02-15', '2024-06-30', 'closed', '2024-02-01', '2024-02-14', '2024-03-01', '2024-04-05'),
+    (2,   'First Semester 2024',   'first',   '2024-09-15', '2025-01-31', 'closed', '2024-09-01', '2024-09-14', '2024-09-29', '2024-11-03'),
+    (2,   'Second Semester 2025', 'second', '2025-02-15', '2025-06-30', 'closed', '2025-02-01', '2025-02-14', '2025-03-01', '2025-04-05')
   ON CONFLICT (academic_year_id, semester_type) DO NOTHING;
 
-  SELECT id INTO v_fall2023_id   FROM semesters WHERE label = 'Fall 2023';
-  SELECT id INTO v_spring2024_id FROM semesters WHERE label = 'Spring 2024';
-  SELECT id INTO v_fall2024_id   FROM semesters WHERE label = 'Fall 2024';
-  SELECT id INTO v_spring2025_id FROM semesters WHERE label = 'Spring 2025';
-  SELECT id INTO v_fall2025_id   FROM semesters WHERE label = 'Fall 2025';
-  SELECT id INTO v_spring2026_id FROM semesters WHERE label = 'Spring 2026';
+  SELECT id INTO v_fall2023_id   FROM semesters WHERE label = 'First Semester 2023';
+  SELECT id INTO v_spring2024_id FROM semesters WHERE label = 'Second Semester 2024';
+  SELECT id INTO v_fall2024_id   FROM semesters WHERE label = 'First Semester 2024';
+  SELECT id INTO v_spring2025_id FROM semesters WHERE label = 'Second Semester 2025';
+  SELECT id INTO v_fall2025_id   FROM semesters WHERE label = 'First Semester 2025';
+  SELECT id INTO v_spring2026_id FROM semesters WHERE label = 'Second Semester 2026';
   
   SELECT id INTO v_cs_dept FROM departments WHERE code = 'CS';
   SELECT id INTO v_is_dept FROM departments WHERE code = 'IS';
@@ -274,7 +274,7 @@ sql += '  INSERT INTO students (user_id, student_code, enrollment_year, speciali
 
 let studentVals = students.map(s => {
   let enrollment_year = s.year === 1 ? 2025 : s.year === 2 ? 2024 : s.year === 3 ? 2023 : 2022;
-  let current_level = s.year === 1 ? 'freshman' : s.year === 2 ? 'sophomore' : s.year === 3 ? 'junior' : 'senior';
+  let current_level = s.year === 1 ? 'الفرقة الأولى' : s.year === 2 ? 'الفرقة الثانية' : s.year === 3 ? 'الفرقة الثالثة' : 'الفرقة الرابعة';
   let specStr = s.dept ? `'${s.dept}'` : 'NULL';
   let completed = s.year === 1 ? 17 : s.year === 2 ? 50 : s.year === 3 ? 83 : 116;
   let sems = s.year === 1 ? 1 : s.year === 2 ? 3 : s.year === 3 ? 5 : 7;
@@ -291,43 +291,43 @@ for (let s of students) {
   
   let semesters = [];
   if (s.year >= 1) {
-    semesters.push({ label: 'Fall 2025', var: 'v_fall2025_id', status: 'completed', courses: y1Fall });
-    semesters.push({ label: 'Spring 2026', var: 'v_spring2026_id', status: 'enrolled', courses: y1Spring });
+    semesters.push({ label: 'First Semester 2025', var: 'v_fall2025_id', status: 'completed', courses: y1First Semester });
+    semesters.push({ label: 'Second Semester 2026', var: 'v_spring2026_id', status: 'enrolled', courses: y1Second Semester });
   }
   if (s.year >= 2) {
-    semesters[0] = { label: 'Fall 2024', var: 'v_fall2024_id', status: 'completed', courses: y1Fall };
-    semesters[1] = { label: 'Spring 2025', var: 'v_spring2025_id', status: 'completed', courses: y1Spring };
-    semesters.push({ label: 'Fall 2025', var: 'v_fall2025_id', status: 'completed', courses: y2Fall });
-    semesters.push({ label: 'Spring 2026', var: 'v_spring2026_id', status: 'enrolled', courses: y2Spring });
+    semesters[0] = { label: 'First Semester 2024', var: 'v_fall2024_id', status: 'completed', courses: y1First Semester };
+    semesters[1] = { label: 'Second Semester 2025', var: 'v_spring2025_id', status: 'completed', courses: y1Second Semester };
+    semesters.push({ label: 'First Semester 2025', var: 'v_fall2025_id', status: 'completed', courses: y2First Semester });
+    semesters.push({ label: 'Second Semester 2026', var: 'v_spring2026_id', status: 'enrolled', courses: y2Second Semester });
   }
   if (s.year >= 3) {
-    semesters[0] = { label: 'Fall 2023', var: 'v_fall2023_id', status: 'completed', courses: y1Fall };
-    semesters[1] = { label: 'Spring 2024', var: 'v_spring2024_id', status: 'completed', courses: y1Spring };
-    semesters[2] = { label: 'Fall 2024', var: 'v_fall2024_id', status: 'completed', courses: y2Fall };
-    semesters[3] = { label: 'Spring 2025', var: 'v_spring2025_id', status: 'completed', courses: y2Spring };
+    semesters[0] = { label: 'First Semester 2023', var: 'v_fall2023_id', status: 'completed', courses: y1First Semester };
+    semesters[1] = { label: 'Second Semester 2024', var: 'v_spring2024_id', status: 'completed', courses: y1Second Semester };
+    semesters[2] = { label: 'First Semester 2024', var: 'v_fall2024_id', status: 'completed', courses: y2First Semester };
+    semesters[3] = { label: 'Second Semester 2025', var: 'v_spring2025_id', status: 'completed', courses: y2Second Semester };
     
     let fallCourses = s.dept === 'CS' ? y3FallCS : s.dept === 'IS' ? y3FallIS : y3FallIT;
     let springCourses = s.dept === 'CS' ? y3SpringCS : s.dept === 'IS' ? y3SpringIS : y3SpringIT;
     
-    semesters.push({ label: 'Fall 2025', var: 'v_fall2025_id', status: 'completed', courses: fallCourses });
-    semesters.push({ label: 'Spring 2026', var: 'v_spring2026_id', status: 'enrolled', courses: springCourses });
+    semesters.push({ label: 'First Semester 2025', var: 'v_fall2025_id', status: 'completed', courses: fallCourses });
+    semesters.push({ label: 'Second Semester 2026', var: 'v_spring2026_id', status: 'enrolled', courses: springCourses });
   }
   if (s.year >= 4) {
     // Shifting everything
-    semesters[0] = { label: 'Fall 2022', var: 'NULL', status: 'completed', courses: y1Fall }; // Optional past tracking
-    semesters[1] = { label: 'Spring 2023', var: 'NULL', status: 'completed', courses: y1Spring };
-    semesters[2] = { label: 'Fall 2023', var: 'v_fall2023_id', status: 'completed', courses: y2Fall };
-    semesters[3] = { label: 'Spring 2024', var: 'v_spring2024_id', status: 'completed', courses: y2Spring };
+    semesters[0] = { label: 'First Semester 2022', var: 'NULL', status: 'completed', courses: y1First Semester }; // Optional past tracking
+    semesters[1] = { label: 'Second Semester 2023', var: 'NULL', status: 'completed', courses: y1Second Semester };
+    semesters[2] = { label: 'First Semester 2023', var: 'v_fall2023_id', status: 'completed', courses: y2First Semester };
+    semesters[3] = { label: 'Second Semester 2024', var: 'v_spring2024_id', status: 'completed', courses: y2Second Semester };
     
     let y3fall = s.dept === 'CS' ? y3FallCS : s.dept === 'IS' ? y3FallIS : y3FallIT;
     let y3spring = s.dept === 'CS' ? y3SpringCS : s.dept === 'IS' ? y3SpringIS : y3SpringIT;
-    semesters[4] = { label: 'Fall 2024', var: 'v_fall2024_id', status: 'completed', courses: y3fall };
-    semesters[5] = { label: 'Spring 2025', var: 'v_spring2025_id', status: 'completed', courses: y3spring };
+    semesters[4] = { label: 'First Semester 2024', var: 'v_fall2024_id', status: 'completed', courses: y3fall };
+    semesters[5] = { label: 'Second Semester 2025', var: 'v_spring2025_id', status: 'completed', courses: y3spring };
     
     let y4fall = s.dept === 'CS' ? y4FallCS : s.dept === 'IS' ? y4FallIS : y4FallIT;
     let y4spring = s.dept === 'CS' ? y4SpringCS : s.dept === 'IS' ? y4SpringIS : y4SpringIT;
-    semesters.push({ label: 'Fall 2025', var: 'v_fall2025_id', status: 'completed', courses: y4fall });
-    semesters.push({ label: 'Spring 2026', var: 'v_spring2026_id', status: 'enrolled', courses: y4spring });
+    semesters.push({ label: 'First Semester 2025', var: 'v_fall2025_id', status: 'completed', courses: y4fall });
+    semesters.push({ label: 'Second Semester 2026', var: 'v_spring2026_id', status: 'enrolled', courses: y4spring });
   }
   
   // Clean up any semesters with NULL var

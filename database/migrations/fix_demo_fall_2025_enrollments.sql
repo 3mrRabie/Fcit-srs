@@ -11,7 +11,7 @@ BEGIN
   IF EXISTS (
     SELECT 1 FROM seed_logs WHERE seed_name = 'fix_demo_fall_2025_enrollments.sql'
   ) THEN
-    RAISE NOTICE 'Demo student Fall 2025 enrollments already fixed.';
+    RAISE NOTICE 'Demo student الترم الأول 2025 enrollments already fixed.';
     RETURN;
   END IF;
 
@@ -26,14 +26,14 @@ BEGIN
     RETURN;
   END IF;
 
-  -- Enroll in Fall 2025 (semester_id = 1) for Year 2 Term 1 courses
+  -- Enroll in الترم الأول 2025 (semester_id = 1) for Year 2 Term 1 courses
   FOREACH v_course_code IN ARRAY v_courses
   LOOP
     -- Get Course ID
     SELECT id INTO v_course_id FROM courses WHERE code = v_course_code LIMIT 1;
     
     IF v_course_id IS NOT NULL THEN
-      -- Get Offering ID for Fall 2025
+      -- Get Offering ID for الترم الأول 2025
       SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = v_course_id AND semester_id = 1 LIMIT 1;
       
       IF v_offering_id IS NOT NULL THEN
@@ -52,5 +52,5 @@ BEGIN
   INSERT INTO seed_logs (seed_name, rows_affected)
   VALUES ('fix_demo_fall_2025_enrollments.sql', 3);
 
-  RAISE NOTICE 'Demo student enrolled in Fall 2025 courses.';
+  RAISE NOTICE 'Demo student enrolled in الترم الأول 2025 courses.';
 END $$;

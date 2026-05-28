@@ -73,7 +73,7 @@ BEGIN
         2024,
         'CS',
         'science_math',
-        'freshman',
+        'الفرقة الأولى',
         'active',
         0.000,
         0,

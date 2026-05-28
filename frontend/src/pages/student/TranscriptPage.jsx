@@ -204,7 +204,10 @@ export default function TranscriptPage() {
         </div>
       ) : (
         semesters.map(s => {
-          const semKey   = s.semester_name || s.name || s.academicYear;
+          const semKey   = s.semester_name || s.name || s.academicYear || '';
+          const cleanSemKey = semKey.replace(/\s*\d{4}\s*/g, '').trim();
+          const yearLabel = s.year_label || s.yearLabel;
+          
           const gpaRec   = gpaLookup[semKey];
           const semGpa   = fmtGpa(gpaRec?.semester_gpa);
           const cumGpa   = fmtGpa(gpaRec?.cumulative_gpa);
@@ -237,7 +240,14 @@ export default function TranscriptPage() {
                 background: 'var(--color-gray-50)',
                 direction: 'rtl',
               }}>
-                <span style={{ fontWeight: 800, fontSize: 14, color: 'var(--color-gray-800)' }}>{semKey}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <span style={{ fontWeight: 800, fontSize: 14, color: 'var(--color-gray-800)' }}>{cleanSemKey}</span>
+                  {yearLabel && (
+                    <span style={{ fontSize: 11, color: 'var(--color-gray-500)', fontWeight: 500 }}>
+                      {cleanSemKey} — العام الدراسي {yearLabel.replace('-', '/')}
+                    </span>
+                  )}
+                </div>
 
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                   {isActive ? (
@@ -245,7 +255,7 @@ export default function TranscriptPage() {
                       fontSize: 11, background: 'var(--color-warning-light)', color: 'var(--color-warning-dark)',
                       padding: '3px 10px', borderRadius: 20, fontWeight: 600,
                     }}>
-                      قيد الدراسة
+                      الترم الحالي
                     </span>
                   ) : (
                     <>

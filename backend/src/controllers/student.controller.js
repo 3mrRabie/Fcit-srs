@@ -125,6 +125,8 @@ const getAvailableCourses = async (req, res, next) => {
     // Verify registration is actually open for this semester
     const semester = (await query('SELECT * FROM semesters WHERE id = $1', [semesterId])).rows[0];
     if (!semester) return res.status(404).json({ success: false, message: 'Semester not found' });
+    
+    semester.status = bylawService.computeSemesterStatus(semester);
 
     const registrationOpen = semester.status === 'registration';
     const addDropOpen = semester.status === 'active' && new Date() <= new Date(semester.add_drop_deadline);
@@ -393,7 +395,7 @@ const getTranscript = async (req, res, next) => {
     transcript.rows.forEach(course => {
       const semName = course.semester_name;
       if (!semestersMap[semName]) {
-        semestersMap[semName] = { semester_name: semName, courses: [] };
+        semestersMap[semName] = { semester_name: semName, year_label: course.year_label, courses: [] };
       }
       semestersMap[semName].courses.push(course);
     });

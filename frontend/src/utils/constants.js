@@ -100,7 +100,7 @@ export const GRADE_CLASSES = {
 
 /** Semester type Arabic labels */
 export const SEMESTER_TYPE_AR = {
-  spring: 'الربيع',
-  fall:   'الخريف',
-  summer: 'الصيف',
+  first: 'الترم الأول',
+  second: 'الترم الثاني',
+  summer: 'الترم الصيفي'
 };

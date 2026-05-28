@@ -1,8 +1,8 @@
 -- =============================================================================
--- Migration 014: Ensure Spring 2026 course offerings exist
--- Root-cause fix: seed 003 inserts Spring 2026 offerings without ON CONFLICT,
+-- Migration 014: Ensure الترم الثاني 2026 course offerings exist
+-- Root-cause fix: seed 003 inserts الترم الثاني 2026 offerings without ON CONFLICT,
 -- so a single duplicate key (e.g. from a partially-applied earlier run) rolls
--- back the ENTIRE Spring 2026 block silently, leaving the semester with zero
+-- back the ENTIRE الترم الثاني 2026 block silently, leaving the semester with zero
 -- active offerings.  Also fixes any NULL section_label values left behind by
 -- old schema versions that didn't have the column default.
 -- Safe to re-run: every INSERT uses ON CONFLICT DO UPDATE so the migration is
@@ -28,14 +28,14 @@ BEGIN
     RETURN;
   END IF;
 
-  -- ── 1. Resolve the Spring 2026 semester ──────────────────────────────────
-  SELECT id INTO v_semester_id FROM semesters WHERE label = 'Spring 2026';
+  -- ── 1. Resolve the الترم الثاني 2026 semester ──────────────────────────────────
+  SELECT id INTO v_semester_id FROM semesters WHERE label = 'الترم الثاني 2026';
   IF v_semester_id IS NULL THEN
-    RAISE WARNING '014: Spring 2026 semester not found — skipping.';
+    RAISE WARNING '014: الترم الثاني 2026 semester not found — skipping.';
     RETURN;
   END IF;
 
-  -- ── 2. Ensure Spring 2026 is open for registration ───────────────────────
+  -- ── 2. Ensure الترم الثاني 2026 is open for registration ───────────────────────
   UPDATE semesters
   SET status = 'registration'
   WHERE id = v_semester_id
@@ -73,7 +73,7 @@ BEGIN
   FROM doctors d JOIN users u ON u.id = d.user_id
   WHERE u.email = 'dr.arwa@fci.tanta.edu.eg' LIMIT 1;
 
-  -- Fall back to demo doctor for any unresolved doctor
+  -- الترم الأول back to demo doctor for any unresolved doctor
   v_doc_osama   := COALESCE(v_doc_osama,   v_doc_default);
   v_doc_aida    := COALESCE(v_doc_aida,    v_doc_default);
   v_doc_omnia   := COALESCE(v_doc_omnia,   v_doc_default);
@@ -82,13 +82,13 @@ BEGIN
   v_doc_mostafa := COALESCE(v_doc_mostafa, v_doc_default);
   v_doc_arwa    := COALESCE(v_doc_arwa,    v_doc_default);
 
-  -- ── 4. Fix NULL section_label on any existing Spring 2026 offerings ───────
+  -- ── 4. Fix NULL section_label on any existing الترم الثاني 2026 offerings ───────
   UPDATE course_offerings
   SET section_label = 'A'
   WHERE semester_id = v_semester_id
     AND (section_label IS NULL OR section_label = '');
 
-  -- ── 5. Upsert all Spring 2026 course offerings ───────────────────────────
+  -- ── 5. Upsert all الترم الثاني 2026 course offerings ───────────────────────────
   -- ON CONFLICT (semester_id, course_id, section_label) DO UPDATE ensures the
   -- offering is re-activated and assigned a doctor if it was previously dead.
 
@@ -193,5 +193,5 @@ BEGIN
   VALUES ('014_ensure_spring2026_offerings.sql')
   ON CONFLICT DO NOTHING;
 
-  RAISE NOTICE '014: Spring 2026 offerings ensured for semester id=%.', v_semester_id;
+  RAISE NOTICE '014: الترم الثاني 2026 offerings ensured for semester id=%.', v_semester_id;
 END $$;

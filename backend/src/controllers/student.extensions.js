@@ -128,6 +128,7 @@ const checkCourseEligibility = async (req, res, next) => {
     let canRegister = true;
 
     // 1. Registration window open?
+    semester.status = require('../services/bylaw.service').computeSemesterStatus(semester);
     const regOpen = semester.status === 'registration';
     const addDropOpen = semester.status === 'active' && new Date() <= new Date(semester.add_drop_deadline);
     if (!regOpen && !addDropOpen) {

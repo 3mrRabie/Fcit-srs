@@ -9,14 +9,14 @@ BEGIN
     RETURN;
   END IF;
 
-  -- Update Fall 2025 to 'grading' (id = 1)
+  -- Update الترم الأول 2025 to 'grading' (id = 1)
   UPDATE semesters SET status = 'grading' WHERE id = 1;
 
-  -- Update Spring 2026 to 'registration' (id = 2)
+  -- Update الترم الثاني 2026 to 'registration' (id = 2)
   UPDATE semesters SET status = 'registration' WHERE id = 2;
 
   INSERT INTO seed_logs (seed_name, rows_affected)
   VALUES ('fix_semester_status.sql', 2);
 
-  RAISE NOTICE 'Semester statuses updated: Fall 2025 -> grading, Spring 2026 -> registration.';
+  RAISE NOTICE 'Semester statuses updated: الترم الأول 2025 -> grading, الترم الثاني 2026 -> registration.';
 END $$;

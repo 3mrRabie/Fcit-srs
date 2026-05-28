@@ -29,13 +29,13 @@ BEGIN
   -- Find current spring 2026 semester
   SELECT id INTO v_spring2026_id
   FROM   semesters
-  WHERE  semester_type = 'spring'
+  WHERE  semester_type = 'second'
     AND  EXTRACT(YEAR FROM start_date) IN (2025, 2026)
   ORDER  BY start_date DESC
   LIMIT  1;
 
   IF v_spring2026_id IS NULL THEN
-    RAISE WARNING 'Spring 2026 semester not found; skipping BS115 dedup.';
+    RAISE WARNING 'الترم الثاني 2026 semester not found; skipping BS115 dedup.';
     RETURN;
   END IF;
 

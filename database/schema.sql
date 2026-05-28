@@ -13,13 +13,13 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- =============================================================================
 
 DO $$ BEGIN CREATE TYPE user_role AS ENUM ('admin', 'doctor', 'student'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-DO $$ BEGIN CREATE TYPE semester_type AS ENUM ('fall', 'spring', 'summer'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE semester_type AS ENUM ('first', 'second', 'summer'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE TYPE semester_status AS ENUM ('upcoming', 'registration', 'active', 'grading', 'closed'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE TYPE enrollment_status AS ENUM ('registered', 'withdrawn', 'excused_withdrawn', 'dropped', 'completed'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE TYPE grade_code AS ENUM ('A+','A','A-','B+','B','B-','C+','C','C-','D+','D','D-','F','P','W','Abs','I','Con'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE TYPE specialization_code AS ENUM ('CS', 'IS', 'IT', 'SE'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE TYPE course_category AS ENUM ('university_req', 'math_science', 'basic_computing', 'applied_computing', 'elective', 'project', 'training'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
-DO $$ BEGIN CREATE TYPE student_level AS ENUM ('freshman', 'sophomore', 'junior', 'senior'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN CREATE TYPE student_level AS ENUM ('الفرقة الأولى', 'الفرقة الثانية', 'الفرقة الثالثة', 'الفرقة الرابعة'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE TYPE academic_status AS ENUM ('active', 'warning', 'probation', 'dismissed', 'graduated', 'on_leave', 'withdrawn'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE TYPE track_type AS ENUM ('science_math', 'science_science'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN CREATE TYPE warning_type AS ENUM ('academic', 'attendance', 'dismissal'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS students (
     enrollment_year     INT NOT NULL,
     specialization      specialization_code,
     track               track_type NOT NULL DEFAULT 'science_math',
-    current_level       student_level DEFAULT 'freshman',
+    current_level       student_level DEFAULT 'الفرقة الأولى',
     academic_status     academic_status DEFAULT 'active',
     cgpa                NUMERIC(4,3) DEFAULT 0.000 CHECK (cgpa >= 0 AND cgpa <= 4),
     total_credits_passed INT DEFAULT 0,
@@ -575,10 +575,10 @@ $$ LANGUAGE plpgsql IMMUTABLE;
 CREATE OR REPLACE FUNCTION credits_to_level(credits INT)
 RETURNS student_level AS $$
 BEGIN
-    IF credits >= 98 THEN RETURN 'senior';
-    ELSIF credits >= 63 THEN RETURN 'junior';
-    ELSIF credits >= 28 THEN RETURN 'sophomore';
-    ELSE RETURN 'freshman';
+    IF credits >= 98 THEN RETURN 'الفرقة الرابعة';
+    ELSIF credits >= 63 THEN RETURN 'الفرقة الثالثة';
+    ELSIF credits >= 28 THEN RETURN 'الفرقة الثانية';
+    ELSE RETURN 'الفرقة الأولى';
     END IF;
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
@@ -907,3 +907,15 @@ SELECT
     (s.total_credits_passed >= COALESCE(get_bylaw_value('total_credits_required'), 138) AND s.cgpa >= 2.0 AND s.academic_status NOT IN ('dismissed','withdrawn')) AS is_eligible
 FROM students s
 JOIN users u ON u.id = s.user_id;
+
+
+CREATE TABLE IF NOT EXISTS doctor_schedule_slots (
+    id              SERIAL PRIMARY KEY,
+    offering_id     INT NOT NULL REFERENCES course_offerings(id) ON DELETE CASCADE,
+    day_of_week     VARCHAR(10) NOT NULL CHECK (day_of_week IN ('Sun','Mon','Tue','Wed','Thu','Fri','Sat')),
+    start_time      TIME NOT NULL,
+    end_time        TIME NOT NULL,
+    room            VARCHAR(50),
+    session_type    VARCHAR(20) DEFAULT 'lecture' CHECK (session_type IN ('lecture','lab','tutorial','project')),
+    UNIQUE (offering_id, day_of_week, start_time)
+);

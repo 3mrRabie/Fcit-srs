@@ -5,10 +5,7 @@
 
 DO $$
 BEGIN
-    IF EXISTS (SELECT 1 FROM seed_logs WHERE seed_name = 'fix_curriculum_plans.sql') THEN
-        RAISE NOTICE 'fix_curriculum_plans.sql already run, skipping';
-        RETURN;
-    END IF;
+
 
     -- 1. Delete invalid rows
     DELETE FROM curriculum_plans WHERE course_id IS NULL OR course_id NOT IN (SELECT id FROM courses WHERE is_active = TRUE);

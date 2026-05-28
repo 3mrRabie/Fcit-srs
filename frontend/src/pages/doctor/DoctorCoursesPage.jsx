@@ -34,7 +34,7 @@ export default function DoctorCoursesPage() {
 
   const ACTIVE_STATUSES = ['active', 'registration', 'grading'];
 
-  const SEMESTER_TYPE_AR = { fall: 'الترم الأول', spring: 'الترم الثاني', summer: 'الترم الصيفي' };
+  const SEMESTER_TYPE_AR = { first: 'الترم الأول', second: 'الترم الثاني', summer: 'الترم الصيفي' };
 
   const filteredAndGrouped = useMemo(() => {
     const q = searchQ.toLowerCase().trim();

@@ -361,7 +361,8 @@ export default function AdminStudentDetail() {
       ) : (
         sems.map(s => {
           const semId    = s.semesterId || s.semester_id;
-          const semName  = s.semesterName || s.semester_name;
+          const semName  = s.semesterName || s.semester_name || '';
+          const cleanSemName = semName.replace(/\s*\d{4}\s*/g, '').trim();
           const yearLabel = s.yearLabel || s.year_label;
           const gpaRec   = gpaLookup[semId];
           const serverGPA = Number(s.gpa || 0);
@@ -398,10 +399,10 @@ export default function AdminStudentDetail() {
                 direction: 'rtl',
               }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <span style={{ fontWeight: 800, fontSize: 14, color: 'var(--color-gray-800)' }}>{semName}</span>
+                  <span style={{ fontWeight: 800, fontSize: 14, color: 'var(--color-gray-800)' }}>{cleanSemName}</span>
                   {yearLabel && (
                     <span style={{ fontSize: 11, color: 'var(--color-gray-500)', fontWeight: 500 }}>
-                      العام الدراسي: {yearLabel}
+                      {cleanSemName} — العام الدراسي {yearLabel.replace('-', '/')}
                     </span>
                   )}
                 </div>
@@ -412,7 +413,7 @@ export default function AdminStudentDetail() {
                       fontSize: 11, background: 'var(--color-warning-light)', color: 'var(--color-warning-dark)',
                       padding: '3px 10px', borderRadius: 20, fontWeight: 600,
                     }}>
-                      قيد الدراسة
+                      الترم الحالي
                     </span>
                   ) : (
                     <>

@@ -13,12 +13,7 @@
 
 DO $$
 BEGIN
-  IF EXISTS (
-    SELECT 1 FROM seed_logs WHERE seed_name = '014_fix_curriculum_constraint.sql'
-  ) THEN
-    RAISE NOTICE '014_fix_curriculum_constraint.sql already applied, skipping.';
-    RETURN;
-  END IF;
+
 
   -- ── 1. Drop ALL existing unique constraints on curriculum_plans ──────────
   ALTER TABLE curriculum_plans

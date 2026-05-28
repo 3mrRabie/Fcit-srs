@@ -21,12 +21,12 @@ BEGIN
     RAISE EXCEPTION 'Demo student not found. Ensure seed 001 has run.';
   END IF;
 
-  -- ── STEP 1: Insert Fall 2024 and Spring 2025 semesters if missing ─────
+  -- ── STEP 1: Insert الترم الأول 2024 and الترم الثاني 2025 semesters if missing ─────
   -- These are needed as the offering's semester reference
   INSERT INTO semesters (academic_year_id, semester_type, label, status,
     start_date, end_date, registration_start, registration_end,
     add_drop_deadline, withdrawal_deadline)
-  SELECT ay.id, 'fall', 'Fall 2024', 'closed',
+  SELECT ay.id, 'first', 'الترم الأول 2024', 'closed',
     '2024-09-15', '2025-01-15', '2024-09-01', '2024-09-14',
     '2024-09-28', '2024-11-10'
   FROM academic_years ay WHERE ay.year_label = '2024-2025'
@@ -35,21 +35,21 @@ BEGIN
   INSERT INTO semesters (academic_year_id, semester_type, label, status,
     start_date, end_date, registration_start, registration_end,
     add_drop_deadline, withdrawal_deadline)
-  SELECT ay.id, 'spring', 'Spring 2025', 'closed',
+  SELECT ay.id, 'second', 'الترم الثاني 2025', 'closed',
     '2025-02-15', '2025-06-15', '2025-02-01', '2025-02-14',
     '2025-03-01', '2025-04-12'
   FROM academic_years ay WHERE ay.year_label = '2024-2025'
   ON CONFLICT (academic_year_id, semester_type) DO NOTHING;
 
-  SELECT id INTO v_fall2024_id   FROM semesters WHERE label = 'Fall 2024';
-  SELECT id INTO v_spring2025_id FROM semesters WHERE label = 'Spring 2025';
+  SELECT id INTO v_fall2024_id   FROM semesters WHERE label = 'الترم الأول 2024';
+  SELECT id INTO v_spring2025_id FROM semesters WHERE label = 'الترم الثاني 2025';
 
   IF v_fall2024_id IS NULL THEN
-    RAISE EXCEPTION 'Fall 2024 semester not found after insert. Check academic_years table.';
+    RAISE EXCEPTION 'الترم الأول 2024 semester not found after insert. Check academic_years table.';
   END IF;
 
-  -- ── STEP 2: Create Y1T1 course_offerings for Fall 2024 ────────────────
-  -- (Reuse same doctors as Fall 2025, is_active = FALSE for historical)
+  -- ── STEP 2: Create Y1T1 course_offerings for الترم الأول 2024 ────────────────
+  -- (Reuse same doctors as الترم الأول 2025, is_active = FALSE for historical)
 
   INSERT INTO course_offerings
     (semester_id, course_id, doctor_id, capacity, schedule, room, is_active, section_label)
@@ -105,7 +105,7 @@ BEGIN
   FROM courses c WHERE c.code = 'UNV113'
   ON CONFLICT (semester_id, course_id, section_label) DO NOTHING;
 
-  -- ── STEP 3: Create Y1T2 course_offerings for Spring 2025 ──────────────
+  -- ── STEP 3: Create Y1T2 course_offerings for الترم الثاني 2025 ──────────────
 
   INSERT INTO course_offerings
     (semester_id, course_id, doctor_id, capacity, schedule, room, is_active, section_label)
@@ -161,7 +161,7 @@ BEGIN
   FROM courses c WHERE c.code = 'CS112'
   ON CONFLICT (semester_id, course_id, section_label) DO NOTHING;
 
-  -- ── STEP 4: Insert Y1T1 completed enrollments (Fall 2024) ─────────────
+  -- ── STEP 4: Insert Y1T1 completed enrollments (الترم الأول 2024) ─────────────
   -- Grades consistent with demo student cgpa 3.58
 
   FOR v_offering_id IN (
@@ -189,7 +189,7 @@ BEGIN
         AND co.section_label = 'Main'
     );
 
-  -- ── STEP 5: Insert Y1T2 completed enrollments (Spring 2025) ───────────
+  -- ── STEP 5: Insert Y1T2 completed enrollments (الترم الثاني 2025) ───────────
 
   FOR v_offering_id IN (
     SELECT co.id FROM course_offerings co
@@ -244,7 +244,7 @@ BEGIN
       JOIN courses c ON c.id = co.course_id
       WHERE e.student_id = v_student_id AND e.status = 'completed'
     ),
-    current_level = 'sophomore',
+    current_level = 'الفرقة الثانية',
     semesters_enrolled = 3   -- Fall2024 + Spring2025 + Fall2025
   WHERE id = v_student_id;
 

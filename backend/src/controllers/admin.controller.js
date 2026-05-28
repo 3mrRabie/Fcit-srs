@@ -590,8 +590,11 @@ const getSemesters = async (req, res, next) => {
       'SELECT s.*, ay.year_label FROM semesters s JOIN academic_years ay ON ay.id = s.academic_year_id ORDER BY s.start_date DESC'
     )).rows;
     
-    // Format semester label dynamically
-    sems.forEach(s => { s.label = bylawService.getSemesterLabel(s.semester_type, s.year_label) || s.label; });
+    // Format semester label and compute dynamic status
+    sems.forEach(s => { 
+      s.label = bylawService.getSemesterLabel(s.semester_type, s.year_label) || s.label; 
+      s.status = bylawService.computeSemesterStatus(s);
+    });
     
     return res.json({ success: true, data: sems });
   } catch (err) { next(err); }
@@ -602,8 +605,8 @@ const createSemester = async (req, res, next) => {
   try {
     const {
       yearLabel,           // e.g. "2025-2026"
-      semesterType,        // fall | spring | summer
-      label,               // e.g. "Fall 2025"
+      semesterType,        // first | second | summer
+      label,               // e.g. "First Semester 2025"
       startDate,
       endDate,
       registrationStart,
@@ -621,9 +624,9 @@ const createSemester = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'yearLabel, semesterType, label, startDate, endDate, registrationStart, registrationEnd are required' });
     }
 
-    const validTypes = ['fall', 'spring', 'summer'];
+    const validTypes = ['first', 'second', 'summer'];
     if (!validTypes.includes(semesterType)) {
-      return res.status(400).json({ success: false, message: 'semesterType must be fall, spring, or summer' });
+      return res.status(400).json({ success: false, message: 'semesterType must be first, second, or summer' });
     }
 
     // Find or create academic year

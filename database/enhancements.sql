@@ -296,10 +296,10 @@ CREATE OR REPLACE FUNCTION student_level_to_int(p_level student_level)
 RETURNS INT AS $$
 BEGIN
   RETURN CASE p_level
-    WHEN 'freshman'  THEN 1
-    WHEN 'sophomore' THEN 2
-    WHEN 'junior'    THEN 3
-    WHEN 'senior'    THEN 4
+    WHEN 'الفرقة الأولى'  THEN 1
+    WHEN 'الفرقة الثانية' THEN 2
+    WHEN 'الفرقة الثالثة'    THEN 3
+    WHEN 'الفرقة الرابعة'    THEN 4
     ELSE 0
   END;
 END;

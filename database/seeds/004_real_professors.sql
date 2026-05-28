@@ -55,8 +55,8 @@ BEGIN
   END IF;
 
   -- Resolve foreign keys
-  SELECT id INTO v_fall2025_id   FROM semesters WHERE label = 'Fall 2025';
-  SELECT id INTO v_spring2026_id FROM semesters WHERE label = 'Spring 2026';
+  SELECT id INTO v_fall2025_id   FROM semesters WHERE label = 'الترم الأول 2025';
+  SELECT id INTO v_spring2026_id FROM semesters WHERE label = 'الترم الثاني 2026';
   SELECT id INTO v_cs_dept FROM departments WHERE code = 'CS';
   SELECT id INTO v_is_dept FROM departments WHERE code = 'IS';
   SELECT id INTO v_it_dept FROM departments WHERE code = 'IT';

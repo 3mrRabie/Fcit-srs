@@ -193,7 +193,10 @@ router.get('/semesters', authenticate, async (req, res, next) => {
     
     // Format semester labels
     const bylawService = require('../services/bylaw.service');
-    sems.forEach(s => { s.label = bylawService.getSemesterLabel(s.semester_type, s.year_label) || s.label; });
+    sems.forEach(s => { 
+      s.label = bylawService.getSemesterLabel(s.semester_type, s.year_label) || s.label; 
+      s.status = bylawService.computeSemesterStatus(s);
+    });
     
     res.json({ success: true, data: sems });
   } catch (err) { next(err); }
@@ -216,6 +219,7 @@ router.get('/semesters/current', authenticate, async (req, res, next) => {
     if (sem) {
       const bylawService = require('../services/bylaw.service');
       sem.label = bylawService.getSemesterLabel(sem.semester_type, sem.year_label) || sem.label;
+      sem.status = bylawService.computeSemesterStatus(sem);
     }
     
     res.json({ success: true, data: sem || null });

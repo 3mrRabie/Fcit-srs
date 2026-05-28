@@ -26,14 +26,14 @@ BEGIN
     RETURN;
   END IF;
 
-  SELECT id INTO v_fall2022_id   FROM semesters WHERE label = 'Fall 2022';
-  SELECT id INTO v_spring2023_id FROM semesters WHERE label = 'Spring 2023';
-  SELECT id INTO v_fall2023_id   FROM semesters WHERE label = 'Fall 2023';
-  SELECT id INTO v_spring2024_id FROM semesters WHERE label = 'Spring 2024';
-  SELECT id INTO v_fall2024_id   FROM semesters WHERE label = 'Fall 2024';
-  SELECT id INTO v_spring2025_id FROM semesters WHERE label = 'Spring 2025';
-  SELECT id INTO v_fall2025_id   FROM semesters WHERE label = 'Fall 2025';
-  SELECT id INTO v_spring2026_id FROM semesters WHERE label = 'Spring 2026';
+  SELECT id INTO v_fall2022_id   FROM semesters WHERE label = 'الترم الأول 2022';
+  SELECT id INTO v_spring2023_id FROM semesters WHERE label = 'الترم الثاني 2023';
+  SELECT id INTO v_fall2023_id   FROM semesters WHERE label = 'الترم الأول 2023';
+  SELECT id INTO v_spring2024_id FROM semesters WHERE label = 'الترم الثاني 2024';
+  SELECT id INTO v_fall2024_id   FROM semesters WHERE label = 'الترم الأول 2024';
+  SELECT id INTO v_spring2025_id FROM semesters WHERE label = 'الترم الثاني 2025';
+  SELECT id INTO v_fall2025_id   FROM semesters WHERE label = 'الترم الأول 2025';
+  SELECT id INTO v_spring2026_id FROM semesters WHERE label = 'الترم الثاني 2026';
 
   SELECT id INTO v_dr_ahmed   FROM doctors WHERE user_id='00000000-0000-0000-0000-000000000002';
   SELECT id INTO v_dr_aida    FROM doctors WHERE user_id='00000000-0000-0000-0000-000000000010';
@@ -78,161 +78,161 @@ BEGIN
   -- BUG 1 FIX STEP 1: Create past-semester course offerings
   INSERT INTO course_offerings (semester_id,course_id,doctor_id,capacity,schedule,room,is_active,section_label)
   SELECT s.id, c.id, v_dr_aida, 80, '[]'::jsonb, 'Online', FALSE, 'Main'
-  FROM (VALUES ('Fall 2024'),('Fall 2023'),('Fall 2022')) AS t(lbl)
+  FROM (VALUES ('الترم الأول 2024'),('الترم الأول 2023'),('الترم الأول 2022')) AS t(lbl)
   JOIN semesters s ON s.label = t.lbl
   CROSS JOIN (SELECT id FROM courses WHERE code='BS112') c
   ON CONFLICT (semester_id,course_id,section_label) DO NOTHING;
 
   INSERT INTO course_offerings (semester_id,course_id,doctor_id,capacity,schedule,room,is_active,section_label)
   SELECT s.id, c.id, v_dr_osama, 80, '[]'::jsonb, 'Online', FALSE, 'Main'
-  FROM (VALUES ('Fall 2024'),('Fall 2023'),('Fall 2022')) AS t(lbl)
+  FROM (VALUES ('الترم الأول 2024'),('الترم الأول 2023'),('الترم الأول 2022')) AS t(lbl)
   JOIN semesters s ON s.label = t.lbl
   CROSS JOIN (SELECT id FROM courses WHERE code='CS111') c
   ON CONFLICT (semester_id,course_id,section_label) DO NOTHING;
 
   INSERT INTO course_offerings (semester_id,course_id,doctor_id,capacity,schedule,room,is_active,section_label)
   SELECT s.id, c.id, v_dr_omnia, 80, '[]'::jsonb, 'Online', FALSE, 'Main'
-  FROM (VALUES ('Fall 2024'),('Fall 2023'),('Fall 2022')) AS t(lbl)
+  FROM (VALUES ('الترم الأول 2024'),('الترم الأول 2023'),('الترم الأول 2022')) AS t(lbl)
   JOIN semesters s ON s.label = t.lbl
   CROSS JOIN (SELECT id FROM courses WHERE code='IS111') c
   ON CONFLICT (semester_id,course_id,section_label) DO NOTHING;
 
   INSERT INTO course_offerings (semester_id,course_id,doctor_id,capacity,schedule,room,is_active,section_label)
   SELECT s.id, c.id, v_dr_nancy, 80, '[]'::jsonb, 'Online', FALSE, 'Main'
-  FROM (VALUES ('Fall 2024'),('Fall 2023'),('Fall 2022')) AS t(lbl)
+  FROM (VALUES ('الترم الأول 2024'),('الترم الأول 2023'),('الترم الأول 2022')) AS t(lbl)
   JOIN semesters s ON s.label = t.lbl
   CROSS JOIN (SELECT id FROM courses WHERE code='BS111') c
   ON CONFLICT (semester_id,course_id,section_label) DO NOTHING;
 
   INSERT INTO course_offerings (semester_id,course_id,doctor_id,capacity,schedule,room,is_active,section_label)
   SELECT s.id, c.id, v_dr_shimaa, 80, '[]'::jsonb, 'Online', FALSE, 'Main'
-  FROM (VALUES ('Fall 2024'),('Fall 2023'),('Fall 2022')) AS t(lbl)
+  FROM (VALUES ('الترم الأول 2024'),('الترم الأول 2023'),('الترم الأول 2022')) AS t(lbl)
   JOIN semesters s ON s.label = t.lbl
   CROSS JOIN (SELECT id FROM courses WHERE code='BS116') c
   ON CONFLICT (semester_id,course_id,section_label) DO NOTHING;
 
   INSERT INTO course_offerings (semester_id,course_id,doctor_id,capacity,schedule,room,is_active,section_label)
   SELECT s.id, c.id, v_dr_walid_s, 80, '[]'::jsonb, 'Online', FALSE, 'Main'
-  FROM (VALUES ('Fall 2024'),('Fall 2023'),('Fall 2022')) AS t(lbl)
+  FROM (VALUES ('الترم الأول 2024'),('الترم الأول 2023'),('الترم الأول 2022')) AS t(lbl)
   JOIN semesters s ON s.label = t.lbl
   CROSS JOIN (SELECT id FROM courses WHERE code='UNV113') c
   ON CONFLICT (semester_id,course_id,section_label) DO NOTHING;
 
   INSERT INTO course_offerings (semester_id,course_id,doctor_id,capacity,schedule,room,is_active,section_label)
   SELECT s.id, c.id, v_dr_aida, 80, '[]'::jsonb, 'Online', FALSE, 'Main'
-  FROM (VALUES ('Spring 2025'),('Spring 2024'),('Spring 2023')) AS t(lbl)
+  FROM (VALUES ('الترم الثاني 2025'),('الترم الثاني 2024'),('الترم الثاني 2023')) AS t(lbl)
   JOIN semesters s ON s.label = t.lbl
   CROSS JOIN (SELECT id FROM courses WHERE code='BS115') c
   ON CONFLICT (semester_id,course_id,section_label) DO NOTHING;
 
   INSERT INTO course_offerings (semester_id,course_id,doctor_id,capacity,schedule,room,is_active,section_label)
   SELECT s.id, c.id, v_dr_ahmed, 80, '[]'::jsonb, 'Online', FALSE, 'Main'
-  FROM (VALUES ('Spring 2025'),('Spring 2024'),('Spring 2023')) AS t(lbl)
+  FROM (VALUES ('الترم الثاني 2025'),('الترم الثاني 2024'),('الترم الثاني 2023')) AS t(lbl)
   JOIN semesters s ON s.label = t.lbl
   CROSS JOIN (SELECT id FROM courses WHERE code='UNV112') c
   ON CONFLICT (semester_id,course_id,section_label) DO NOTHING;
 
   INSERT INTO course_offerings (semester_id,course_id,doctor_id,capacity,schedule,room,is_active,section_label)
   SELECT s.id, c.id, v_dr_mostafa, 80, '[]'::jsonb, 'Online', FALSE, 'Main'
-  FROM (VALUES ('Spring 2025'),('Spring 2024'),('Spring 2023')) AS t(lbl)
+  FROM (VALUES ('الترم الثاني 2025'),('الترم الثاني 2024'),('الترم الثاني 2023')) AS t(lbl)
   JOIN semesters s ON s.label = t.lbl
   CROSS JOIN (SELECT id FROM courses WHERE code='BS113') c
   ON CONFLICT (semester_id,course_id,section_label) DO NOTHING;
 
   INSERT INTO course_offerings (semester_id,course_id,doctor_id,capacity,schedule,room,is_active,section_label)
   SELECT s.id, c.id, v_dr_arwa, 80, '[]'::jsonb, 'Online', FALSE, 'Main'
-  FROM (VALUES ('Spring 2025'),('Spring 2024'),('Spring 2023')) AS t(lbl)
+  FROM (VALUES ('الترم الثاني 2025'),('الترم الثاني 2024'),('الترم الثاني 2023')) AS t(lbl)
   JOIN semesters s ON s.label = t.lbl
   CROSS JOIN (SELECT id FROM courses WHERE code='UNV114') c
   ON CONFLICT (semester_id,course_id,section_label) DO NOTHING;
 
   INSERT INTO course_offerings (semester_id,course_id,doctor_id,capacity,schedule,room,is_active,section_label)
   SELECT s.id, c.id, v_dr_shimaa, 80, '[]'::jsonb, 'Online', FALSE, 'Main'
-  FROM (VALUES ('Spring 2025'),('Spring 2024'),('Spring 2023')) AS t(lbl)
+  FROM (VALUES ('الترم الثاني 2025'),('الترم الثاني 2024'),('الترم الثاني 2023')) AS t(lbl)
   JOIN semesters s ON s.label = t.lbl
   CROSS JOIN (SELECT id FROM courses WHERE code='UNV111') c
   ON CONFLICT (semester_id,course_id,section_label) DO NOTHING;
 
   INSERT INTO course_offerings (semester_id,course_id,doctor_id,capacity,schedule,room,is_active,section_label)
   SELECT s.id, c.id, v_dr_osama, 80, '[]'::jsonb, 'Online', FALSE, 'Main'
-  FROM (VALUES ('Spring 2025'),('Spring 2024'),('Spring 2023')) AS t(lbl)
+  FROM (VALUES ('الترم الثاني 2025'),('الترم الثاني 2024'),('الترم الثاني 2023')) AS t(lbl)
   JOIN semesters s ON s.label = t.lbl
   CROSS JOIN (SELECT id FROM courses WHERE code='CS112') c
   ON CONFLICT (semester_id,course_id,section_label) DO NOTHING;
 
   INSERT INTO course_offerings (semester_id,course_id,doctor_id,capacity,schedule,room,is_active,section_label)
   SELECT s.id, c.id, v_dr_hanaa_h, 80, '[]'::jsonb, 'Online', FALSE, 'Main'
-  FROM (VALUES ('Fall 2024'),('Fall 2023')) AS t(lbl)
+  FROM (VALUES ('الترم الأول 2024'),('الترم الأول 2023')) AS t(lbl)
   JOIN semesters s ON s.label = t.lbl
   CROSS JOIN (SELECT id FROM courses WHERE code='BS114') c
   ON CONFLICT (semester_id,course_id,section_label) DO NOTHING;
 
   INSERT INTO course_offerings (semester_id,course_id,doctor_id,capacity,schedule,room,is_active,section_label)
   SELECT s.id, c.id, v_dr_nancy, 80, '[]'::jsonb, 'Online', FALSE, 'Main'
-  FROM (VALUES ('Fall 2024'),('Fall 2023')) AS t(lbl)
+  FROM (VALUES ('الترم الأول 2024'),('الترم الأول 2023')) AS t(lbl)
   JOIN semesters s ON s.label = t.lbl
   CROSS JOIN (SELECT id FROM courses WHERE code='BS117') c
   ON CONFLICT (semester_id,course_id,section_label) DO NOTHING;
 
   INSERT INTO course_offerings (semester_id,course_id,doctor_id,capacity,schedule,room,is_active,section_label)
   SELECT s.id, c.id, v_dr_osama, 80, '[]'::jsonb, 'Online', FALSE, 'Main'
-  FROM (VALUES ('Fall 2024'),('Fall 2023')) AS t(lbl)
+  FROM (VALUES ('الترم الأول 2024'),('الترم الأول 2023')) AS t(lbl)
   JOIN semesters s ON s.label = t.lbl
   CROSS JOIN (SELECT id FROM courses WHERE code='CS211') c
   ON CONFLICT (semester_id,course_id,section_label) DO NOTHING;
 
   INSERT INTO course_offerings (semester_id,course_id,doctor_id,capacity,schedule,room,is_active,section_label)
   SELECT s.id, c.id, v_dr_arwa, 80, '[]'::jsonb, 'Online', FALSE, 'Main'
-  FROM (VALUES ('Fall 2024'),('Fall 2023')) AS t(lbl)
+  FROM (VALUES ('الترم الأول 2024'),('الترم الأول 2023')) AS t(lbl)
   JOIN semesters s ON s.label = t.lbl
   CROSS JOIN (SELECT id FROM courses WHERE code='SE211') c
   ON CONFLICT (semester_id,course_id,section_label) DO NOTHING;
 
   INSERT INTO course_offerings (semester_id,course_id,doctor_id,capacity,schedule,room,is_active,section_label)
   SELECT s.id, c.id, v_dr_mostafa, 80, '[]'::jsonb, 'Online', FALSE, 'Main'
-  FROM (VALUES ('Fall 2024'),('Fall 2023')) AS t(lbl)
+  FROM (VALUES ('الترم الأول 2024'),('الترم الأول 2023')) AS t(lbl)
   JOIN semesters s ON s.label = t.lbl
   CROSS JOIN (SELECT id FROM courses WHERE code='CS212') c
   ON CONFLICT (semester_id,course_id,section_label) DO NOTHING;
 
   INSERT INTO course_offerings (semester_id,course_id,doctor_id,capacity,schedule,room,is_active,section_label)
   SELECT s.id, c.id, v_dr_aida, 80, '[]'::jsonb, 'Online', FALSE, 'Main'
-  FROM (VALUES ('Fall 2024'),('Fall 2023')) AS t(lbl)
+  FROM (VALUES ('الترم الأول 2024'),('الترم الأول 2023')) AS t(lbl)
   JOIN semesters s ON s.label = t.lbl
   CROSS JOIN (SELECT id FROM courses WHERE code='IT211') c
   ON CONFLICT (semester_id,course_id,section_label) DO NOTHING;
 
   INSERT INTO course_offerings (semester_id,course_id,doctor_id,capacity,schedule,room,is_active,section_label)
   SELECT s.id, c.id, v_dr_omnia, 80, '[]'::jsonb, 'Online', FALSE, 'Main'
-  FROM (VALUES ('Spring 2025'),('Spring 2024')) AS t(lbl)
+  FROM (VALUES ('الترم الثاني 2025'),('الترم الثاني 2024')) AS t(lbl)
   JOIN semesters s ON s.label = t.lbl
   CROSS JOIN (SELECT id FROM courses WHERE code='IS211') c
   ON CONFLICT (semester_id,course_id,section_label) DO NOTHING;
 
   INSERT INTO course_offerings (semester_id,course_id,doctor_id,capacity,schedule,room,is_active,section_label)
   SELECT s.id, c.id, v_dr_hanaa_e, 80, '[]'::jsonb, 'Online', FALSE, 'Main'
-  FROM (VALUES ('Spring 2025'),('Spring 2024')) AS t(lbl)
+  FROM (VALUES ('الترم الثاني 2025'),('الترم الثاني 2024')) AS t(lbl)
   JOIN semesters s ON s.label = t.lbl
   CROSS JOIN (SELECT id FROM courses WHERE code='CS214') c
   ON CONFLICT (semester_id,course_id,section_label) DO NOTHING;
 
   INSERT INTO course_offerings (semester_id,course_id,doctor_id,capacity,schedule,room,is_active,section_label)
   SELECT s.id, c.id, v_dr_marian, 80, '[]'::jsonb, 'Online', FALSE, 'Main'
-  FROM (VALUES ('Spring 2025'),('Spring 2024')) AS t(lbl)
+  FROM (VALUES ('الترم الثاني 2025'),('الترم الثاني 2024')) AS t(lbl)
   JOIN semesters s ON s.label = t.lbl
   CROSS JOIN (SELECT id FROM courses WHERE code='IT317') c
   ON CONFLICT (semester_id,course_id,section_label) DO NOTHING;
 
   INSERT INTO course_offerings (semester_id,course_id,doctor_id,capacity,schedule,room,is_active,section_label)
   SELECT s.id, c.id, v_dr_nancy, 80, '[]'::jsonb, 'Online', FALSE, 'Main'
-  FROM (VALUES ('Spring 2025'),('Spring 2024')) AS t(lbl)
+  FROM (VALUES ('الترم الثاني 2025'),('الترم الثاني 2024')) AS t(lbl)
   JOIN semesters s ON s.label = t.lbl
   CROSS JOIN (SELECT id FROM courses WHERE code='IS212') c
   ON CONFLICT (semester_id,course_id,section_label) DO NOTHING;
 
   INSERT INTO course_offerings (semester_id,course_id,doctor_id,capacity,schedule,room,is_active,section_label)
   SELECT s.id, c.id, v_dr_osama, 80, '[]'::jsonb, 'Online', FALSE, 'Main'
-  FROM (VALUES ('Spring 2025'),('Spring 2024')) AS t(lbl)
+  FROM (VALUES ('الترم الثاني 2025'),('الترم الثاني 2024')) AS t(lbl)
   JOIN semesters s ON s.label = t.lbl
   CROSS JOIN (SELECT id FROM courses WHERE code='CS213') c
   ON CONFLICT (semester_id,course_id,section_label) DO NOTHING;

@@ -12,10 +12,10 @@ module.exports = {
 
   // ── Level Thresholds (credits passed) — must match academic-regulations.json levels ──
   LEVELS: {
-    freshman:  { min: 0,   max: 27 },
-    sophomore: { min: 28,  max: 62 },
-    junior:    { min: 63,  max: 97 },
-    senior:    { min: 98,  max: Infinity }
+    'الفرقة الأولى':  { min: 0,   max: 27 },
+    'الفرقة الثانية': { min: 28,  max: 62 },
+    'الفرقة الثالثة':    { min: 63,  max: 97 },
+    'الفرقة الرابعة':    { min: 98,  max: Infinity }
   },
 
   // ── Registration Credit Limits (Art. 11) ─────────────────────────────────

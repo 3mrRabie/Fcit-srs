@@ -22,8 +22,8 @@ BEGIN
     SELECT id INTO v_is_dept FROM departments WHERE code = 'IS';
     SELECT id INTO v_it_dept FROM departments WHERE code = 'IT';
     SELECT id INTO v_se_dept FROM departments WHERE code = 'SE';
-    SELECT id INTO v_fall2025_id FROM semesters WHERE label = 'Fall 2025';
-    SELECT id INTO v_spring2026_id FROM semesters WHERE label = 'Spring 2026';
+    SELECT id INTO v_fall2025_id FROM semesters WHERE label = 'الترم الأول 2025';
+    SELECT id INTO v_spring2026_id FROM semesters WHERE label = 'الترم الثاني 2026';
     SELECT id INTO v_doctor_id FROM doctors WHERE user_id = '00000000-0000-0000-0000-000000000002';
 
     -- =========================================================================

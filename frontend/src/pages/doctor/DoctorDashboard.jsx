@@ -15,7 +15,7 @@ const PRIMARY = 'var(--color-primary)';
 const SUCCESS = 'var(--color-success)';
 const WARN    = 'var(--color-warning)';
 
-const SEMESTER_TYPE_AR = { fall: 'الترم الأول', spring: 'الترم الثاني', summer: 'الترم الصيفي' };
+const SEMESTER_TYPE_AR = { first: 'الترم الأول', second: 'الترم الثاني', summer: 'الترم الصيفي' };
 
 function DoctorSkeleton() {
   return (
@@ -80,7 +80,7 @@ export default function DoctorDashboard() {
         || sem?.label
         || 'فصل غير محدد';
       const startDate = sem?.start_date || '';
-      if (!groups[label]) groups[label] = { courses: [], status, startDate };
+      if (!groups[label]) groups[label] = { courses: [], status, startDate, year };
       groups[label].courses.push(c);
     });
     const ORDER = { registration: 0, active: 1, grading: 2 };
@@ -163,7 +163,9 @@ export default function DoctorDashboard() {
             description="لا توجد مقررات مسندة إليك في الفصل الدراسي الحالي"
           />
         ) : (
-          grouped.map(([semLabel, { courses: semCourses, status }]) => (
+          grouped.map(([semLabel, { courses: semCourses, status, year }]) => {
+            const cleanSemLabel = semLabel.replace(/\s*\d{4}\s*/g, '').replace(/\s*-\s*\d{4}\s*/g, '').trim();
+            return (
             <div
               key={semLabel}
               style={{
@@ -181,7 +183,14 @@ export default function DoctorDashboard() {
                 background: 'var(--color-gray-50)',
               }}>
                 <Calendar size={16} color="var(--color-primary)" />
-                <span style={{ fontWeight: 800, fontSize: 15, color: 'var(--color-primary)' }}>{semLabel}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <span style={{ fontWeight: 800, fontSize: 15, color: 'var(--color-primary)' }}>{cleanSemLabel}</span>
+                  {year && (
+                    <span style={{ fontSize: 11, color: 'var(--color-gray-500)', fontWeight: 500 }}>
+                      {cleanSemLabel} — العام الدراسي {year.replace('-', '/')}
+                    </span>
+                  )}
+                </div>
                 {semesterBadge(status)}
                 <span style={{ marginRight: 'auto', fontSize: 12, color: 'var(--color-gray-400)' }}>
                   {semCourses.length} مقررات ·{' '}
@@ -267,7 +276,7 @@ export default function DoctorDashboard() {
                 </tbody>
               </table>
             </div>
-          ))
+          )})
         )}
       </div>
     </AppLayout>

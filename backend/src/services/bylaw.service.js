@@ -18,7 +18,7 @@ const DEFAULT_BYLAW = {
   departments: [],
   levels: [],
   semesters: {
-    regular: { types: { fall: 'الترم الأول', spring: 'الترم الثاني' }, weeks: 15 },
+    regular: { types: { first: 'الترم الأول', second: 'الترم الثاني' }, weeks: 15 },
     summer: { types: { summer: 'الترم الصيفي' }, weeks: 8 }
   },
   grading_system: [],
@@ -352,16 +352,47 @@ function getSemesterLabel(type, yearLabel) {
   try {
     const bylaw = getBylaw();
     let typeAr = type || '';
-    if (type === 'fall') typeAr = bylaw?.semesters?.regular?.types?.fall || 'الترم الأول';
-    else if (type === 'spring') typeAr = bylaw?.semesters?.regular?.types?.spring || 'الترم الثاني';
+    if (type === 'first') typeAr = bylaw?.semesters?.regular?.types?.fall || 'الترم الأول';
+    else if (type === 'second') typeAr = bylaw?.semesters?.regular?.types?.spring || 'الترم الثاني';
     else if (type === 'summer') typeAr = bylaw?.semesters?.summer?.types?.summer || 'الترم الصيفي';
     return yearLabel ? `${typeAr} ${yearLabel}` : typeAr;
   } catch {
     // Ultimate fallback — never crash
-    const fallback = { fall: 'الترم الأول', spring: 'الترم الثاني', summer: 'الترم الصيفي' };
+    const fallback = { first: 'الترم الأول', second: 'الترم الثاني', summer: 'الترم الصيفي' };
     const label = fallback[type] || type || '';
     return yearLabel ? `${label} ${yearLabel}` : label;
   }
+}
+
+/**
+ * Computes the dynamic status of a semester based on current date, 
+ * but respects manual early advancement from the database.
+ */
+function computeSemesterStatus(sem) {
+  if (!sem) return 'upcoming';
+  if (sem.status === 'closed') return 'closed';
+
+  const statusScores = { 'upcoming': 0, 'registration': 1, 'active': 2, 'grading': 3, 'closed': 4 };
+
+  const now = new Date();
+  const regStart = new Date(sem.registration_start || sem.startDate);
+  const regEnd = new Date(sem.registration_end || sem.endDate);
+  const start = new Date(sem.start_date || sem.startDate);
+  const end = new Date(sem.end_date || sem.endDate);
+
+  regEnd.setHours(23, 59, 59, 999);
+  end.setHours(23, 59, 59, 999);
+
+  let dateStatus = 'upcoming';
+  if (now >= regStart && now <= regEnd) dateStatus = 'registration';
+  else if (now > regEnd && now <= end) dateStatus = 'active';
+  else if (now > end) dateStatus = 'grading';
+
+  const dbStatusScore = statusScores[sem.status] || 0;
+  const dateStatusScore = statusScores[dateStatus] || 0;
+
+  // Return whichever status is further along the timeline
+  return dbStatusScore > dateStatusScore ? sem.status : dateStatus;
 }
 
 // [B3-FIX] Correct extraction of JSONB result from check_graduation_eligibility()
@@ -435,4 +466,5 @@ module.exports = {
   shouldReceiveWarning, checkDismissalConditions, checkHonorsEligibility,
   checkLeaveEligibility, creditsToLevel, checkGraduationEligibility, clearBylawCache, getBylaw,
   getSemesterLabel,
+  computeSemesterStatus,
 };

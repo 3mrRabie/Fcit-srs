@@ -14,7 +14,7 @@ export default function AdminSemestersPage() {
   const [editData, setEditData] = useState(null);
 
   // Form states
-  const defaultAddForm = { academicYear: '2024-2025', semesterType: 'fall', startDate: '', endDate: '' };
+  const defaultAddForm = { academicYear: '2024-2025', semesterType: 'first', startDate: '', endDate: '' };
   const [addForm, setAddForm] = useState(defaultAddForm);
   const [editForm, setEditForm] = useState({ startDate: '', endDate: '' });
 
@@ -234,8 +234,8 @@ export default function AdminSemestersPage() {
               value={addForm.semesterType} 
               onChange={e => setAddForm(p => ({...p, semesterType: e.target.value}))}
             >
-              <option value="fall">الترم الأول (الخريف)</option>
-              <option value="spring">الترم الثاني (الربيع)</option>
+              <option value="fall">الترم الأول</option>
+              <option value="spring">الترم الثاني</option>
               <option value="summer">الترم الصيفي</option>
             </Select>
 

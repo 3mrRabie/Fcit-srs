@@ -14,8 +14,8 @@ BEGIN
     RETURN;
   END IF;
 
-  SELECT id INTO v_fall2025_id   FROM semesters WHERE label = 'Fall 2025';
-  SELECT id INTO v_spring2026_id FROM semesters WHERE label = 'Spring 2026';
+  SELECT id INTO v_fall2025_id   FROM semesters WHERE label = 'الترم الأول 2025';
+  SELECT id INTO v_spring2026_id FROM semesters WHERE label = 'الترم الثاني 2026';
   SELECT id INTO v_student_id    FROM students
     WHERE user_id = '00000000-0000-0000-0000-000000000003';
 
@@ -24,7 +24,7 @@ BEGIN
     RETURN;
   END IF;
 
-  -- ── Fall 2025 (Y2T1) — completed ─────────────────────────────────────
+  -- ── الترم الأول 2025 (Y2T1) — completed ─────────────────────────────────────
   -- BS114
   SELECT id INTO v_offering_id FROM course_offerings
   WHERE course_id = (SELECT id FROM courses WHERE code = 'BS114')
@@ -91,7 +91,7 @@ BEGIN
     ON CONFLICT (student_id,offering_id) DO NOTHING;
   END IF;
 
-  -- ── Spring 2026 (Y2T2) ───────────────────────────────────────────────
+  -- ── الترم الثاني 2026 (Y2T2) ───────────────────────────────────────────────
   -- No pre-registered enrollments for the current semester.
   -- The student starts with an empty schedule and registers courses manually.
 
@@ -113,8 +113,8 @@ BEGIN
       WHERE e.student_id=v_student_id
         AND e.status = 'completed'
     ),
-    cgpa = 3.58,   -- Weighted average of the 6 Fall 2025 grades above
-    current_level = 'sophomore'
+    cgpa = 3.58,   -- Weighted average of the 6 الترم الأول 2025 grades above
+    current_level = 'الفرقة الثانية'
   WHERE id = v_student_id;
 
   INSERT INTO seed_logs (seed_name, rows_affected)
