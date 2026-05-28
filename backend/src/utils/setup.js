@@ -141,6 +141,11 @@ async function setup() {
       'migrations/013_fix_curriculum_seed.sql',   // re-populates curriculum_plans with correct ON CONFLICT
       'migrations/014_ensure_spring2026_offerings.sql', // guarantees Spring 2026 offerings exist and are active
       'migrations/014_fix_curriculum_constraint.sql',
+      'migrations/015_fix_course_prerequisites.sql', // fix prereqs + add IT212 + correct course names
+      'migrations/016_remove_duplicate_prerequisites.sql', // remove old wrong prereqs left as duplicates
+      'migrations/017_unconditional_prereq_cleanup.sql',  // unconditional targeted cleanup (no guard)
+      'migrations/018_fix_migration_prerequisites_wrong_data.sql', // root-cause fix: remove all wrong prereqs injected by migration_prerequisites.sql
+      'migrations/019_db_patch.sql', // [PATCH-019] Full bylaw-accurate course catalog, 72 prerequisites, FIX-001 IT317→IT212 for Dr. Marian, corrected schedule seed
     ];
     for (const migFile of namedMigrations) {
       const key = path.basename(migFile);

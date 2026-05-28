@@ -3385,7 +3385,7 @@ BEGIN
     VALUES (v_student_id, v_offering_id, v_spring2026_id, NULL, NULL, 'registered')
     ON CONFLICT (student_id, offering_id) DO NOTHING;
   END IF;
-  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT317') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
+  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT212') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
   IF v_offering_id IS NULL THEN
     RAISE WARNING 'Offering not found: IT317 Spring 2026 — skipping';
   ELSE
@@ -3571,7 +3571,7 @@ BEGIN
     VALUES (v_student_id, v_offering_id, v_spring2026_id, NULL, NULL, 'registered')
     ON CONFLICT (student_id, offering_id) DO NOTHING;
   END IF;
-  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT317') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
+  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT212') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
   IF v_offering_id IS NULL THEN
     RAISE WARNING 'Offering not found: IT317 Spring 2026 — skipping';
   ELSE
@@ -3757,7 +3757,7 @@ BEGIN
     VALUES (v_student_id, v_offering_id, v_spring2026_id, NULL, NULL, 'registered')
     ON CONFLICT (student_id, offering_id) DO NOTHING;
   END IF;
-  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT317') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
+  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT212') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
   IF v_offering_id IS NULL THEN
     RAISE WARNING 'Offering not found: IT317 Spring 2026 — skipping';
   ELSE
@@ -3943,7 +3943,7 @@ BEGIN
     VALUES (v_student_id, v_offering_id, v_spring2026_id, NULL, NULL, 'registered')
     ON CONFLICT (student_id, offering_id) DO NOTHING;
   END IF;
-  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT317') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
+  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT212') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
   IF v_offering_id IS NULL THEN
     RAISE WARNING 'Offering not found: IT317 Spring 2026 — skipping';
   ELSE
@@ -4129,7 +4129,7 @@ BEGIN
     VALUES (v_student_id, v_offering_id, v_spring2026_id, NULL, NULL, 'registered')
     ON CONFLICT (student_id, offering_id) DO NOTHING;
   END IF;
-  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT317') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
+  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT212') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
   IF v_offering_id IS NULL THEN
     RAISE WARNING 'Offering not found: IT317 Spring 2026 — skipping';
   ELSE
@@ -4315,7 +4315,7 @@ BEGIN
     VALUES (v_student_id, v_offering_id, v_spring2026_id, NULL, NULL, 'registered')
     ON CONFLICT (student_id, offering_id) DO NOTHING;
   END IF;
-  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT317') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
+  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT212') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
   IF v_offering_id IS NULL THEN
     RAISE WARNING 'Offering not found: IT317 Spring 2026 — skipping';
   ELSE
@@ -4501,7 +4501,7 @@ BEGIN
     VALUES (v_student_id, v_offering_id, v_spring2026_id, NULL, NULL, 'registered')
     ON CONFLICT (student_id, offering_id) DO NOTHING;
   END IF;
-  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT317') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
+  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT212') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
   IF v_offering_id IS NULL THEN
     RAISE WARNING 'Offering not found: IT317 Spring 2026 — skipping';
   ELSE
@@ -4687,7 +4687,7 @@ BEGIN
     VALUES (v_student_id, v_offering_id, v_spring2026_id, NULL, NULL, 'registered')
     ON CONFLICT (student_id, offering_id) DO NOTHING;
   END IF;
-  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT317') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
+  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT212') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
   IF v_offering_id IS NULL THEN
     RAISE WARNING 'Offering not found: IT317 Spring 2026 — skipping';
   ELSE
@@ -4873,7 +4873,7 @@ BEGIN
     VALUES (v_student_id, v_offering_id, v_spring2026_id, NULL, NULL, 'registered')
     ON CONFLICT (student_id, offering_id) DO NOTHING;
   END IF;
-  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT317') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
+  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT212') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
   IF v_offering_id IS NULL THEN
     RAISE WARNING 'Offering not found: IT317 Spring 2026 — skipping';
   ELSE
@@ -5059,7 +5059,7 @@ BEGIN
     VALUES (v_student_id, v_offering_id, v_spring2026_id, NULL, NULL, 'registered')
     ON CONFLICT (student_id, offering_id) DO NOTHING;
   END IF;
-  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT317') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
+  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT212') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
   IF v_offering_id IS NULL THEN
     RAISE WARNING 'Offering not found: IT317 Spring 2026 — skipping';
   ELSE
@@ -5245,7 +5245,7 @@ BEGIN
     VALUES (v_student_id, v_offering_id, v_spring2026_id, NULL, NULL, 'registered')
     ON CONFLICT (student_id, offering_id) DO NOTHING;
   END IF;
-  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT317') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
+  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT212') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
   IF v_offering_id IS NULL THEN
     RAISE WARNING 'Offering not found: IT317 Spring 2026 — skipping';
   ELSE
@@ -5431,7 +5431,7 @@ BEGIN
     VALUES (v_student_id, v_offering_id, v_spring2026_id, NULL, NULL, 'registered')
     ON CONFLICT (student_id, offering_id) DO NOTHING;
   END IF;
-  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT317') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
+  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT212') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
   IF v_offering_id IS NULL THEN
     RAISE WARNING 'Offering not found: IT317 Spring 2026 — skipping';
   ELSE
@@ -5617,7 +5617,7 @@ BEGIN
     VALUES (v_student_id, v_offering_id, v_spring2026_id, NULL, NULL, 'registered')
     ON CONFLICT (student_id, offering_id) DO NOTHING;
   END IF;
-  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT317') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
+  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT212') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
   IF v_offering_id IS NULL THEN
     RAISE WARNING 'Offering not found: IT317 Spring 2026 — skipping';
   ELSE
@@ -5803,7 +5803,7 @@ BEGIN
     VALUES (v_student_id, v_offering_id, v_spring2026_id, NULL, NULL, 'registered')
     ON CONFLICT (student_id, offering_id) DO NOTHING;
   END IF;
-  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT317') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
+  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT212') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
   IF v_offering_id IS NULL THEN
     RAISE WARNING 'Offering not found: IT317 Spring 2026 — skipping';
   ELSE
@@ -5989,7 +5989,7 @@ BEGIN
     VALUES (v_student_id, v_offering_id, v_spring2026_id, NULL, NULL, 'registered')
     ON CONFLICT (student_id, offering_id) DO NOTHING;
   END IF;
-  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT317') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
+  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT212') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
   IF v_offering_id IS NULL THEN
     RAISE WARNING 'Offering not found: IT317 Spring 2026 — skipping';
   ELSE
@@ -6175,7 +6175,7 @@ BEGIN
     VALUES (v_student_id, v_offering_id, v_spring2026_id, NULL, NULL, 'registered')
     ON CONFLICT (student_id, offering_id) DO NOTHING;
   END IF;
-  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT317') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
+  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT212') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
   IF v_offering_id IS NULL THEN
     RAISE WARNING 'Offering not found: IT317 Spring 2026 — skipping';
   ELSE
@@ -6361,7 +6361,7 @@ BEGIN
     VALUES (v_student_id, v_offering_id, v_spring2026_id, NULL, NULL, 'registered')
     ON CONFLICT (student_id, offering_id) DO NOTHING;
   END IF;
-  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT317') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
+  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT212') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
   IF v_offering_id IS NULL THEN
     RAISE WARNING 'Offering not found: IT317 Spring 2026 — skipping';
   ELSE
@@ -6547,7 +6547,7 @@ BEGIN
     VALUES (v_student_id, v_offering_id, v_spring2026_id, NULL, NULL, 'registered')
     ON CONFLICT (student_id, offering_id) DO NOTHING;
   END IF;
-  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT317') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
+  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT212') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
   IF v_offering_id IS NULL THEN
     RAISE WARNING 'Offering not found: IT317 Spring 2026 — skipping';
   ELSE
@@ -6733,7 +6733,7 @@ BEGIN
     VALUES (v_student_id, v_offering_id, v_spring2026_id, NULL, NULL, 'registered')
     ON CONFLICT (student_id, offering_id) DO NOTHING;
   END IF;
-  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT317') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
+  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT212') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
   IF v_offering_id IS NULL THEN
     RAISE WARNING 'Offering not found: IT317 Spring 2026 — skipping';
   ELSE
@@ -6919,7 +6919,7 @@ BEGIN
     VALUES (v_student_id, v_offering_id, v_spring2026_id, NULL, NULL, 'registered')
     ON CONFLICT (student_id, offering_id) DO NOTHING;
   END IF;
-  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT317') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
+  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT212') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
   IF v_offering_id IS NULL THEN
     RAISE WARNING 'Offering not found: IT317 Spring 2026 — skipping';
   ELSE
@@ -7105,7 +7105,7 @@ BEGIN
     VALUES (v_student_id, v_offering_id, v_spring2026_id, NULL, NULL, 'registered')
     ON CONFLICT (student_id, offering_id) DO NOTHING;
   END IF;
-  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT317') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
+  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT212') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
   IF v_offering_id IS NULL THEN
     RAISE WARNING 'Offering not found: IT317 Spring 2026 — skipping';
   ELSE
@@ -7291,7 +7291,7 @@ BEGIN
     VALUES (v_student_id, v_offering_id, v_spring2026_id, NULL, NULL, 'registered')
     ON CONFLICT (student_id, offering_id) DO NOTHING;
   END IF;
-  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT317') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
+  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT212') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
   IF v_offering_id IS NULL THEN
     RAISE WARNING 'Offering not found: IT317 Spring 2026 — skipping';
   ELSE
@@ -7477,7 +7477,7 @@ BEGIN
     VALUES (v_student_id, v_offering_id, v_spring2026_id, NULL, NULL, 'registered')
     ON CONFLICT (student_id, offering_id) DO NOTHING;
   END IF;
-  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT317') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
+  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT212') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
   IF v_offering_id IS NULL THEN
     RAISE WARNING 'Offering not found: IT317 Spring 2026 — skipping';
   ELSE
@@ -7663,7 +7663,7 @@ BEGIN
     VALUES (v_student_id, v_offering_id, v_spring2026_id, NULL, NULL, 'registered')
     ON CONFLICT (student_id, offering_id) DO NOTHING;
   END IF;
-  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT317') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
+  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT212') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
   IF v_offering_id IS NULL THEN
     RAISE WARNING 'Offering not found: IT317 Spring 2026 — skipping';
   ELSE
@@ -7849,7 +7849,7 @@ BEGIN
     VALUES (v_student_id, v_offering_id, v_spring2026_id, NULL, NULL, 'registered')
     ON CONFLICT (student_id, offering_id) DO NOTHING;
   END IF;
-  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT317') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
+  SELECT id INTO v_offering_id FROM course_offerings WHERE course_id = (SELECT id FROM courses WHERE code = 'IT212') AND semester_id = v_spring2026_id AND doctor_id = (SELECT id FROM doctors WHERE user_id = v_dr_marian);
   IF v_offering_id IS NULL THEN
     RAISE WARNING 'Offering not found: IT317 Spring 2026 — skipping';
   ELSE

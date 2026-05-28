@@ -1,3 +1,65 @@
+# FCIT-SRS Patch Notes
+
+---
+
+## [PATCH-019] Database Integration — 2026-05-28
+
+### Files Added
+| File | Destination in project | Purpose |
+|------|------------------------|---------|
+| `fcit_db_patch.sql` | `database/migrations/019_db_patch.sql` | Authoritative data patch |
+| `fcit_courses_bylaw.json` | `database/fcit_courses_bylaw.json` | Bylaw course catalog (JSON reference) |
+| `fcit_schedule_corrected.json` | `database/fcit_schedule_corrected.json` | Corrected schedule data (JSON reference) |
+
+### Files Modified
+- `backend/src/utils/setup.js` — Added `migrations/019_db_patch.sql` to `namedMigrations` list so it runs automatically on next startup (once-only via `migration_logs` guard).
+
+### What This Patch Fixes
+
+**Section 1 — Course Catalog (`curriculum_plans`)**
+Full upsert of the complete bylaw-accurate course catalog across all 4 programs (CS, IS, IT, SE) plus University and College requirements. Uses `ON CONFLICT (code) DO UPDATE` so it is safe to run on existing data.
+
+**Section 2 — Prerequisites**
+Replaces all 72 prerequisite relationships from the official bylaw. Covers corrections previously flagged by migrations 015–018. Deletes only the affected course codes before re-inserting to avoid collateral damage.
+
+**Section 3 — FIX-001: IT317 → IT212 for Dr. Marian Wagdy (CRITICAL)**
+IT317 (Advanced Computer Networks) was incorrectly assigned to Dr. Marian Wagdy. The patch renames or removes that offering and ensures Dr. Marian correctly holds IT212 (Computer Network Technology) in both `course_offerings` and `doctor_schedule_slots`.
+
+**Section 4 — Schedule Seed (`doctor_schedule_slots`)**
+Full re-seed of all schedule slots from the corrected `info.pdf` data. Resolves the IT317/IT212 assignment. Remaining open issues are preserved as `RAISE NOTICE` in the SQL and documented in `fcit_schedule_corrected.json`.
+
+**Section 5 — Audit Log**
+Inserts a `DATA_PATCH` audit record with all applied fixes and flagged issues for traceability.
+
+### Known Remaining Issues (not blocking)
+| ID | Severity | Description |
+|----|----------|-------------|
+| ISSUE-002 | HIGH | Scheduling conflict: IT311 & CS313 both assigned to Dr. Ahmed Salim, Sunday 07:00–09:00, Y3-CS-T1 |
+| ISSUE-003 | MEDIUM | Unmatched course "المتحكمات الدقيقة" (Y4-IT-T1) — possible IT315 duplicate |
+| ISSUE-004 | MEDIUM | Unmatched course "الواقع الافتراضي" (Virtual Reality, Y4-IT-T1) — not in IT bylaw |
+| ISSUE-005 | MEDIUM | Unmatched course "معالجة الاشارات الرقمية" (Y4-IT-T2) — not in IT bylaw |
+| ISSUE-006 | MEDIUM | Unmatched course "مفاهيم لغات الحاسب" (Y4-CS-T1) — possible CS416 rename |
+| ISSUE-007 | MEDIUM | Unmatched course "ادارة ونمذجة البيانات الكبيرة" (Y4-IS-T2) |
+| ISSUE-008 | MEDIUM | Unmatched course "هيكليات خدمة التوجه" (SOA, Y4-IS-T2) |
+
+See `database/fcit_schedule_corrected.json` → `issues_flagged` for full details.
+
+### How to Apply
+The migration is applied **automatically** on next container restart via `setup.js`.
+
+To apply manually (e.g. on a running database):
+```bash
+# Inside Docker
+docker compose exec postgres psql -U postgres -d student_registration_system \
+  -f /app/database/migrations/019_db_patch.sql
+
+# Or directly
+psql -U postgres -d student_registration_system \
+  -f database/migrations/019_db_patch.sql
+```
+
+---
+
 # FCIT-SRS Patch — 3 Root-Cause Fixes
 
 ## Files Changed

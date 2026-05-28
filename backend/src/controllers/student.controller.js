@@ -143,6 +143,7 @@ const getAvailableCourses = async (req, res, next) => {
               dep.code as department_code,
               -- Check if already registered
               CASE WHEN e.id IS NOT NULL THEN TRUE ELSE FALSE END as already_registered,
+              CASE WHEN e_drop.id IS NOT NULL THEN TRUE ELSE FALSE END as was_dropped,
               e.id as enrollment_id,
               e.status as enrollment_status
        FROM course_offerings co
@@ -154,6 +155,8 @@ const getAvailableCourses = async (req, res, next) => {
        LEFT JOIN departments dep ON dep.id = c.department_id
        LEFT JOIN enrollments e ON e.offering_id = co.id AND e.student_id = $1
          AND e.status IN ('registered','completed')
+       LEFT JOIN enrollments e_drop ON e_drop.offering_id = co.id AND e_drop.student_id = $1
+         AND e_drop.status = 'dropped'
        WHERE co.semester_id = $2
          AND co.is_active = TRUE
          AND c.is_active = TRUE
@@ -205,14 +208,19 @@ const getAvailableCourses = async (req, res, next) => {
       [student.id, semesterId]
     )).rows[0].total, 10);
 
-    // For each offering, apply dynamic eligibility rules
-    // Filter out courses the student already PASSED (they don't need to re-take them)
-    // Courses the student FAILED remain visible so they can re-register
+    // [DYNAMIC-REG] No curriculum-plan year/level pre-filter.
+    // The original design intent: show ALL active offerings; prerequisites,
+    // capacity, and credit-limit checks in `enriched` determine can_register.
+    // Filtering by curriculum_plans caused level-mismatch false negatives
+    // (e.g. stored total_credits_passed of 0 made all 200-level courses vanish).
     const filteredOfferings = offerings.rows.filter(o => {
-      // Always keep courses the student is currently registered in this semester
+      // Always show courses the student is currently registered in this semester
       if (o.already_registered) return true;
-      // Hide courses the student already passed successfully
+      // Hide courses the student already passed successfully (no need to re-take)
       if (passedSet.has(o.course_id)) return false;
+      // Always show courses the student dropped this semester so they can re-register
+      if (o.was_dropped) return true;
+      // Show all remaining active offerings — prerequisite blocks appear inline
       return true;
     });
 

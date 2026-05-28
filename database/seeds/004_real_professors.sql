@@ -511,12 +511,12 @@ BEGIN
   DO UPDATE SET end_time=EXCLUDED.end_time, room=EXCLUDED.room;
 
   INSERT INTO course_offerings (semester_id, course_id, doctor_id, capacity, schedule, room, is_active, section_label)
-  VALUES (v_spring2026_id, (SELECT id FROM courses WHERE code='IT317'), v_dr_marian, 60, '[]'::jsonb, 'Central Hall (Upper)', TRUE, 'Main')
+  VALUES (v_spring2026_id, (SELECT id FROM courses WHERE code='IT212'), v_dr_marian, 60, '[]'::jsonb, 'Central Hall (Upper)', TRUE, 'Main')
   ON CONFLICT (semester_id, course_id, section_label)
   DO UPDATE SET doctor_id = EXCLUDED.doctor_id, capacity = EXCLUDED.capacity, room = EXCLUDED.room, is_active = TRUE;
 
   SELECT id INTO v_offering_id FROM course_offerings 
-  WHERE course_id=(SELECT id FROM courses WHERE code='IT317') 
+  WHERE course_id=(SELECT id FROM courses WHERE code='IT212') 
     AND semester_id=v_spring2026_id AND section_label='Main';
 
   v_active_offering_ids := array_append(v_active_offering_ids, v_offering_id);

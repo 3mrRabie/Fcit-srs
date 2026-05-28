@@ -91,61 +91,9 @@ BEGIN
     ON CONFLICT (student_id,offering_id) DO NOTHING;
   END IF;
 
-  -- ── Spring 2026 (Y2T2) — registered ──────────────────────────────────
-  -- IS211
-  SELECT id INTO v_offering_id FROM course_offerings
-  WHERE course_id=(SELECT id FROM courses WHERE code='IS211')
-    AND semester_id=v_spring2026_id AND section_label='Main';
-  IF v_offering_id IS NOT NULL THEN
-    INSERT INTO enrollments
-      (student_id,offering_id,semester_id,letter_grade,grade_points,status)
-    VALUES (v_student_id,v_offering_id,v_spring2026_id,NULL,NULL,'registered')
-    ON CONFLICT (student_id,offering_id) DO NOTHING;
-  END IF;
-
-  -- CS214
-  SELECT id INTO v_offering_id FROM course_offerings
-  WHERE course_id=(SELECT id FROM courses WHERE code='CS214')
-    AND semester_id=v_spring2026_id AND section_label='Main';
-  IF v_offering_id IS NOT NULL THEN
-    INSERT INTO enrollments
-      (student_id,offering_id,semester_id,letter_grade,grade_points,status)
-    VALUES (v_student_id,v_offering_id,v_spring2026_id,NULL,NULL,'registered')
-    ON CONFLICT (student_id,offering_id) DO NOTHING;
-  END IF;
-
-  -- IT317
-  SELECT id INTO v_offering_id FROM course_offerings
-  WHERE course_id=(SELECT id FROM courses WHERE code='IT317')
-    AND semester_id=v_spring2026_id AND section_label='Main';
-  IF v_offering_id IS NOT NULL THEN
-    INSERT INTO enrollments
-      (student_id,offering_id,semester_id,letter_grade,grade_points,status)
-    VALUES (v_student_id,v_offering_id,v_spring2026_id,NULL,NULL,'registered')
-    ON CONFLICT (student_id,offering_id) DO NOTHING;
-  END IF;
-
-  -- IS212
-  SELECT id INTO v_offering_id FROM course_offerings
-  WHERE course_id=(SELECT id FROM courses WHERE code='IS212')
-    AND semester_id=v_spring2026_id AND section_label='Main';
-  IF v_offering_id IS NOT NULL THEN
-    INSERT INTO enrollments
-      (student_id,offering_id,semester_id,letter_grade,grade_points,status)
-    VALUES (v_student_id,v_offering_id,v_spring2026_id,NULL,NULL,'registered')
-    ON CONFLICT (student_id,offering_id) DO NOTHING;
-  END IF;
-
-  -- CS213
-  SELECT id INTO v_offering_id FROM course_offerings
-  WHERE course_id=(SELECT id FROM courses WHERE code='CS213')
-    AND semester_id=v_spring2026_id AND section_label='Main';
-  IF v_offering_id IS NOT NULL THEN
-    INSERT INTO enrollments
-      (student_id,offering_id,semester_id,letter_grade,grade_points,status)
-    VALUES (v_student_id,v_offering_id,v_spring2026_id,NULL,NULL,'registered')
-    ON CONFLICT (student_id,offering_id) DO NOTHING;
-  END IF;
+  -- ── Spring 2026 (Y2T2) ───────────────────────────────────────────────
+  -- No pre-registered enrollments for the current semester.
+  -- The student starts with an empty schedule and registers courses manually.
 
   -- ── Update student credit totals ──────────────────────────────────────
   UPDATE students SET
@@ -155,6 +103,7 @@ BEGIN
       JOIN course_offerings co ON co.id=e.offering_id
       JOIN courses c ON c.id=co.course_id
       WHERE e.student_id=v_student_id AND e.status='completed'
+        AND e.letter_grade NOT IN ('F','Abs','W','I')
     ),
     total_credits_attempted = (
       SELECT COALESCE(SUM(c.credits),0)
@@ -162,9 +111,9 @@ BEGIN
       JOIN course_offerings co ON co.id=e.offering_id
       JOIN courses c ON c.id=co.course_id
       WHERE e.student_id=v_student_id
-        AND e.status IN ('completed','registered')
+        AND e.status = 'completed'
     ),
-    cgpa = 3.58,   -- Weighted average of the 6 grades assigned above
+    cgpa = 3.58,   -- Weighted average of the 6 Fall 2025 grades above
     current_level = 'sophomore'
   WHERE id = v_student_id;
 

@@ -61,7 +61,9 @@ BEGIN
     ('CS211', 'البرمجة كائنية التوجه',     'Object Oriented Programming',      3, 'basic_computing', v_cs_dept, 2, TRUE),
     ('CS212', 'هياكل البيانات',            'Data Structures',                  3, 'basic_computing', v_cs_dept, 2, TRUE),
     ('IS111', 'مقدمة في نظم المعلومات',   'Intro to Information Systems',     3, 'basic_computing', v_is_dept, 1, TRUE),
-    ('IT111', 'أساسيات رقمية',             'Digital Fundamentals',             3, 'basic_computing', v_it_dept, 1, TRUE);
+    ('IT111', 'أساسيات تكنولوجيا المعلومات','Fundamentals of Information Technology',3,'basic_computing',v_it_dept,1,TRUE),
+    ('IT211', 'تصميم المنطق الرقمي',       'Digital Logic Design',             3, 'basic_computing', v_it_dept, 2, TRUE),
+    ('IT212', 'تكنولوجيا شبكات الحاسب',   'Computer network Technology',      3, 'basic_computing', v_it_dept, 2, TRUE);
 
     -- =========================================================================
     -- COMPUTER SCIENCE - APPLIED COURSES (38 mandatory credits)
@@ -103,7 +105,7 @@ BEGIN
     -- =========================================================================
     INSERT INTO courses (code, name_ar, name_en, credits, category, department_id, level, is_mandatory) VALUES
     ('IS211', 'نظم قواعد البيانات',        'Database Systems',                 3, 'applied_computing', v_is_dept, 2, TRUE),
-    ('IS212', 'أساليب التحسين',            'Optimization Methods',             3, 'applied_computing', v_is_dept, 2, TRUE),
+    ('IS212', 'طرق الأمثلية',               'Optimization Methods',             3, 'applied_computing', v_is_dept, 2, TRUE),
     ('IS311', 'تحليل وتصميم نظم المعلومات','Analysis and Design of IS',        3, 'applied_computing', v_is_dept, 3, TRUE),
     ('IS312', 'إدارة قواعد البيانات',      'Database Management Systems',      3, 'applied_computing', v_is_dept, 3, TRUE),
     ('IS313', 'إدارة الملفات ومعالجتها',  'File Management & Processing',     3, 'applied_computing', v_is_dept, 3, TRUE),
@@ -114,7 +116,7 @@ BEGIN
     ('IS318', 'نظرية المعلومات وضغط البيانات','Information Theory & Data Compression',3,'applied_computing',v_is_dept,3,TRUE),
     ('IS411', 'استخراج البيانات',          'Data Mining',                      3, 'applied_computing', v_is_dept, 4, TRUE),
     ('IS412', 'إدارة مشاريع نظم المعلومات','IS Project Management',            3, 'applied_computing', v_is_dept, 4, TRUE),
-    ('IS413', 'موضوعات مختارة في هندسة نظم المعلومات','Selected Topics in IS Engineering',3,'applied_computing',v_is_dept,4,TRUE);
+    ('IS413', 'موضوعات مختارة في نظم المعلومات 1','Selected Topics in Information Systems 1',3,'applied_computing',v_is_dept,4,TRUE);
 
     INSERT INTO courses (code, name_ar, name_en, credits, category, department_id, level, is_mandatory) VALUES
     ('IS321', 'موضوعات مختارة في هندسة البيانات','Selected Topics in Data Engineering',3,'elective',v_is_dept,3,FALSE),
@@ -136,10 +138,9 @@ BEGIN
     -- INFORMATION TECHNOLOGY - APPLIED COURSES
     -- =========================================================================
     INSERT INTO courses (code, name_ar, name_en, credits, category, department_id, level, is_mandatory) VALUES
-    ('IT211', 'تصميم الدوائر المنطقية',    'Digital Logic Design',             3, 'applied_computing', v_it_dept, 2, TRUE),
-    ('IT311', 'الحاسوب الرسومي',           'Computer Graphics',                3, 'applied_computing', v_it_dept, 3, TRUE),
+    ('IT311', 'الرسم بالحاسب',             'Computer Graphics',                3, 'applied_computing', v_it_dept, 3, TRUE),
     ('IT312', 'التعرف على الأنماط',        'Pattern Recognition',              3, 'applied_computing', v_it_dept, 3, TRUE),
-    ('IT313', 'أمن شبكات الحاسب',          'Information & Computer Network Security',3,'applied_computing',v_it_dept,3,TRUE),
+    ('IT313', 'تأمين شبكات الحاسبات والمعلومات','Information and Computer Networks Security',3,'applied_computing',v_it_dept,3,TRUE),
     ('IT314', 'الإشارات والأنظمة',         'Signals & Systems',                3, 'applied_computing', v_it_dept, 3, TRUE),
     ('IT315', 'المعالجات الدقيقة',         'Microprocessors',                  3, 'applied_computing', v_it_dept, 3, TRUE),
     ('IT316', 'معالجة الصور',              'Image Processing',                 3, 'applied_computing', v_it_dept, 3, TRUE),
@@ -228,26 +229,28 @@ BEGIN
     ((SELECT id FROM courses WHERE code='CS211'), (SELECT id FROM courses WHERE code='CS112')),
     -- CS212 Data Structures needs CS112
     ((SELECT id FROM courses WHERE code='CS212'), (SELECT id FROM courses WHERE code='CS112')),
-    -- IS211 Database Systems needs CS112
-    ((SELECT id FROM courses WHERE code='IS211'), (SELECT id FROM courses WHERE code='CS112')),
+    -- IS211 Database Systems needs IS111
+    ((SELECT id FROM courses WHERE code='IS211'), (SELECT id FROM courses WHERE code='IS111')),
     -- IT211 Digital Logic Design needs BS115
     ((SELECT id FROM courses WHERE code='IT211'), (SELECT id FROM courses WHERE code='BS115')),
+    -- IT212 Computer Network Technology needs CS111
+    ((SELECT id FROM courses WHERE code='IT212'), (SELECT id FROM courses WHERE code='CS111')),
     -- SE211 Software Engineering needs CS112
     ((SELECT id FROM courses WHERE code='SE211'), (SELECT id FROM courses WHERE code='CS112')),
     -- CS213 Algorithms Analysis needs CS212
     ((SELECT id FROM courses WHERE code='CS213'), (SELECT id FROM courses WHERE code='CS212')),
     -- CS214 OS needs CS212
     ((SELECT id FROM courses WHERE code='CS214'), (SELECT id FROM courses WHERE code='CS212')),
-    -- IS212 Optimization needs IS211
-    ((SELECT id FROM courses WHERE code='IS212'), (SELECT id FROM courses WHERE code='IS211')),
-    -- CS311 Security needs CS212
-    ((SELECT id FROM courses WHERE code='CS311'), (SELECT id FROM courses WHERE code='CS212')),
-    -- CS312 Computer Org needs CS212
-    ((SELECT id FROM courses WHERE code='CS312'), (SELECT id FROM courses WHERE code='CS212')),
+    -- IS212 Optimization (طرق الأمثلية) needs BS113 (Math 2)
+    ((SELECT id FROM courses WHERE code='IS212'), (SELECT id FROM courses WHERE code='BS113')),
+    -- CS311 Security needs IT212
+    ((SELECT id FROM courses WHERE code='CS311'), (SELECT id FROM courses WHERE code='IT212')),
+    -- CS312 Computer Org needs IT211
+    ((SELECT id FROM courses WHERE code='CS312'), (SELECT id FROM courses WHERE code='IT211')),
     -- CS313 AI needs CS212
     ((SELECT id FROM courses WHERE code='CS313'), (SELECT id FROM courses WHERE code='CS212')),
-    -- CS314 ML needs CS313
-    ((SELECT id FROM courses WHERE code='CS314'), (SELECT id FROM courses WHERE code='CS313')),
+    -- CS314 ML needs CS211 (OOP)
+    ((SELECT id FROM courses WHERE code='CS314'), (SELECT id FROM courses WHERE code='CS211')),
     -- CS315 Big Data needs IS311
     ((SELECT id FROM courses WHERE code='CS315'), (SELECT id FROM courses WHERE code='IS311')),
     -- CS316 Advanced OS needs CS214
@@ -256,34 +259,34 @@ BEGIN
     ((SELECT id FROM courses WHERE code='IS311'), (SELECT id FROM courses WHERE code='IS211')),
     -- IS312 DBMS needs IS211
     ((SELECT id FROM courses WHERE code='IS312'), (SELECT id FROM courses WHERE code='IS211')),
-    -- IS313 File Mgmt needs IS211
-    ((SELECT id FROM courses WHERE code='IS313'), (SELECT id FROM courses WHERE code='IS211')),
-    -- IS314 Info Retrieval needs IS211
-    ((SELECT id FROM courses WHERE code='IS314'), (SELECT id FROM courses WHERE code='IS211')),
-    -- IS315 Data Warehousing needs IS312
-    ((SELECT id FROM courses WHERE code='IS315'), (SELECT id FROM courses WHERE code='IS312')),
-    -- IS316 Data Analytics needs IS312
-    ((SELECT id FROM courses WHERE code='IS316'), (SELECT id FROM courses WHERE code='IS312')),
-    -- IS317 Web IS needs IS311
-    ((SELECT id FROM courses WHERE code='IS317'), (SELECT id FROM courses WHERE code='IS311')),
+    -- IS313 File Mgmt needs CS212 (Data Structures)
+    ((SELECT id FROM courses WHERE code='IS313'), (SELECT id FROM courses WHERE code='CS212')),
+    -- IS314 Info Retrieval needs BS115 (Electronics)
+    ((SELECT id FROM courses WHERE code='IS314'), (SELECT id FROM courses WHERE code='BS115')),
+    -- IS315 Data Warehousing needs IS311
+    ((SELECT id FROM courses WHERE code='IS315'), (SELECT id FROM courses WHERE code='IS311')),
+    -- IS316 Data Analytics needs IS315
+    ((SELECT id FROM courses WHERE code='IS316'), (SELECT id FROM courses WHERE code='IS315')),
+    -- IS317 Web IS needs CS211 (OOP)
+    ((SELECT id FROM courses WHERE code='IS317'), (SELECT id FROM courses WHERE code='CS211')),
     -- IS318 Info Theory needs BS116
     ((SELECT id FROM courses WHERE code='IS318'), (SELECT id FROM courses WHERE code='BS116')),
-    -- IT311 Graphics needs IT211
-    ((SELECT id FROM courses WHERE code='IT311'), (SELECT id FROM courses WHERE code='IT211')),
-    -- IT312 Pattern Recog needs IT211
-    ((SELECT id FROM courses WHERE code='IT312'), (SELECT id FROM courses WHERE code='IT211')),
-    -- IT313 Network Security needs IT211
-    ((SELECT id FROM courses WHERE code='IT313'), (SELECT id FROM courses WHERE code='IT211')),
-    -- IT314 Signals needs IT211
-    ((SELECT id FROM courses WHERE code='IT314'), (SELECT id FROM courses WHERE code='IT211')),
+    -- IT311 Computer Graphics needs CS112
+    ((SELECT id FROM courses WHERE code='IT311'), (SELECT id FROM courses WHERE code='CS112')),
+    -- IT312 Pattern Recognition needs BS117
+    ((SELECT id FROM courses WHERE code='IT312'), (SELECT id FROM courses WHERE code='BS117')),
+    -- IT313 Network Security needs IT111
+    ((SELECT id FROM courses WHERE code='IT313'), (SELECT id FROM courses WHERE code='IT111')),
+    -- IT314 Signals & Systems needs BS114 (Math 3)
+    ((SELECT id FROM courses WHERE code='IT314'), (SELECT id FROM courses WHERE code='BS114')),
     -- IT315 Microprocessors needs IT211
     ((SELECT id FROM courses WHERE code='IT315'), (SELECT id FROM courses WHERE code='IT211')),
-    -- IT316 Image Processing needs IT311
-    ((SELECT id FROM courses WHERE code='IT316'), (SELECT id FROM courses WHERE code='IT311')),
-    -- IT317 Advanced Networks needs IT311
-    ((SELECT id FROM courses WHERE code='IT317'), (SELECT id FROM courses WHERE code='IT311')),
-    -- IT318 Computer Architecture needs IT315
-    ((SELECT id FROM courses WHERE code='IT318'), (SELECT id FROM courses WHERE code='IT315')),
+    -- IT316 Image Processing needs IT314
+    ((SELECT id FROM courses WHERE code='IT316'), (SELECT id FROM courses WHERE code='IT314')),
+    -- IT317 Advanced Networks needs IT212
+    ((SELECT id FROM courses WHERE code='IT317'), (SELECT id FROM courses WHERE code='IT212')),
+    -- IT318 Computer Architecture needs BS115
+    ((SELECT id FROM courses WHERE code='IT318'), (SELECT id FROM courses WHERE code='BS115')),
     -- IT319 Digital Multimedia needs IT311
     ((SELECT id FROM courses WHERE code='IT319'), (SELECT id FROM courses WHERE code='IT311')),
     -- SE311 Req Analysis needs SE211
@@ -294,36 +297,36 @@ BEGIN
     ((SELECT id FROM courses WHERE code='SE313'), (SELECT id FROM courses WHERE code='SE211')),
     -- SE314 Quality needs SE311
     ((SELECT id FROM courses WHERE code='SE314'), (SELECT id FROM courses WHERE code='SE311')),
-    -- SE315 Advanced SE needs SE313
-    ((SELECT id FROM courses WHERE code='SE315'), (SELECT id FROM courses WHERE code='SE313')),
+    -- SE315 Advanced SE needs SE211
+    ((SELECT id FROM courses WHERE code='SE315'), (SELECT id FROM courses WHERE code='SE211')),
     -- SE316 UI Design needs SE211
     ((SELECT id FROM courses WHERE code='SE316'), (SELECT id FROM courses WHERE code='SE211')),
-    -- CS411 Computation Theory needs CS213
-    ((SELECT id FROM courses WHERE code='CS411'), (SELECT id FROM courses WHERE code='CS213')),
-    -- CS412 IoT needs CS312
-    ((SELECT id FROM courses WHERE code='CS412'), (SELECT id FROM courses WHERE code='CS312')),
-    -- CS413 Problem Solving needs CS313
-    ((SELECT id FROM courses WHERE code='CS413'), (SELECT id FROM courses WHERE code='CS313')),
+    -- CS411 Computation Theory needs BS112 (Discrete Mathematics)
+    ((SELECT id FROM courses WHERE code='CS411'), (SELECT id FROM courses WHERE code='BS112')),
+    -- CS412 IoT needs IT212
+    ((SELECT id FROM courses WHERE code='CS412'), (SELECT id FROM courses WHERE code='IT212')),
+    -- CS413 Problem Solving needs CS213
+    ((SELECT id FROM courses WHERE code='CS413'), (SELECT id FROM courses WHERE code='CS213')),
     -- CS414 Data Science needs CS314 and CS315
     ((SELECT id FROM courses WHERE code='CS414'), (SELECT id FROM courses WHERE code='CS314')),
-    -- CS415 Cloud needs CS312
-    ((SELECT id FROM courses WHERE code='CS415'), (SELECT id FROM courses WHERE code='CS312')),
-    -- CS416 Compilers needs CS213
-    ((SELECT id FROM courses WHERE code='CS416'), (SELECT id FROM courses WHERE code='CS213')),
-    -- IS411 Data Mining needs IS316
-    ((SELECT id FROM courses WHERE code='IS411'), (SELECT id FROM courses WHERE code='IS316')),
+    -- CS415 Cloud needs CS316
+    ((SELECT id FROM courses WHERE code='CS415'), (SELECT id FROM courses WHERE code='CS316')),
+    -- CS416 Compilers needs CS411
+    ((SELECT id FROM courses WHERE code='CS416'), (SELECT id FROM courses WHERE code='CS411')),
+    -- IS411 Data Mining needs BS116 (Probability & Statistics)
+    ((SELECT id FROM courses WHERE code='IS411'), (SELECT id FROM courses WHERE code='BS116')),
     -- IS412 IS Project Mgmt needs IS311
     ((SELECT id FROM courses WHERE code='IS412'), (SELECT id FROM courses WHERE code='IS311')),
-    -- IS413 Selected Topics needs IS311
-    ((SELECT id FROM courses WHERE code='IS413'), (SELECT id FROM courses WHERE code='IS311')),
+    -- IS413 Selected Topics needs IS317
+    ((SELECT id FROM courses WHERE code='IS413'), (SELECT id FROM courses WHERE code='IS317')),
     -- IT411 Robot Systems needs IT314
     ((SELECT id FROM courses WHERE code='IT411'), (SELECT id FROM courses WHERE code='IT314')),
-    -- IT413 Communication Tech needs IT314
-    ((SELECT id FROM courses WHERE code='IT413'), (SELECT id FROM courses WHERE code='IT314')),
+    -- IT413 Communication Tech needs IT317
+    ((SELECT id FROM courses WHERE code='IT413'), (SELECT id FROM courses WHERE code='IT317')),
     -- IT414 Cyber Security needs IT313
     ((SELECT id FROM courses WHERE code='IT414'), (SELECT id FROM courses WHERE code='IT313')),
-    -- IT415 Cloud Networks needs IT317
-    ((SELECT id FROM courses WHERE code='IT415'), (SELECT id FROM courses WHERE code='IT317')),
+    -- IT415 Cloud Networks needs IT111
+    ((SELECT id FROM courses WHERE code='IT415'), (SELECT id FROM courses WHERE code='IT111')),
     -- SE411 Project Mgmt needs SE311
     ((SELECT id FROM courses WHERE code='SE411'), (SELECT id FROM courses WHERE code='SE311')),
     -- SE412 Testing needs SE314

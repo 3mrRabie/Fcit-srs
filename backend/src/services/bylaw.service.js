@@ -147,29 +147,10 @@ async function canStudentRegisterCourse(studentId, courseId, semesterId, offerin
   if (!offering) return { allowed: false, reason: 'Course is not offered this semester' };
   if (offering.enrolled_count >= offering.capacity) return { allowed: false, reason: 'Course is full' };
 
-  // [FIX-CANREG] Use bylaw-computed level (same as getAvailableCourses) instead of the
-  // raw DB current_level string. Previously this used an EXACT year_of_study match and
-  // restricted level-2 students to GENERAL courses, both inconsistent with the availability
-  // query and causing 400 errors for any valid registration attempt.
-  const studentLevelNum = creditsToLevel(student.total_credits_passed).id || 1;
-
-  // Level 1 only → GENERAL curriculum. Level 2+ → also include their specialization track.
-  const specOptions = studentLevelNum <= 1
-    ? ['GENERAL']
-    : [student.specialization || 'CS', 'GENERAL'];
-
-  // Art. 12: students may register courses at their current level or one level below.
-  // This allows retakes and catch-up without permitting registration far ahead of level.
-  const cpCheck = (await query(
-    `SELECT 1 FROM curriculum_plans
-     WHERE course_id = $1
-       AND specialization = ANY($2::text[])
-       AND year_of_study BETWEEN $3 - 1 AND $3
-     LIMIT 1`,
-    [courseId, specOptions, studentLevelNum]
-  )).rows[0];
-
-  if (!cpCheck) return { allowed: false, reason: 'Course is not valid for your current level, term, or specialization' };
+  // [DYNAMIC-REG] Curriculum plan level/specialization check removed.
+  // Prerequisites, capacity, and credit-limit checks below are the sole gate.
+  // The curriculum_plans filter caused false 400s when the student's stored
+  // specialization didn't match, or when total_credits_passed was 0.
 
   const existing = (await query(
     `SELECT e.* FROM enrollments e JOIN course_offerings co ON co.id = e.offering_id

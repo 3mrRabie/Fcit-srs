@@ -32,7 +32,7 @@ SELECT add_prereq('BS117','BS111');   -- Operations Research requires Math(1)
 -- COMPUTER SCIENCE (CS) chain — full 4-year hierarchy
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Year 1 → Year 2
-SELECT add_prereq('CS112','CS111');   -- Structured Programming requires CS Fundamentals
+SELECT add_prereq('CS112','CS111');      -- Structured Programming requires CS Fundamentals
 SELECT add_prereq('IS111','CS111',FALSE); -- IS Intro: advisory only on CS Fundamentals
 
 -- Year 2 (OOP, DS, Algorithms, OS)
@@ -41,31 +41,32 @@ SELECT add_prereq('CS212','CS112');   -- Data Structures requires Structured Pro
 SELECT add_prereq('CS213','CS212');   -- Algorithms requires Data Structures
 SELECT add_prereq('CS214','CS212');   -- Operating Systems requires Data Structures
 SELECT add_prereq('SE211','CS112');   -- Software Engineering requires Structured Programming
-SELECT add_prereq('IS211','CS112');   -- Database Systems requires Structured Programming
+SELECT add_prereq('IS211','IS111');   -- Database Systems requires IS Intro          [FIXED: was CS112]
+SELECT add_prereq('IS212','BS113');   -- Optimization Methods requires Math(2)       [FIXED: was IS211]
 SELECT add_prereq('IT211','BS115');   -- Digital Logic requires Electronics
 
 -- Year 3 (Security, Networks, AI, etc.)
-SELECT add_prereq('CS311','CS212');   -- Computer Security requires Data Structures
-SELECT add_prereq('CS312','CS212');   -- Computer Organization requires Data Structures
+SELECT add_prereq('CS311','IT212');   -- Computer Security requires Networks Tech     [FIXED: was CS212]
+SELECT add_prereq('CS312','IT211');   -- Computer Organization requires Digital Logic [FIXED: was CS212]
 SELECT add_prereq('CS313','CS212');   -- AI requires Data Structures
-SELECT add_prereq('CS314','CS313');   -- Machine Learning requires AI
+SELECT add_prereq('CS314','CS211');   -- Machine Learning requires OOP                [FIXED: was CS313]
 SELECT add_prereq('CS315','IS311');   -- Big Data requires Analysis & Design of IS
 SELECT add_prereq('CS316','CS214');   -- Advanced OS requires Operating Systems
 SELECT add_prereq('IS311','IS211');   -- Analysis & Design of IS requires Database
 SELECT add_prereq('IS312','IS211');   -- DB Management requires Database Systems
-SELECT add_prereq('IS313','IS211');   -- File Management requires Database Systems
-SELECT add_prereq('IS314','IS211');   -- Information Retrieval requires Database Systems
-SELECT add_prereq('IS315','IS312');   -- Data Warehousing requires DB Management
-SELECT add_prereq('IS316','IS312');   -- Data Analytics requires DB Management
-SELECT add_prereq('IS317','IS311');   -- Web-based IS requires Analysis & Design
+SELECT add_prereq('IS313','CS212');   -- File Management requires Data Structures     [FIXED: was IS211]
+SELECT add_prereq('IS314','BS115');   -- Information Retrieval requires Electronics   [FIXED: was IS211]
+SELECT add_prereq('IS315','IS311');   -- Data Warehousing requires Analysis & Design  [FIXED: was IS312]
+SELECT add_prereq('IS316','IS315');   -- Data Analytics requires Data Warehousing     [FIXED: was IS312]
+SELECT add_prereq('IS317','CS211');   -- Web-based IS requires OOP                   [FIXED: was IS311]
 SELECT add_prereq('IS318','BS116');   -- Information Theory requires Probability
 SELECT add_prereq('SE311','SE211');   -- SW Requirements requires Software Engineering
 SELECT add_prereq('SE312','SE211');   -- SW for Internet requires Software Engineering
 SELECT add_prereq('SE313','SE211');   -- SW Design requires Software Engineering
-SELECT add_prereq('IT311','IT211');   -- Computer Graphics requires Digital Logic
-SELECT add_prereq('IT312','IT211');   -- Pattern Recognition requires Digital Logic
-SELECT add_prereq('IT313','IT211');   -- Info & Network Security requires Digital Logic
-SELECT add_prereq('IT314','IT211');   -- Signals & Systems requires Digital Logic
+SELECT add_prereq('IT311','CS112');   -- Computer Graphics requires Structured Prog   [FIXED: was IT211]
+SELECT add_prereq('IT312','BS117');   -- Pattern Recognition requires Operations Res  [FIXED: was IT211]
+SELECT add_prereq('IT313','IT111');   -- Info & Network Security requires IT Intro    [FIXED: was IT211]
+SELECT add_prereq('IT314','BS114');   -- Signals & Systems requires Math(3)           [FIXED: was IT211]
 SELECT add_prereq('IT315','IT211');   -- Microprocessors requires Digital Logic
 
 -- Year 3 → 4 Security / Crypto
@@ -74,30 +75,30 @@ SELECT add_prereq('CS322','CS311');   -- Network Security requires Computer Secu
 SELECT add_prereq('CS332','CS313');   -- Knowledge Discovery requires AI
 
 -- Year 4
-SELECT add_prereq('CS411','CS213');   -- Computation Theory requires Algorithms
-SELECT add_prereq('CS412','CS312');   -- IoT requires Computer Organization
-SELECT add_prereq('CS413','CS313');   -- Problem Solving requires AI
+SELECT add_prereq('CS411','BS112');   -- Computation Theory requires Discrete Math    [FIXED: was CS213]
+SELECT add_prereq('CS412','IT212');   -- IoT requires Networks Technology             [FIXED: was CS312]
+SELECT add_prereq('CS413','CS213');   -- Problem Solving requires Algorithms          [FIXED: was CS313]
 SELECT add_prereq('CS414','CS314');   -- Data Science requires Machine Learning
-SELECT add_prereq('CS415','CS312');   -- Cloud Computing requires Computer Organization
-SELECT add_prereq('CS416','CS213');   -- Compilers requires Algorithms
+SELECT add_prereq('CS415','CS316');   -- Cloud Computing requires Advanced OS         [FIXED: was CS312]
+SELECT add_prereq('CS416','CS411');   -- Compilers requires Computation Theory        [FIXED: was CS213]
 SELECT add_prereq('CS423','CS312');   -- Mobile Computing requires Computer Organization
 SELECT add_prereq('CS424','CS211');   -- Mobile App Programming requires OOP
 SELECT add_prereq('CS433','CS313');   -- Selected Topics AI requires AI
 SELECT add_prereq('CS434','CS316');   -- High Performance Computing requires Advanced OS
 SELECT add_prereq('CS443','CS313');   -- NLP requires AI
-SELECT add_prereq('IS411','IS316');   -- Data Mining requires Data Analytics
+SELECT add_prereq('IS411','BS116');   -- Data Mining requires Probability & Statistics [FIXED: was IS316]
 SELECT add_prereq('IS412','IS311');   -- IS Project Management requires Analysis & Design
-SELECT add_prereq('IS413','IS311');   -- Selected Topics IS requires Analysis & Design
-SELECT add_prereq('IT316','IT311');   -- Image Processing requires Computer Graphics
-SELECT add_prereq('IT317','IT311');   -- Advanced Networks requires Computer Graphics
-SELECT add_prereq('IT318','IT315');   -- Computer Architecture requires Microprocessors
+SELECT add_prereq('IS413','IS317');   -- Selected Topics IS requires Web-based IS     [FIXED: was IS311]
+SELECT add_prereq('IT316','IT314');   -- Image Processing requires Signals & Systems
+SELECT add_prereq('IT317','IT212');   -- Advanced Networks requires Networks Technology [FIXED: was IT311]
+SELECT add_prereq('IT318','BS115');   -- Computer Architecture requires Electronics   [FIXED: was IT315]
 SELECT add_prereq('IT319','IT311');   -- Digital Multimedia requires Computer Graphics
 SELECT add_prereq('IT411','IT314');   -- Robot Systems requires Signals & Systems
-SELECT add_prereq('IT413','IT314');   -- Communication Technology requires Signals
+SELECT add_prereq('IT413','IT317');   -- Communication Technology requires Adv Networks [FIXED: was IT314]
 SELECT add_prereq('IT414','IT313');   -- Cyber Security requires Info & Network Security
-SELECT add_prereq('IT415','IT317');   -- Cloud Networking requires Advanced Networks
+SELECT add_prereq('IT415','IT111');   -- Cloud Networks requires IT Intro              [FIXED: was IT317]
 SELECT add_prereq('SE314','SE311');   -- SW Quality Assurance requires SW Requirements
-SELECT add_prereq('SE315','SE313');   -- Advanced SW Eng requires SW Design
+SELECT add_prereq('SE315','SE211');   -- Advanced SW Eng requires Software Engineering [FIXED: was SE313]
 SELECT add_prereq('SE316','SE211');   -- UI Design requires Software Engineering
 SELECT add_prereq('SE411','SE311');   -- SW Project Management requires SW Requirements
 SELECT add_prereq('SE412','SE314');   -- SW Testing requires SW Quality Assurance

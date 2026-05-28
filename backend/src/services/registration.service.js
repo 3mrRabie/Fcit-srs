@@ -140,7 +140,7 @@ async function dropCourse(enrollmentId, studentId) {
 
     // Decrement enrolled_count so the seat becomes available for other students
     await client.query(
-      'UPDATE course_offerings SET enrolled_count = GREATEST(0, enrolled_count - 1), updated_at = NOW() WHERE id = $1',
+      'UPDATE course_offerings SET enrolled_count = GREATEST(0, enrolled_count - 1) WHERE id = $1',
       [enrollment.offering_id]
     );
 
